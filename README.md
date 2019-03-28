@@ -22,6 +22,9 @@ an R working `for` loop and rewrites it into a `lapply` function.
   - This implementation creates a lapply function that uses ‘assign’ to
     copy values of the parent environments, and thus, would not work for
     example in code parallelization.
+  - Might fail if the generated code is used on other than `.GlobalEnv`.
+  - Might fail if the `for` loop uses `<<-`, or assigns to specified
+    environments.
 
 ### Description
 
@@ -48,7 +51,8 @@ lapply(X, FUN, ...)
 * ...  optional arguments to FUN.
 ```
 
-So simply for(var in seq) expr \<=\> lapply(seq, function(var) { expr })
+So simply `for(var in seq) expr` \<=\> `lapply(seq, function(var) { expr
+})`
 
 However, the main difference between both is that lapply is a function,
 meanwhile for is a Control Flow command, and thus, they differ in which
