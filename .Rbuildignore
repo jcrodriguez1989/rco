@@ -1,0 +1,7 @@
+^codecov\.yml$
+^\.travis\.yml$
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^docs$
+^_pkgdown\.yml$
