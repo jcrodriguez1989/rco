@@ -25,4 +25,6 @@ Imports:
 Suggests: 
     covr,
     knitr,
-    testthat
+    testthat,
+    ggplot2,
+    microbenchmark
