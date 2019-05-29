@@ -9,8 +9,8 @@ test_that("correctly parse and deparse text", {
     "i",
     sep = "\n"
   )
-  # parsed_data <- rco:::parse_flat_data(code)
-  # expect_equal(dim(parsed_data), c(34, 9))
-  # deparsed_data <- rco:::deparse_flat_data(parsed_data)
-  # expect_equal(code, deparsed_data)
+  parsed_data <- parse_flat_data(code)
+  expect_equal(dim(parsed_data), c(34, 13))
+  deparsed_data <- deparse_flat_data(parsed_data)
+  expect_equal(code, deparsed_data)
 })
