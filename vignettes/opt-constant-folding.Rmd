@@ -32,9 +32,9 @@ speed_up <- function(obj) {
 
 ## Background
 
-[Source](https://en.wikipedia.org/wiki/Constant_folding)
+Constant folding is an optimization technique that eliminates expressions that calculate a value that can already be determined before execution. These are typically calculations that only reference constant values or expressions that reference variables whose values are constant.
 
-Constant folding is the process of recognizing and evaluating constant expressions rather than computing them at runtime. Consider the statement: 
+For example, consider the statement:
 
 `i <- 320 * 200 * 32`
 
