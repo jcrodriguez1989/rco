@@ -35,6 +35,11 @@ precedence_ops <- c(
   "'}'"
 )
 
+loops <- c(
+  "FOR",
+  "WHILE",
+  "REPEAT"
+)
 
 # https://svn.r-project.org/R/trunk/src/main/gram.y
 

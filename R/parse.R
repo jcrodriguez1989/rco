@@ -78,3 +78,53 @@ get_children <- function(fpd, id) {
   }
   return(act_fpd)
 }
+
+# Replaces exprs with just one child, by its child
+#
+# @param fpd a flat parsed data data.frame .
+#
+flatten_leaves <- function(fpd) {
+  parent_ids <- fpd$parent
+  one_child_parents <- parent_ids[ # parents with unique child
+    !(duplicated(parent_ids) | duplicated(parent_ids, fromLast = TRUE))]
+  new_fpd <- fpd[!fpd$id %in% one_child_parents,] # remove one_child_parents
+  one_child_parents <- one_child_parents[one_child_parents > 0]
+  for (ocp in one_child_parents) { # new parent will be the grandpa
+    new_fpd[new_fpd$parent == ocp, "parent"] <- fpd[fpd$id == ocp, "parent"]
+  }
+  return(new_fpd)
+}
+
+# Returns the fpd with only roots
+#
+# @param fpd a flat parsed data data.frame .
+#
+get_roots <- function(fpd) {
+  fpd[!fpd$parent %in% fpd$id, ]
+}
+
+# Converts equal_assign to an expr
+#
+# @param fpd a flat parsed data data.frame .
+#
+eq_assign_to_expr <- function(fpd) {
+  fpd <- fpd[order(fpd$pos_id),] # pos_id is important here
+  eq_assign_ids <- fpd[fpd$token == "EQ_ASSIGN", "id"]
+  new_fpd <- fpd
+  # equal_assign : expr EQ_ASSIGN (expr | equal_assign)
+  for (i in sort(eq_assign_ids, decreasing = TRUE)) {
+    act_idx <- which(new_fpd$id == i)
+    act_fpd <- new_fpd[act_idx + -1:1,]
+    new_fpd <- new_fpd[-(act_idx + -1:1),]
+    expr_fpd <- act_fpd[1,]
+    act_fpd[1, "pos_id"] <- act_fpd[1, "pos_id"] + 10e-5
+    expr_fpd$token <- "expr"
+    expr_fpd$terminal <- FALSE
+    expr_fpd$text <- paste(act_fpd$text, collapse = " ")
+    expr_fpd$id <- paste0(expr_fpd$id, "_EQ_ASS")
+    act_fpd$parent <- expr_fpd$id
+    new_fpd <- rbind(new_fpd, expr_fpd, act_fpd)
+    new_fpd <- new_fpd[order(new_fpd$pos_id),]
+  }
+  new_fpd
+}
