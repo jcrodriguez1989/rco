@@ -4,7 +4,7 @@
 \alias{opt_constant_folding}
 \title{Optimizer: Constant Folding}
 \usage{
-opt_constant_folding(texts, fold_floats = TRUE)
+opt_constant_folding(texts, fold_floats = FALSE)
 }
 \arguments{
 \item{texts}{A list of character vectors with the code to optimize.}

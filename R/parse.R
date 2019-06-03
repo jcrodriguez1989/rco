@@ -78,3 +78,101 @@ get_children <- function(fpd, id) {
   }
   return(act_fpd)
 }
+
+# Replaces exprs with just one child, by its child
+#
+# @param fpd a flat parsed data data.frame .
+#
+flatten_leaves <- function(fpd) {
+  parent_ids <- fpd$parent
+  one_child_parents <- parent_ids[ # parents with unique child
+    !(duplicated(parent_ids) | duplicated(parent_ids, fromLast = TRUE))]
+  new_fpd <- fpd[!fpd$id %in% one_child_parents,] # remove one_child_parents
+  one_child_parents <- one_child_parents[one_child_parents > 0]
+  for (ocp in one_child_parents) { # new parent will be the grandpa
+    new_fpd[new_fpd$parent == ocp, "parent"] <- fpd[fpd$id == ocp, "parent"]
+  }
+  return(new_fpd)
+}
+
+# Returns the fpd with only roots
+#
+# @param fpd a flat parsed data data.frame .
+#
+get_roots <- function(fpd) {
+  fpd[!fpd$parent %in% fpd$id, ]
+}
+
+# Converts equal_assign to an expr
+#
+# @param fpd a flat parsed data data.frame .
+#
+eq_assign_to_expr <- function(fpd) {
+  fpd <- fpd[order(fpd$pos_id),] # pos_id is important here
+  eq_assign_ids <- fpd[fpd$token == "EQ_ASSIGN", "id"]
+  new_fpd <- fpd
+  # equal_assign : expr EQ_ASSIGN (expr | equal_assign)
+  for (i in sort(eq_assign_ids, decreasing = TRUE)) {
+    act_idx <- which(new_fpd$id == i)
+    act_fpd <- new_fpd[act_idx + -1:1,]
+    new_fpd <- new_fpd[-(act_idx + -1:1),]
+    expr_fpd <- act_fpd[1,]
+    act_fpd[1, "pos_id"] <- act_fpd[1, "pos_id"] + 10e-5
+    expr_fpd$token <- "expr"
+    expr_fpd$terminal <- FALSE
+    expr_fpd$text <- paste(act_fpd$text, collapse = " ")
+    expr_fpd$id <- paste0(expr_fpd$id, "_EQ_ASS")
+    act_fpd$parent <- expr_fpd$id
+    new_fpd <- rbind(new_fpd, expr_fpd, act_fpd)
+    new_fpd <- new_fpd[order(new_fpd$pos_id),]
+  }
+  new_fpd
+}
+
+
+# Copies relevant information from a pdf to a new pdf
+#
+# @param fpd_from a flat parsed data data.frame from which to take parent, etc.
+# @param fpd_replace a fpd that will replace fpd_from.
+#
+replace_pd <- function(fpd_from, fpd_replace) {
+  fpd_replace <- fpd_replace[order(fpd_replace$pos_id),]
+  from_root <- get_roots(fpd_from) # it must be one row
+  replace_root <- get_roots(fpd_replace) # it must be one row
+  new_fpd <- fpd_replace
+
+  # from old fpd parent, copy to new parent: id, parent, and pos
+  new_fpd[fpd_replace$id == replace_root$id, c("id", "parent", "pos_id")] <-
+    from_root[, c("id", "parent", "pos_id")]
+
+  # new fpd first childs have to point to new parent id
+  new_fpd[fpd_replace$parent == replace_root$id, "parent"] <- from_root$id
+
+  # create a fake ids to every node except parent
+  new_fpd[fpd_replace$id != replace_root$id, "id"] <-
+    paste0(from_root$id, "_", new_fpd[fpd_replace$id != replace_root$id, "id"])
+
+  # fix parents for new fpd (not parent, nor first childs)
+  new_fpd[fpd_replace$id != replace_root$id &
+            fpd_replace$parent != replace_root$id, "parent"] <-
+    paste0(from_root$id, "_",
+           new_fpd[fpd_replace$id != replace_root$id &
+                     fpd_replace$parent != replace_root$id, "parent"])
+
+  # fix pos_ids
+  new_fpd$pos_id <- from_root$pos_id + seq(0, nrow(new_fpd)-1) * 10e-5
+
+  # copy first prev_spaces, and last next_spaces and lines
+  from_terms <- fpd_from[fpd_from$terminal,]
+  fst_term <- from_terms[which.min(from_terms$pos_id),]
+  last_term <- from_terms[which.max(from_terms$pos_id),]
+  new_terms <- new_fpd[new_fpd$terminal, "id"]
+  new_fpd[new_fpd$id == new_terms[[1]], "prev_spaces"] <-
+    fst_term$prev_spaces
+  new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_spaces"] <-
+    last_term$next_spaces
+  new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_lines"] <-
+    last_term$next_lines
+
+  return(new_fpd)
+}
