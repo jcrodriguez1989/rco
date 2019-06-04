@@ -68,14 +68,20 @@ deparse_flat_data <- function(fpd) {
 #
 # @param fpd a flat parsed data data.frame to deparse.
 # @param id Numeric indicating the parent ID.
+# @param include_father Logical indicating if keep father node.
 #
-get_children <- function(fpd, id) {
-  act_fpd <- fpd[fpd$id == id,]
-  act_childs <- fpd[fpd$parent == id, "id"]
+get_children <- function(fpd, id, include_father = TRUE) {
+  act_fpd <- fpd[fpd$id %in% id,]
+  if (!include_father) {
+    act_fpd <- NULL
+  }
+  act_childs <- fpd[fpd$parent %in% id, "id"]
   while (length(act_childs) > 0) {
     act_fpd <- rbind(act_fpd, fpd[fpd$id %in% act_childs,])
     act_childs <- fpd[fpd$parent %in% fpd[fpd$id %in% act_childs, "id"], "id"]
   }
+  act_fpd <- act_fpd[order(act_fpd$pos_id), ]
+
   return(act_fpd)
 }
 

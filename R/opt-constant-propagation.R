@@ -30,11 +30,18 @@ constant_prop_one <- function(text, fold_floats) {
   pd <- parse_flat_data(text, include_text = TRUE)
   pd <- flatten_leaves(pd)
   pd <- eq_assign_to_expr(pd)
-  new_pd <- pd[pd$parent < 0,] # keep lines with just comments
-  # todo: keep propagating till no change
-  new_pd <- rbind(new_pd, one_propagate(pd, c())$fpd)
-  new_pd <- new_pd[order(new_pd$pos_id),]
-  deparse_flat_data(new_pd)
+  res_pd <- pd[pd$parent < 0,] # keep lines with just comments
+  new_pd <- pd[pd$parent >= 0,] # keep lines with just comments
+
+  # fold until no changes
+  old_pd <- NULL
+  while (!isTRUE(all.equal(old_pd, new_pd))) {
+    old_pd <- new_pd
+    new_pd <- one_propagate(new_pd, c())$fpd
+  }
+  res_pd <- rbind(res_pd, new_pd)
+  res_pd <- res_pd[order(res_pd$pos_id),]
+  deparse_flat_data(res_pd)
 }
 
 # Executes constant propagation of a tree
@@ -44,94 +51,98 @@ constant_prop_one <- function(text, fold_floats) {
 #
 one_propagate <- function(fpd, values) {
   act_nodes <- get_roots(fpd)
-  new_fpd <- act_nodes[act_nodes$terminal,] # they are {, }, (, )
+  res_fpd <- act_nodes[act_nodes$terminal,] # they are {, }, (, )
   act_nodes <- act_nodes[!act_nodes$terminal,]
 
   for (i in seq_len(nrow(act_nodes))) {
     act_node <- act_nodes[i,]
     act_fpd <- get_children(fpd, act_node$id)
-    if (is_constant_var_expr(act_fpd, act_node$id)) {
+    if (is_constant_var_expr(fpd, act_node$id)) {
       # if is constant var ( e.g. x <- 3 ) add it to values
       act_val <- get_constant_var(act_fpd, act_node$id)
       values[names(act_val)] <- act_val # add act_val to values
-      new_fpd <- rbind(new_fpd, get_children(act_fpd, act_node$id))
-    } else if (only_uses_ops(act_fpd, act_node$id, names(values))) {
+      res_fpd <- rbind(res_fpd, act_fpd)
+    } else if (only_uses_ops(fpd, act_node$id)) {
       # if uses a constant var ( e.g. x + 3 ) then replace expression
       # if it doesnt use a constant var, it returns the same
-      new_fpd <- rbind(new_fpd,
+      res_fpd <- rbind(res_fpd,
                        replace_constant_vars(act_fpd, act_node$id, values))
       # replace the constant var by the value and replace in fpd
-    } else if (is_function_call(act_fpd, act_node$id)) {
-      childs <- get_children(act_fpd, act_node$id)
-      new_fpd <- rbind(new_fpd,
-                       replace_constant_vars(childs, act_node$id, values))
+    } else if (is_function_call(fpd, act_node$id)) {
       # if function call, then empty the values  :'(
-      # as from functions, parent envs can be modified
+      # ( e.g. rm(list=ls()) )
+      res_fpd <- rbind(res_fpd,
+                       replace_constant_vars(act_fpd, act_node$id, values))
       values <- c()
-    } else if (is_loop(act_fpd, act_node$id)) {
+    } else if (is_loop(fpd, act_node$id)) {
       # if it is a loop, then remove the in-loop assigned variables from values
-      loop_ass_vars <- get_assigned_vars(act_fpd, act_node$id)
+      loop_ass_vars <- get_assigned_vars(fpd, act_node$id)
       values <- values[!names(values) %in% loop_ass_vars]
-      childs <- act_fpd[act_fpd$parent == act_node$id,]
-      new_fpd <- rbind(new_fpd, childs[childs$terminal,])
+      childs <- fpd[fpd$parent == act_node$id,]
+      res_fpd <- rbind(res_fpd, act_node)
+      res_fpd <- rbind(res_fpd, childs[childs$terminal,])
+      # work on loop condition, and on body
       exprs_fpd <- childs[!childs$terminal,]
       for (i in seq_len(nrow(exprs_fpd))) {
-        res <- one_propagate(get_children(act_fpd, exprs_fpd[i, "id"]), values)
-        new_fpd <- rbind(new_fpd, res$fpd)
+        res <- one_propagate(get_children(fpd, exprs_fpd[i, "id"]), values)
+        res_fpd <- rbind(res_fpd, res$fpd)
         values <- res$values
       }
+    } else if (is_assignment(fpd, act_node$id)) {
+      # note that it is an assignment, but not of constant value
+      # and can be x <- y <- z * 7
+      res_fpd <- rbind(res_fpd, act_node) # keep root node
+      childs <- fpd[fpd$parent == act_node$id,]
+      # get indexes that are not the expr to assing
+      save_idxs <- get_assign_indexes(childs$token)
+      res_fpd <- rbind(res_fpd, childs[save_idxs,])
+      childs <- childs[-save_idxs,]
+      child_pd <- get_children(fpd, childs$id)
+      if (nrow(childs) == 1 && childs$token == "expr") {
+        # it is an expr
+        res <- one_propagate(child_pd, values)
+        res_fpd <- rbind(res_fpd, res$fpd)
+        values <- res$values
+      } else {
+        # it is a SYMBOL flattened by us
+        res_fpd <- rbind(res_fpd,
+                         replace_constant_vars(child_pd, act_node$id, values))
+      }
+      # remove assigned var from values
+      values <- values[names(values) !=
+                         get_assigned_var(act_fpd, act_node$id)]
+    } else if (is_function_def(act_fpd, act_node$id)) {
+      # it has a new env, so dont pass constant values
+      # note that it is an assignment, but not of constant value
+      childs <- fpd[fpd$parent == act_node$id,]
+      # FUNCTION '(' formlist ')' cr expr_or_assign
+      # formlist can have exprs
+      res_fpd <- rbind(res_fpd, act_node)
+      res_fpd <- rbind(res_fpd, childs[childs$terminal,])
+      exprs_fpd <- childs[!childs$terminal,]
+      for (i in seq_len(nrow(exprs_fpd)-1)) {
+        # dont propagate in function arg expressions
+        res_fpd <- rbind(res_fpd, get_children(act_fpd, exprs_fpd[i, "id"]))
+      }
+      # propagate on the function body ( with new env c() )
+      res <- one_propagate(
+        get_children(act_fpd, exprs_fpd[nrow(exprs_fpd), "id"]), c())
+      res_fpd <- rbind(res_fpd, res$fpd)
     } else {
       # propagate on act_node childs
       # get children w/o parent, and keep propagating
-      child_pd <- get_children(act_fpd, act_node$id)
-      child_pd <- child_pd[child_pd$id != act_node$id,] # remove parent
-      new_fpd <- rbind(new_fpd, act_node)
-      if (is_assignment(act_fpd, act_node$id)) {
-        # note that it is an assignment, but not of constant value
-        childs <- child_pd[child_pd$parent == act_node$id,]
-        assignation_idxs <- 1:2
-        if (childs$token[[2]] == "RIGHT_ASSIGN") {
-          assignation_idxs <- 2:3
-        }
-        new_fpd <- rbind(new_fpd, childs[assignation_idxs,])
-        child_pd <- child_pd[!child_pd$id %in% childs[assignation_idxs, "id"],]
-        if (get_roots(child_pd)$token != "expr") {
-          # it is a SYMBOL flattened by us
-          res <- list(
-            fpd = replace_constant_vars(child_pd, act_node$id, values),
-            values = values
-          )
-        } else {
-          # it is an expr
-          res <- one_propagate(child_pd, values)
-        }
-        values <- res$values
-        # remove assigned var from values
-        values <- values[names(values) !=
-                           get_assigned_var(act_fpd, act_node$id)]
-      } else if (is_function_def(act_fpd, act_node$id)) {
-        # it has a new env, so no constant values
-        # note that it is an assignment, but not of constant value
-        childs <- child_pd[child_pd$parent == act_node$id,]
-        # FUNCTION '(' formlist ')' cr expr_or_assign
-        # formlist can have expr
-        new_fpd <- rbind(new_fpd, childs[childs$terminal,])
-        exprs_fpd <- childs[!childs$terminal,]
-        for (i in seq_len(nrow(exprs_fpd)-1)) {
-          # dont propagate in function arg expressions
-          new_fpd <- rbind(new_fpd, get_children(child_pd, exprs_fpd[i, "id"]))
-        }
-        # propagate on the function body ( with new env c() )
-        res <- one_propagate(
-          get_children(child_pd, exprs_fpd[nrow(exprs_fpd), "id"]), c())
-      } else {
-        res <- one_propagate(child_pd, values)
-        values <- res$values # add new values to values
-      }
-      new_fpd <- rbind(new_fpd, res$fpd)
+      childs <- fpd[fpd$parent == act_node$id,]
+      res_fpd <- rbind(res_fpd, act_node)
+      res_fpd <- rbind(res_fpd, childs[childs$terminal,])
+      res <- one_propagate(
+        get_children(fpd, childs[!childs$terminal, "id"]),
+        values)
+      values <- res$values
+      res_fpd <- rbind(res_fpd, res$fpd)
     }
   }
-  return(list(fpd = new_fpd, values = values))
+  res_fpd <- res_fpd[order(res_fpd$pos_id),]
+  return(list(fpd = res_fpd, values = values))
 }
 
 # Returns a logical indicating if a node is assignment of constant to var
@@ -140,11 +151,23 @@ one_propagate <- function(fpd, values) {
 # @param id Numeric indicating the node ID.
 #
 is_constant_var_expr <- function(fpd, id) {
-  # is an assignment, and the remaining expr is a constant or -constant
-  child <- fpd[fpd$parent == id,]
-  is_assignment(fpd, id) && (
-    is_constant_or_minus(fpd, child[3, "id"]) ||
-      is_constant_or_minus(fpd, child[1, "id"]))
+  # is an assignment (might be recursive),
+  # and the remaining expr is a constant or -constant
+  if (!is_assignment(fpd, id)) {
+    return(FALSE)
+  }
+  act_pd <- fpd[fpd$parent == id,]
+  if (nrow(act_pd) != 3) {
+    browser()
+  }
+  if (act_pd$token[[1]] %in% c("'('", "'{'") &&
+      act_pd$token[[3]] %in% c("')'", "'}'")) {
+    return(is_constant_var_expr(fpd, act_pd[2, "id"]))
+  }
+  is_constant_or_minus(fpd, act_pd[3, "id"]) ||
+    is_constant_or_minus(fpd, act_pd[1, "id"]) ||
+    is_constant_var_expr(fpd, act_pd[3, "id"]) ||
+    is_constant_var_expr(fpd, act_pd[1, "id"])
 }
 
 # Returns a logical indicating if a node is a constant or -constant
@@ -170,10 +193,12 @@ get_constant_var <- function(fpd, id) {
   if (!is_constant_var_expr(fpd, id)) {
     return(NULL)
   }
+  act_pd <- fpd[fpd$parent == id,]
   act_pd <- get_children(fpd, id)
   act_var <- act_pd[act_pd$token == "SYMBOL", "text"]
   act_code <- act_pd[act_pd$token %in% c("'-'", constants),]
   res <- eval(parse(text = paste0(act_code$text)))
+  res <- rep(res, length(act_var))
   names(res) <- act_var
   return(res)
 }
@@ -182,9 +207,8 @@ get_constant_var <- function(fpd, id) {
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
-# @param constant_vars A character vector with constant vars names
 #
-only_uses_ops <- function(fpd, id, constant_vars) {
+only_uses_ops <- function(fpd, id) {
   act_pd <- get_children(fpd, id)
   all(act_pd$token %in% c("expr", "SYMBOL", constants, ops, precedence_ops))
 }
@@ -251,13 +275,36 @@ is_assignment <- function(fpd, id) {
   #   SYMBOL {LEFT_ASSIGN EQ_ASSIGN}_ASSIGN expr
   #   expr RIGHT_ASSIGN SYMBOL
   act_pd <- fpd[fpd$parent == id,]
-  if (nrow(act_pd) != 3)
-    return(FALSE)
-  # nrow(act_pd) == 3 &&
-    (act_pd$token[[1]] == "SYMBOL" &&
-       act_pd$token[[2]] %in% c("LEFT_ASSIGN", "EQ_ASSIGN")) ||
-    (act_pd$token[[2]] == "RIGHT_ASSIGN" &&
-       act_pd$token[[3]] == "SYMBOL")
+  child <- get_children(fpd, id)
+  return(
+    length(unique(child$token[child$token %in% assigns])) == 1 &&
+      nrow(act_pd) == 3 && (
+      (act_pd$token[[1]] %in% c("'('", "'{'") &&
+         act_pd$token[[3]] %in% c("')'", "'}'") &&
+         is_assignment(fpd, act_pd[2, "id"])) ||
+        (act_pd$token[[1]] == "SYMBOL" &&
+         act_pd$token[[2]] %in% c("LEFT_ASSIGN", "EQ_ASSIGN")) ||
+        (
+          act_pd$token[[3]] == "SYMBOL" &&
+            act_pd$token[[2]] == "RIGHT_ASSIGN"
+        )
+    )
+  )
+}
+
+# From a vector of tokens returns the index of everything except the value
+#
+# @param tokens Vector of tokens
+#
+get_assign_indexes <- function(tokens) {
+  idxs <- which(tokens %in% assigns)
+  aux <- rep(-1, length(idxs))
+  if (all(tokens[idxs] == "RIGHT_ASSIGN")) {
+    aux <- -aux
+  }
+  idxs <- c(idxs, idxs+aux)
+  idxs <- c(idxs, which(tokens %in% precedence_ops))
+  return(idxs)
 }
 
 # Returns the name of the var that is beign assigned
@@ -316,29 +363,3 @@ is_function_def <- function(fpd, id) {
   act_pd <- fpd[fpd$parent == id,]
   "FUNCTION" %in% act_pd$token
 }
-
-# # Get IDs of exprs that contain assignment of a constant to a variable
-# #
-# # @param fpd a flat parsed data data.frame .
-# #
-# get_constant_var_exprs <- function(fpd) {
-#   res <- c()
-#   visit_nodes <- get_roots(fpd)$id
-#   while (length(visit_nodes) > 0) {
-#     new_visit_nodes <- c()
-#     # we are only going to check expressions
-#     visit_nodes <- visit_nodes[fpd[fpd$id %in% visit_nodes, "token"] == "expr"]
-#     for (act_parent in visit_nodes) {
-#       # act_parent <- visit_nodes[[1]]
-#       if (is_constant_var_expr(fpd, act_parent)) {
-#         res <- c(res, act_parent)
-#       } else {
-#         new_visit_nodes <- c(new_visit_nodes,
-#                              fpd[fpd$parent == act_parent &
-#                                    fpd$token == "expr", "id"])
-#       }
-#     }
-#     visit_nodes <- new_visit_nodes
-#   }
-#   return(res)
-# }

@@ -125,6 +125,31 @@ test_that("constant propagate in strange while", {
   expect_equal(as.list(env1), as.list(env2))
 })
 
+test_that("constant propagate in strange while 2", {
+  code <- paste(
+    "c <- 0",
+    "while ((a <- 1) && (b <- a + 1) && c < 10) {",
+    "  c <- c + a + b",
+    "}",
+    "z <- a",
+    sep = "\n")
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  expect_equal(opt_code, paste(
+    "c <- 0",
+    "while ((a <- 1) && (b <- 1 + 1) && c < 10) {",
+    "  c <- c + 1 + b",
+    "}",
+    "z <- 1",
+    sep = "\n"
+  ))
+
+  env1 <- new.env()
+  eval(parse(text = code), envir = env1)
+  env2 <- new.env()
+  eval(parse(text = opt_code), envir = env2)
+  expect_equal(as.list(env1), as.list(env2))
+})
+
 test_that("constant propagate in repeat", {
   code <- paste(
     "i <- 0",
@@ -228,6 +253,37 @@ test_that("constant propagate in strange for", {
   expect_equal(as.list(env1), as.list(env2))
 })
 
+test_that("constant propagate in strange for 2", {
+  code <- paste(
+    "c <- 0",
+    "for (i in {",
+    "  a <- 1",
+    "  b <- a + 2",
+    "  1:10",
+    "  }) {",
+    "  c <- c + a + b",
+    "}",
+    sep = "\n")
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  expect_equal(opt_code, paste(
+    "c <- 0",
+    "for (i in {",
+    "  a <- 1",
+    "  b <- 1 + 2",
+    "  1:10",
+    "  }) {",
+    "  c <- c + 1 + b",
+    "}",
+    sep = "\n"
+  ))
+
+  env1 <- new.env()
+  eval(parse(text = code), envir = env1)
+  env2 <- new.env()
+  eval(parse(text = opt_code), envir = env2)
+  expect_equal(as.list(env1), as.list(env2))
+})
+
 test_that("constant propagate in function", {
   code <- paste(
     "x <- 1",
@@ -253,6 +309,84 @@ test_that("constant propagate in function", {
     "}",
     "j <- 2",
     "y <- 1",
+    sep = "\n"
+  ))
+
+  env1 <- new.env()
+  eval(parse(text = code), envir = env1)
+  env2 <- new.env()
+  eval(parse(text = opt_code), envir = env2)
+  env1 <- as.list(env1)
+  env2 <- as.list(env2)
+
+  expect_equal(names(env1), names(env1))
+  expect_equal(env1$res, env2$res)
+})
+
+test_that("constant propagate with double assign", {
+  code <- paste(
+    "(a <- (b <- -1))",
+    "c <- a",
+    "d <- (e <- b)",
+    "d <- (e <- a)",
+    "d <- a <- b",
+    "",
+    "(a = (b = -1))",
+    "c <- a",
+    "d = (e = b)",
+    "d = (e = a)",
+    "d = a = b",
+    "",
+    "((-1 -> b) -> a)",
+    "a -> c",
+    "(b -> e) -> d",
+    "(a -> e) -> d",
+    "b -> a -> d",
+    sep = "\n")
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  expect_equal(opt_code, paste(
+    "(a <- (b <- -1))",
+    "c <- -1",
+    "d <- (e <- -1)",
+    "d <- (e <- -1)",
+    "d <- a <- -1",
+    "",
+    "(a = (b = -1))",
+    "c <- -1",
+    "d = (e = -1)",
+    "d = (e = -1)",
+    "d = a = -1",
+    "",
+    "((-1 -> b) -> a)",
+    "-1 -> c",
+    "(-1 -> e) -> d",
+    "(-1 -> e) -> d",
+    "-1 -> a -> d",
+    sep = "\n"
+  ))
+
+  env1 <- new.env()
+  eval(parse(text = code), envir = env1)
+  env2 <- new.env()
+  eval(parse(text = opt_code), envir = env2)
+  env1 <- as.list(env1)
+  env2 <- as.list(env2)
+
+  expect_equal(names(env1), names(env1))
+  expect_equal(env1$res, env2$res)
+})
+
+test_that("constant propagate recursively", {
+  code <- paste(
+    "a <- -1",
+    "b <- a",
+    "c <- b",
+    sep = "\n")
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  expect_equal(opt_code, paste(
+    "a <- -1",
+    "b <- -1",
+    "c <- -1",
     sep = "\n"
   ))
 
