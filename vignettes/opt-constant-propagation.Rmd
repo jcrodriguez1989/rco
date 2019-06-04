@@ -1,0 +1,116 @@
+---
+output: rmarkdown::html_vignette
+title: Constant Propagation
+vignette: >
+  %\VignetteIndexEntry{Constant Propagation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+    microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+    obj <- as.data.frame(obj)
+    summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+    res <- c()
+    for (i in seq_len(nrow(summaries)-1)+1) {
+        res <- rbind(res, summaries[1,] / summaries[i,])
+    }
+    rownames(res) <- levels(obj$expr)[-1]
+    return(res)
+}
+```
+
+# Constant Propagation
+
+## Background
+
+<!-- Constant folding is an optimization technique that eliminates expressions that calculate a value that can already be determined before execution. These are typically calculations that only reference constant values or expressions that reference variables whose values are constant. -->
+
+<!-- For example, consider the statement: -->
+
+<!-- `i <- 320 * 200 * 32` -->
+
+<!-- Most compilers would not actually generate two multiply instructions. Instead, they identify constructs such as these and substitute the computed values (in this case, `2048000`). -->
+
+## Example
+
+<!-- A simple example would be to have to convert the unit of many temporary samples from hours to miliseconds `miliseconds <- 1000 * 60 * 60 * hours`. -->
+
+<!-- ```{r} -->
+<!-- code <- paste( -->
+<!--   "hours_vector <- runif(1000, 0, 24)", -->
+<!--   "ms_vector <- numeric(1000)", -->
+<!--   "# of course it would be much efficient to do vectorized operations xP", -->
+<!--   "for (i in seq_along(hours_vector)) {", -->
+<!--   "  ms_vector[i] <- 1000 * 60 * 60 * hours_vector[i]", -->
+<!--   "}", -->
+<!--   sep = "\n") -->
+<!-- cat(code) -->
+<!-- ``` -->
+
+<!-- Then, the automatically optimized code would be: -->
+
+<!-- ```{r} -->
+<!-- opt_code <- opt_constant_folding(list(code)) -->
+<!-- cat(opt_code$codes[[1]]) -->
+<!-- ``` -->
+
+<!-- And if we measure the execution time of each one, and the speed-up: -->
+
+<!-- ```{r} -->
+<!-- bmark_res <- microbenchmark( -->
+<!--   { -->
+<!--     eval(parse(text = code)) -->
+<!--   },{ -->
+<!--     eval(parse(text = opt_code)) -->
+<!--   } -->
+<!-- ) -->
+<!-- autoplot(bmark_res) -->
+<!-- speed_up(bmark_res) -->
+<!-- ``` -->
+
+## Implementation
+
+<!-- Actually, `opt_constant_folding` will fold expressions that are conformed solely by operators and constants which tokens are (`utils::getParseData`): -->
+
+<!-- ```{r echo=FALSE} -->
+<!-- rco:::ops -->
+<!-- rco:::constants -->
+<!-- ``` -->
+
+## To-Do
+
+<!-- * Implement intelligent constant folding? -->
+
+<!--   For example: fold `0 * x` to `0` -->
+
+<!--   However, this could change code behavior, in the second case, if `x` does not exist then the code would not throw an error, meanwhile, in the first case, it would. -->
+
+<!-- * Reorder variables with associative operators? -->
+
+<!--   The R parser has left associativity, so `x + 10 + 200` is `((x + 10) + 200)`. So this is not being folded to `x + 210`. -->
+
+<!--   If we consider operators with associativity, we could replace `x + 10 + 200` to  `10 + 200 + x`, and then fold it to `210 + x` -->
+
+<!-- * Try constant folding if a function takes constants? -->
+
+<!--   For example: If we have `paste("aa", "bb")`, we know that this can be folded to `"aa bb"`. The optimizer could try function calls that have all constants as input. -->
+
+<!--   However, this could break the optimizer, for instance, if we try to optimize the following code (when evaluating `foo(3)`): -->
+
+<!--   ```{r eval=FALSE} -->
+<!--   foo <- function(x) { -->
+<!--     while(TRUE) { -->
+<!--       x <- x+1 -->
+<!--     } -->
+<!--   } -->
+<!--   foo(3) -->
+<!--   ``` -->
