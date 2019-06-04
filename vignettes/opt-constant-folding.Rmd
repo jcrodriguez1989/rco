@@ -84,6 +84,7 @@ Actually, `opt_constant_folding` will fold expressions that are conformed solely
 ```{r echo=FALSE}
 rco:::ops
 rco:::constants
+rco:::precedence_ops
 ```
 
 ## Floating-point precision
@@ -100,33 +101,30 @@ x + y + z == 1
 If we constant fold it, we would have:
 
 ```{r}
-opt_code <- opt_constant_folding(list(paste(
+code <- paste(
   "x <- 1/(2+1)",
   "y <- 1/(2+1)",
   "z <- 1/(2+1)",
   "x + y + z == 1",
-  sep = "\n")))$codes[[1]]
+  sep = "\n")
+opt_code <- opt_constant_folding(list(code), fold_floats = TRUE)$codes[[1]]
 cat(opt_code)
 ```
 
 However, this code is not equivalent due to precision:
 
 ```{r}
-x <- 0.333333333333333
-y <- 0.333333333333333
-z <- 0.333333333333333
-x + y + z == 1
+eval(parse(text = code))
+```
+
+```{r}
+eval(parse(text = opt_code))
 ```
 
 In this case, we can use the parameter `fold_floats`. If set to FALSE, then the optimizer will fold every expression except those which fold loses precision:
 
 ```{r}
-opt_code <- opt_constant_folding(list(paste(
-  "x <- 1/(2+1)",
-  "y <- 1/(2+1)",
-  "z <- 1/(2+1)",
-  "x + y + z == 1",
-  sep = "\n")), fold_floats = FALSE)$codes[[1]]
+opt_code <- opt_constant_folding(list(code), fold_floats = FALSE)$codes[[1]]
 cat(opt_code)
 ```
 
