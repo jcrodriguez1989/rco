@@ -71,9 +71,9 @@ deparse_flat_data <- function(fpd) {
 # @param include_father Logical indicating if keep father node.
 #
 get_children <- function(fpd, id, include_father = TRUE) {
-  act_fpd <- fpd[fpd$id %in% id,]
-  if (!include_father) {
-    act_fpd <- NULL
+  act_fpd <- NULL
+  if (include_father) {
+    act_fpd <- fpd[fpd$id %in% id,]
   }
   act_childs <- fpd[fpd$parent %in% id, "id"]
   while (length(act_childs) > 0) {
@@ -81,7 +81,6 @@ get_children <- function(fpd, id, include_father = TRUE) {
     act_childs <- fpd[fpd$parent %in% fpd[fpd$id %in% act_childs, "id"], "id"]
   }
   act_fpd <- act_fpd[order(act_fpd$pos_id), ]
-
   return(act_fpd)
 }
 
@@ -133,4 +132,52 @@ eq_assign_to_expr <- function(fpd) {
     new_fpd <- new_fpd[order(new_fpd$pos_id),]
   }
   new_fpd
+}
+
+
+# Copies relevant information from a pdf to a new pdf
+#
+# @param fpd_from a flat parsed data data.frame from which to take parent, etc.
+# @param fpd_replace a fpd that will replace fpd_from.
+#
+replace_pd <- function(fpd_from, fpd_replace) {
+  fpd_replace <- fpd_replace[order(fpd_replace$pos_id),]
+  from_root <- get_roots(fpd_from) # it must be one row
+  replace_root <- get_roots(fpd_replace) # it must be one row
+  new_fpd <- fpd_replace
+
+  # from old fpd parent, copy to new parent: id, parent, and pos
+  new_fpd[fpd_replace$id == replace_root$id, c("id", "parent", "pos_id")] <-
+    from_root[, c("id", "parent", "pos_id")]
+
+  # new fpd first childs have to point to new parent id
+  new_fpd[fpd_replace$parent == replace_root$id, "parent"] <- from_root$id
+
+  # create a fake ids to every node except parent
+  new_fpd[fpd_replace$id != replace_root$id, "id"] <-
+    paste0(from_root$id, "_", new_fpd[fpd_replace$id != replace_root$id, "id"])
+
+  # fix parents for new fpd (not parent, nor first childs)
+  new_fpd[fpd_replace$id != replace_root$id &
+            fpd_replace$parent != replace_root$id, "parent"] <-
+    paste0(from_root$id, "_",
+           new_fpd[fpd_replace$id != replace_root$id &
+                     fpd_replace$parent != replace_root$id, "parent"])
+
+  # fix pos_ids
+  new_fpd$pos_id <- from_root$pos_id + seq(0, nrow(new_fpd)-1) * 10e-5
+
+  # copy first prev_spaces, and last next_spaces and lines
+  from_terms <- fpd_from[fpd_from$terminal,]
+  fst_term <- from_terms[which.min(from_terms$pos_id),]
+  last_term <- from_terms[which.max(from_terms$pos_id),]
+  new_terms <- new_fpd[new_fpd$terminal, "id"]
+  new_fpd[new_fpd$id == new_terms[[1]], "prev_spaces"] <-
+    fst_term$prev_spaces
+  new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_spaces"] <-
+    last_term$next_spaces
+  new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_lines"] <-
+    last_term$next_lines
+
+  return(new_fpd)
 }
