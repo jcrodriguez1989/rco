@@ -67,15 +67,15 @@ deparse_flat_data <- function(fpd) {
 # Gets a sub fpd with all the children from a node ID
 #
 # @param fpd a flat parsed data data.frame to deparse.
-# @param id Numeric indicating the parent ID.
+# @param ids Numeric indicating the parent ID.
 # @param include_father Logical indicating if keep father node.
 #
-get_children <- function(fpd, id, include_father = TRUE) {
+get_children <- function(fpd, ids, include_father = TRUE) {
   act_fpd <- NULL
   if (include_father) {
-    act_fpd <- fpd[fpd$id %in% id,]
+    act_fpd <- fpd[fpd$id %in% ids,]
   }
-  act_childs <- fpd[fpd$parent %in% id, "id"]
+  act_childs <- fpd[fpd$parent %in% ids, "id"]
   while (length(act_childs) > 0) {
     act_fpd <- rbind(act_fpd, fpd[fpd$id %in% act_childs,])
     act_childs <- fpd[fpd$parent %in% fpd[fpd$id %in% act_childs, "id"], "id"]
@@ -134,7 +134,6 @@ eq_assign_to_expr <- function(fpd) {
   new_fpd
 }
 
-
 # Copies relevant information from a pdf to a new pdf
 #
 # @param fpd_from a flat parsed data data.frame from which to take parent, etc.
@@ -179,5 +178,16 @@ replace_pd <- function(fpd_from, fpd_replace) {
   new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_lines"] <-
     last_term$next_lines
 
+  return(new_fpd)
+}
+
+# Returns the fpd, where branches starting from ids were removed
+#
+# @param fpd a flat parsed data data.frame .
+# @param ids an ids vector of branches id to remove.
+#
+remove_nodes <- function(fpd, ids) {
+  to_remove_fpd <- get_children(fpd, ids)
+  new_fpd <- fpd[!fpd$id %in% to_remove_fpd$id,]
   return(new_fpd)
 }
