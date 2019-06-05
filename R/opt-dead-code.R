@@ -19,7 +19,7 @@ opt_dead_code <- function(texts) {
   return(res)
 }
 
-# Executes constant propagation on one text of code code
+# Executes dead code elimination on one text of code
 #
 # @param text A character vector with code to optimize.
 #

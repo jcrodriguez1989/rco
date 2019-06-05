@@ -26,14 +26,14 @@ opt_constant_propagation <- function(texts) {
 #
 # @param text A character vector with code to optimize.
 #
-constant_prop_one <- function(text, fold_floats) {
+constant_prop_one <- function(text) {
   pd <- parse_flat_data(text, include_text = TRUE)
   pd <- flatten_leaves(pd)
   pd <- eq_assign_to_expr(pd)
   res_pd <- pd[pd$parent < 0,] # keep lines with just comments
   new_pd <- pd[pd$parent >= 0,] # keep lines with just comments
 
-  # fold until no changes
+  # propagate until no changes
   old_pd <- NULL
   while (!isTRUE(all.equal(old_pd, new_pd))) {
     old_pd <- new_pd
