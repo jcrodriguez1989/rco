@@ -12,7 +12,7 @@
 #'   "x <- i * 20 + 100",
 #'   sep = "\n"
 #' )
-#' opt_constant_folding(list(code))
+#' cat(opt_constant_folding(list(code))$codes[[1]])
 #' @export
 #'
 opt_constant_folding <- function(texts, fold_floats = FALSE) {
@@ -95,46 +95,4 @@ one_fold <- function(pd, fold_floats) {
 
   new_pd <- new_pd[order(new_pd$pos_id), ]
   return(new_pd)
-}
-
-# todo: delete this code alternative
-# @param pd A parse data data.frame with code to optimize.
-one_fold2 <- function(pd, fold_floats) {
-  # parents of constants
-  const_parents <- unique(pd[pd$token %in% constants, "parent"])
-  for (id in const_parents) {
-    act_parent <- pd[pd$id == id, ]
-    act_expr <- pd[pd$parent == id, ]
-
-    # if all the children are terminals, and we have more than one
-    if (any(!act_expr$terminal) || nrow(act_expr) <= 1) {
-      next
-    }
-    # all the children are terminals, and we have more than one
-    # try to evaluate it
-    eval_val <- try({
-      eval(parse(text = act_parent$text))
-    }, silent = TRUE)
-
-    if (inherits(eval_val, "try-error")) {
-      next
-    }
-    # it was correctly evaluated then
-    res <- parse_flat_data(eval_val, include_text = TRUE)
-    # only fold if it parses to two rows: a constant, and an expr as its parent
-    if (nrow(res) != 2 ||
-      !"expr" %in% res$token || !any(constants %in% res$token)) {
-      next
-    }
-    # replace the parent and its childs by the new constant (folded)
-    res <- res[res$token %in% constants, ]
-    if (!fold_floats && res$token == "NUM_CONST" &&
-      floor(as.numeric(res$text)) != as.numeric(res$text)) {
-      next
-    }
-    pd[pd$id == id, c("token", "terminal", "text")] <-
-      res[, c("token", "terminal", "text")]
-    pd <- pd[!pd$parent %in% id, ]
-  }
-  return(pd)
 }
