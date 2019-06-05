@@ -12,7 +12,7 @@
 #'   "x <- i * 20 + 100",
 #'   sep = "\n"
 #' )
-#' opt_constant_folding(list(code))
+#' cat(opt_constant_folding(list(code))$codes[[1]])
 #' @export
 #'
 opt_constant_folding <- function(texts, fold_floats = FALSE) {
