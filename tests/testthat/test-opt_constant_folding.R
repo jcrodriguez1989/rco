@@ -2,6 +2,7 @@ context("opt_constant_folding")
 
 test_that("correctly constant fold", {
   code <- paste(
+    "x <- - 2 + (4 - 3)",
     "x <- - 1 + 2 - 3 * 4 / 5 ^ 6",
     "x <- (1000 + 2 - 3 * 4) / 5 ^ (6 - 1)",
     "x <- 2 - 3 * 4 / 5 ^ 6 - 1",
@@ -24,8 +25,9 @@ test_that("correctly constant fold", {
     "  i <- i + 7 * 3",
     "}",
     sep = "\n")
-  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  opt_code <- opt_constant_folding(list(code), fold_floats = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
+    "x <- -1",
     "x <- 0.999232",
     "x <- 0.3168",
     "x <- 0.999232",
@@ -53,6 +55,7 @@ test_that("correctly constant fold", {
 
 test_that("dont fold floats", {
   code <- paste(
+    "x <- - 2 + (4 - 3)",
     "x <- - 1 + 2 - 3 * 4 / 5 ^ 6",
     "x <- (1000 + 2 - 3 * 4) / 5 ^ (6 - 1)",
     "x <- 2 - 3 * 4 / 5 ^ 6 - 1",
@@ -77,6 +80,7 @@ test_that("dont fold floats", {
     sep = "\n")
   opt_code <- opt_constant_folding(list(code), fold_floats = FALSE)$codes[[1]]
   expect_equal(opt_code, paste(
+    "x <- -1",
     "x <- 1 - 12 / 15625",
     "x <- 990 / 3125",
     "x <- 2 - 12 / 15625 - 1",
@@ -163,6 +167,27 @@ test_that("constant fold in function", {
     "}",
     "",
     "res <- bar(TRUE)",
+    sep = "\n"
+  ))
+
+  env1 <- new.env()
+  eval(parse(text = code), envir = env1)
+  env2 <- new.env()
+  eval(parse(text = opt_code), envir = env2)
+  env1 <- as.list(env1)
+  env2 <- as.list(env2)
+
+  expect_equal(names(env1), names(env1))
+  expect_equal(env1$res, env2$res)
+})
+
+test_that("constant fold in function call", {
+  code <- paste(
+    "sum(1*7, 8/2)",
+    sep = "\n")
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "sum(7, 4)",
     sep = "\n"
   ))
 

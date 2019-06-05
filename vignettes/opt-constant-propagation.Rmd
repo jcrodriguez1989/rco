@@ -32,50 +32,66 @@ speed_up <- function(obj) {
 
 ## Background
 
-<!-- Constant folding is an optimization technique that eliminates expressions that calculate a value that can already be determined before execution. These are typically calculations that only reference constant values or expressions that reference variables whose values are constant. -->
+Constant propagation is the process of substituting the values of known constants in expressions, this eliminates cases in which values are copied from one location or variable to another in order to simply assign their value to another variable.
 
-<!-- For example, consider the statement: -->
+For example, consider the following code:
 
-<!-- `i <- 320 * 200 * 32` -->
+```{r eval=FALSE}
+x <- 14
+y <- 7 - x / 2
+z <- y * (28 / x + 2) - x
+```
 
-<!-- Most compilers would not actually generate two multiply instructions. Instead, they identify constructs such as these and substitute the computed values (in this case, `2048000`). -->
+Here, `x` is assigned a constant, and thus, can be propagated (three times). Propagating yields:
+
+```{r eval=FALSE}
+x <- 14
+y <- 7 - 14 / 2
+z <- y * (28 / 14 + 2) - 14
+```
+
+Constant propagation enables the code to assign static values, which is faster than looking up and copying the value of a variable, and also saves time by eliminating assigning a value to a variable that is itself subsequently used only to propagate that value throughout the code. In some cases, copy propagation itself may not provide direct optimizations, but simply facilitates other transformations, such as constant folding, code motion, and dead code elimination. <!-- todo: link these three other optimizations -->
 
 ## Example
 
-<!-- A simple example would be to have to convert the unit of many temporary samples from hours to miliseconds `miliseconds <- 1000 * 60 * 60 * hours`. -->
+A simple example would be to have to convert the unit of many temporary samples from hours to miliseconds `miliseconds <- 1000 * 60 * 60 * hours`.
 
-<!-- ```{r} -->
-<!-- code <- paste( -->
-<!--   "hours_vector <- runif(1000, 0, 24)", -->
-<!--   "ms_vector <- numeric(1000)", -->
-<!--   "# of course it would be much efficient to do vectorized operations xP", -->
-<!--   "for (i in seq_along(hours_vector)) {", -->
-<!--   "  ms_vector[i] <- 1000 * 60 * 60 * hours_vector[i]", -->
-<!--   "}", -->
-<!--   sep = "\n") -->
-<!-- cat(code) -->
-<!-- ``` -->
+```{r}
+code <- paste(
+  "n <- 1000",
+  "hours_vector <- runif(n, 0, 24)",
+  "ms_vector <- numeric(n)",
+  "hs_to_mins <- 60",
+  "mins_to_secs <- 60",
+  "secs_to_ms <- 1000",
+  "# of course it would be much efficient to do vectorized operations xP",
+  "for (i in 1:n) {",
+  "  ms_vector[i] <- secs_to_ms * mins_to_secs * hs_to_mins * hours_vector[i]",
+  "}",
+  sep = "\n")
+cat(code)
+```
 
-<!-- Then, the automatically optimized code would be: -->
+Then, the automatically optimized code would be:
 
-<!-- ```{r} -->
-<!-- opt_code <- opt_constant_folding(list(code)) -->
-<!-- cat(opt_code$codes[[1]]) -->
-<!-- ``` -->
+```{r}
+opt_code <- opt_constant_propagation(list(code))
+cat(opt_code$codes[[1]])
+```
 
-<!-- And if we measure the execution time of each one, and the speed-up: -->
+And if we measure the execution time of each one, and the speed-up:
 
-<!-- ```{r} -->
-<!-- bmark_res <- microbenchmark( -->
-<!--   { -->
-<!--     eval(parse(text = code)) -->
-<!--   },{ -->
-<!--     eval(parse(text = opt_code)) -->
-<!--   } -->
-<!-- ) -->
-<!-- autoplot(bmark_res) -->
-<!-- speed_up(bmark_res) -->
-<!-- ``` -->
+```{r}
+bmark_res <- microbenchmark(
+  {
+    eval(parse(text = code))
+  },{
+    eval(parse(text = opt_code))
+  }
+)
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
 
 ## Implementation
 
@@ -88,7 +104,7 @@ speed_up <- function(obj) {
 
 ## To-Do
 
-<!-- * Implement intelligent constant folding? -->
+* Recognize functions that modify the environment
 
 <!--   For example: fold `0 * x` to `0` -->
 
