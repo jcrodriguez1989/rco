@@ -22,7 +22,7 @@ opt_constant_propagation <- function(texts) {
   return(res)
 }
 
-# Executes constant propagation on one text of code code
+# Executes constant propagation on one text of code
 #
 # @param text A character vector with code to optimize.
 #
