@@ -4,6 +4,10 @@ test_that("correctly constant propagate", {
   code <- paste(
     "x = 3",
     "y = x + 3",
+    "xl <- FALSE",
+    "yl <- xl",
+    "xn <- NA",
+    "yn <- xn",
     "x <- ( -170 )",
     "rm_everything <- function() {",
     "  y <- x",
@@ -32,6 +36,10 @@ test_that("correctly constant propagate", {
   expect_equal(opt_code, paste(
     "x = 3",
     "y = 3 + 3",
+    "xl <- FALSE",
+    "yl <- 0",
+    "xn <- NA",
+    "yn <- NA",
     "x <- ( -170 )",
     "rm_everything <- function() {",
     "  y <- x",
