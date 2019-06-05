@@ -64,7 +64,7 @@ Carefully examine the results after running this function!" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -90,6 +90,9 @@ Carefully examine the results after running this function!" />
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       
@@ -146,11 +149,8 @@ folded (will reduce precision).</p></td>
   <span class='st'>"x &lt;- i * 20 + 100"</span>,
   <span class='kw'>sep</span> <span class='kw'>=</span> <span class='st'>"\n"</span>
 )
-<span class='fu'>opt_constant_folding</span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='no'>code</span>))</div><div class='output co'>#&gt; $codes
-#&gt; $codes[[1]]
-#&gt; [1] "i &lt;- 2048000\nx &lt;- i * 20 + 100"
-#&gt; 
-#&gt; </div></pre>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/cat'>cat</a></span>(<span class='fu'>opt_constant_folding</span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='no'>code</span>))$<span class='no'>codes</span><span class='kw'>[[</span><span class='fl'>1</span>]])</div><div class='output co'>#&gt; i &lt;- 2048000
+#&gt; x &lt;- i * 20 + 100</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

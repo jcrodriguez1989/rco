@@ -1,7 +1,7 @@
 Package: rco
 Type: Package
 Title: R Code Optimizer
-Version: 0.1.0
+Version: 0.1.001
 Authors@R: c(
     person(given = "Juan Cruz", family = "Rodriguez", 
         role = c("aut", "cre"), email = "jcrodriguez@unc.edu.ar"),
@@ -25,4 +25,6 @@ Imports:
 Suggests: 
     covr,
     knitr,
-    testthat
+    testthat,
+    ggplot2,
+    microbenchmark
