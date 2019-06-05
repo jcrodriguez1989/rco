@@ -13,7 +13,7 @@
 #'   "z <- i - 124",
 #'   sep = "\n"
 #' )
-#' opt_constant_propagation(list(code))
+#' cat(opt_constant_propagation(list(code))$codes[[1]])
 #' @export
 #'
 opt_constant_propagation <- function(texts) {
