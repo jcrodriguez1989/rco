@@ -12,7 +12,7 @@ optimize_text <- function(text, optimizers) {
   # create a temp file to write text, and apply optimizers
   tmp_file <- tempfile()
   write_code_file(text, tmp_file)
-  optimize_files(tmp_file, optimizers)
+  optimize_files(tmp_file, optimizers, overwrite = TRUE)
   res <- paste(read_code_file(tmp_file), collapse = "\n")
   cat(res)
 
