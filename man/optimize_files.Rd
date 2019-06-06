@@ -4,7 +4,7 @@
 \alias{optimize_files}
 \title{Optimize `.R` files}
 \usage{
-optimize_files(files, optimizers, overwrite = FALSE)
+optimize_files(files, optimizers = all_optimizers, overwrite = FALSE)
 }
 \arguments{
 \item{files}{A character vector with paths to files to optimize.}

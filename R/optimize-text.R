@@ -8,7 +8,7 @@
 #'
 #' @export
 #'
-optimize_text <- function(text, optimizers) {
+optimize_text <- function(text, optimizers = all_optimizers) {
   # create a temp file to write text, and apply optimizers
   tmp_file <- tempfile()
   write_code_file(text, tmp_file)

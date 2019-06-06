@@ -29,16 +29,9 @@ opt_dead_code <- function(texts) {
 dead_code_one <- function(text) {
   fpd <- parse_flat_data(text, include_text = TRUE)
   fpd <- flatten_leaves(fpd)
-  # fpd <- eq_assign_to_expr(fpd)
   res_fpd <- fpd[fpd$parent < 0,] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0,] # keep lines with just comments
-
-  # eliminate dead code until no changes
-  # old_fpd <- NULL
-  # while (!isTRUE(all.equal(old_fpd, new_fpd))) {
-    # old_fpd <- new_fpd
-    new_fpd <- one_dead_code(new_fpd)
-  # }
+  new_fpd <- one_dead_code(new_fpd)
   res_fpd <- rbind(res_fpd, new_fpd)
   res_fpd <- res_fpd[order(res_fpd$pos_id),]
   deparse_flat_data(res_fpd)
