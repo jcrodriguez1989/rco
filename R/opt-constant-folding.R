@@ -33,14 +33,7 @@ opt_constant_folding <- function(texts, fold_floats = FALSE) {
 constant_fold_one <- function(text, fold_floats) {
   pd <- parse_flat_data(text, include_text = TRUE)
   pd <- flatten_leaves(pd)
-
-  # fold until no changes
-  old_pd <- NULL
-  while (!isTRUE(all.equal(old_pd, pd))) {
-    old_pd <- pd
-    pd <- one_fold(pd, fold_floats)
-  }
-
+  pd <- one_fold(pd, fold_floats)
   deparse_flat_data(pd)
 }
 
