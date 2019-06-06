@@ -14,8 +14,11 @@ Performs one dead code elimination pass.
 Carefully examine the results after running this function!
 }
 \examples{
-# todo: add example
 code <- paste(
+  "while(TRUE) {",
+  "  break",
+  "  dead_code()",
+  "}",
   sep = "\\n"
 )
 cat(opt_dead_code(list(code))$codes[[1]])

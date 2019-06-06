@@ -32,7 +32,7 @@ test_that("correctly constant propagate", {
     "  y",
     "}",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x = 3",
     "y = 3 + 3",
@@ -82,7 +82,7 @@ test_that("constant propagate in while", {
     "}",
     "l <- j + 3",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 1",
     "i <- 0",
@@ -115,7 +115,7 @@ test_that("constant propagate in strange while", {
     "}",
     "z <- y",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "i <- 0",
     "n <- 10",
@@ -141,7 +141,7 @@ test_that("constant propagate in strange while 2", {
     "}",
     "z <- a",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "c <- 0",
     "while ((a <- 1) && (b <- 1 + 1) && c < 10) {",
@@ -171,7 +171,7 @@ test_that("constant propagate in repeat", {
     "  }",
     "}",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "i <- 0",
     "j <- 4",
@@ -204,7 +204,7 @@ test_that("constant propagate in for", {
     "}",
     "l <- y",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 1",
     "i <- 6",
@@ -238,7 +238,7 @@ test_that("constant propagate in strange for", {
     "}",
     "l <- y",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "i <- 0",
     "x <- 1",
@@ -272,7 +272,7 @@ test_that("constant propagate in strange for 2", {
     "  c <- c + a + b",
     "}",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "c <- 0",
     "for (i in {",
@@ -305,7 +305,7 @@ test_that("constant propagate in function", {
     "j <- j",
     "y <- x",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 1",
     "j <- 2",
@@ -351,7 +351,7 @@ test_that("constant propagate with double assign", {
     "(a -> e) -> d",
     "b -> a -> d",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "(a <- (b <- -1))",
     "c <- -1",
@@ -390,7 +390,7 @@ test_that("constant propagate recursively", {
     "b <- a",
     "c <- b",
     sep = "\n")
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "a <- -1",
     "b <- -1",
