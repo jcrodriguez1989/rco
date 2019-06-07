@@ -90,10 +90,34 @@ one_propagate <- function(fpd, values) {
       res_fpd <- rbind(res_fpd, childs[childs$terminal, ])
       # work on loop condition, and on body
       exprs_fpd <- childs[!childs$terminal, ]
+      loop_values <- values
+      for (i in seq_len(nrow(exprs_fpd))) {
+        res <- one_propagate(get_children(fpd, exprs_fpd[i, "id"]), loop_values)
+        res_fpd <- rbind(res_fpd, res$fpd)
+        # cant keep these values, because maybe the loop is never executed
+        loop_values <- res$values
+      }
+      if (has_function_call(fpd, act_node$id)) {
+        # but if the loop had a function call, we should delete values
+        values <- c()
+      }
+    } else if (is_if(fpd, act_node$id)) {
+      # if it is an if, then remove the in-if/else assigned vars from values
+      if_ass_vars <- get_assigned_vars(fpd, act_node$id)
+      values <- values[!names(values) %in% if_ass_vars]
+      childs <- fpd[fpd$parent == act_node$id, ]
+      res_fpd <- rbind(res_fpd, act_node)
+      res_fpd <- rbind(res_fpd, childs[childs$terminal, ])
+      # work on if/else exprs
+      exprs_fpd <- childs[!childs$terminal, ]
       for (i in seq_len(nrow(exprs_fpd))) {
         res <- one_propagate(get_children(fpd, exprs_fpd[i, "id"]), values)
         res_fpd <- rbind(res_fpd, res$fpd)
-        values <- res$values
+        # cant keep res$values, because maybe the if condition is FALSE
+      }
+      if (has_function_call(fpd, act_node$id)) {
+        # but if the if/else had a function call, we should delete values
+        values <- c()
       }
     } else if (is_assignment(fpd, act_node$id)) {
       # note that it is an assignment, but not of constant value
@@ -264,6 +288,16 @@ is_function_call <- function(fpd, id) {
   "SYMBOL_FUNCTION_CALL" %in% act_pd$token
 }
 
+# Returns a logical indicating if a node has a function call
+#
+# @param fpd a flat parsed data data.frame .
+# @param id Numeric indicating the node ID.
+#
+has_function_call <- function(fpd, id) {
+  act_pd <- get_children(fpd, id)
+  "SYMBOL_FUNCTION_CALL" %in% act_pd$token
+}
+
 # Returns a logical indicating if a node is a loop
 #
 # @param fpd a flat parsed data data.frame .
@@ -272,6 +306,16 @@ is_function_call <- function(fpd, id) {
 is_loop <- function(fpd, id) {
   act_pd <- fpd[fpd$parent == id, ]
   any(loops %in% act_pd$token)
+}
+
+# Returns a logical indicating if a node is an if
+#
+# @param fpd a flat parsed data data.frame .
+# @param id Numeric indicating the node ID.
+#
+is_if <- function(fpd, id) {
+  act_pd <- fpd[fpd$parent == id, ]
+  "IF" %in% act_pd$token
 }
 
 # Returns a logical indicating if a node is an assignment

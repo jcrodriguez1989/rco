@@ -97,7 +97,7 @@ test_that("constant propagate in while", {
     "  x <- x + 1",
     "  i <- i + 1",
     "}",
-    "l <- 3 + 3",
+    "l <- j + 3",
     sep = "\n"
   ))
 
@@ -106,6 +106,39 @@ test_that("constant propagate in while", {
   env2 <- new.env()
   eval(parse(text = opt_code), envir = env2)
   expect_equal(as.list(env1), as.list(env2))
+})
+
+test_that("constant propagate in while with function call", {
+  code <- paste(
+    "n <- 10",
+    "while (i < n) {",
+    "  rm('n')",
+    "}",
+    "l <- n + 3",
+    "",
+    "n <- 11",
+    "while (i < n) {",
+    "  i <- i + n",
+    "}",
+    "l <- n + 3",
+    "",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "n <- 10",
+    "while (i < 10) {",
+    "  rm('n')",
+    "}",
+    "l <- n + 3",
+    "",
+    "n <- 11",
+    "while (i < 11) {",
+    "  i <- i + 11",
+    "}",
+    "l <- 11 + 3",
+    sep = "\n"
+  ))
 })
 
 test_that("constant propagate in strange while", {
@@ -125,7 +158,7 @@ test_that("constant propagate in strange while", {
     "while ((x <- i+1) && (y <- 2) && i < 10) {",
     "  i <- i+1",
     "}",
-    "z <- 2",
+    "z <- y",
     sep = "\n"
   ))
 
@@ -151,7 +184,7 @@ test_that("constant propagate in strange while 2", {
     "while ((a <- 1) && (b <- 1 + 1) && c < 10) {",
     "  c <- c + 1 + b",
     "}",
-    "z <- 1",
+    "z <- a",
     sep = "\n"
   ))
 
@@ -219,7 +252,7 @@ test_that("constant propagate in for", {
     "  k <- 1",
     "  y <- 3",
     "}",
-    "l <- 3",
+    "l <- y",
     sep = "\n"
   ))
 
@@ -257,7 +290,7 @@ test_that("constant propagate in strange for", {
     "  j <- i",
     "  k <- 2",
     "}",
-    "l <- 3",
+    "l <- y",
     sep = "\n"
   ))
 
@@ -418,4 +451,52 @@ test_that("constant propagate recursively", {
 
   expect_equal(names(env1), names(env1))
   expect_equal(env1$res, env2$res)
+})
+
+test_that("dont propagate if/else variables", {
+  code <- paste(
+    "x <- 1",
+    "if (bool) {",
+    "  y <- x",
+    "  y <- 2",
+    "}",
+    "z <- y",
+    "z <- x",
+    "",
+    "x <- 1",
+    "y <- 2",
+    "if (bool) {",
+    "  z <- x",
+    "  x <- 2",
+    "} else {",
+    "  z <- y",
+    "  y <- 1",
+    "}",
+    "z <- y",
+    "z <- x",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "x <- 1",
+    "if (bool) {",
+    "  y <- 1",
+    "  y <- 2",
+    "}",
+    "z <- y",
+    "z <- 1",
+    "",
+    "x <- 1",
+    "y <- 2",
+    "if (bool) {",
+    "  z <- x",
+    "  x <- 2",
+    "} else {",
+    "  z <- y",
+    "  y <- 1",
+    "}",
+    "z <- y",
+    "z <- x",
+    sep = "\n"
+  ))
 })

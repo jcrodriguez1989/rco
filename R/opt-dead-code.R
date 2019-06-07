@@ -52,6 +52,9 @@ one_dead_code <- function(fpd) {
   # work on constant `while` and `if` conditions
   new_fpd <- remove_constant_conds(new_fpd)
 
+  # remove unassigned expressions in functions
+  new_fpd <- remove_unassigned_exprs(new_fpd)
+
   return(new_fpd)
 }
 
@@ -252,4 +255,13 @@ unindent_fpd <- function(fpd, parent_spaces) {
   fpd[fpd$id %in% new_line_ids, "prev_spaces"] <-
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
   return(fpd)
+}
+
+# Returns a new fpd where unassigned expressions (in functions) were removed
+#
+# @param fpd A flat parsed data data.frame .
+#
+remove_unassigned_exprs <- function(fpd) {
+  # browser()
+  fpd
 }

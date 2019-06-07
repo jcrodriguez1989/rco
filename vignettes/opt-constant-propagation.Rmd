@@ -146,6 +146,12 @@ while (y < 5) {
 
 which is not equivalent.
 
+### `IF (COND) { BODY } ELSE { BODY }`
+
+If it is an `if`: it will get which variables are being assigned in the if/else `BODY` and remove them from `values`, and then propagate in `COND` and `BODY`.
+
+In-loop assigned variables are removed from `values`, as it is possible that the `BODY` is never executed (FALSE cond).
+
 ### `VAR <- EXPR`
 
 If it is an assignment (of a non constant value): it will keep `VAR <-` and try to propagate on `EXPR`. Moreover, it will remove `VAR` from `values` as it is assigned a non-constant value.

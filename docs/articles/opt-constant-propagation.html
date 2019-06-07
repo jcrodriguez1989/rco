@@ -163,8 +163,8 @@
 <a class="sourceLine" id="cb7-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-constant-propagation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##           Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 27.5155 26.67627 26.33695 29.38792 27.62149 110.7545</code></pre>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 28.33867 27.39104 25.57277 27.28912 27.43951 74.49953</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -215,6 +215,13 @@
 <a class="sourceLine" id="cb11-5" data-line-number="5">  x &lt;-<span class="st"> </span><span class="dv">3</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
 <a class="sourceLine" id="cb11-6" data-line-number="6">}</a></code></pre></div>
 <p>which is not equivalent.</p>
+</div>
+<div id="if-cond-body-else-body" class="section level3">
+<h3 class="hasAnchor">
+<a href="#if-cond-body-else-body" class="anchor"></a><code>IF (COND) { BODY } ELSE { BODY }</code>
+</h3>
+<p>If it is an <code>if</code>: it will get which variables are being assigned in the if/else <code>BODY</code> and remove them from <code>values</code>, and then propagate in <code>COND</code> and <code>BODY</code>.</p>
+<p>In-loop assigned variables are removed from <code>values</code>, as it is possible that the <code>BODY</code> is never executed (FALSE cond).</p>
 </div>
 <div id="var---expr" class="section level3">
 <h3 class="hasAnchor">
