@@ -12,19 +12,19 @@ library("rco")
 library("microbenchmark")
 library("ggplot2")
 autoplot.microbenchmark <- function(obj) {
-    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
-    microbenchmark:::autoplot.microbenchmark(obj)
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
 }
 speed_up <- function(obj) {
-    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
-    obj <- as.data.frame(obj)
-    summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
-    res <- c()
-    for (i in seq_len(nrow(summaries)-1)+1) {
-        res <- rbind(res, summaries[1,] / summaries[i,])
-    }
-    rownames(res) <- levels(obj$expr)[-1]
-    return(res)
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
 }
 ```
 
@@ -44,7 +44,7 @@ foo <- function() {
     a <- 25 # dead code
   }
   return(a)
-  b <- 24   # dead code
+  b <- 24 # dead code
   return(b) # dead code
 }
 ```
@@ -99,7 +99,8 @@ code <- paste(
   "    i <- i - 1",
   "  }",
   "}",
-  sep = "\n")
+  sep = "\n"
+)
 cat(code)
 ```
 
@@ -113,13 +114,11 @@ cat(opt_code$codes[[1]])
 And if we measure the execution time of each one, and the speed-up:
 
 ```{r message=FALSE}
-bmark_res <- microbenchmark(
-  {
-    eval(parse(text = code))
-  },{
-    eval(parse(text = opt_code))
-  }
-)
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
 autoplot(bmark_res)
 speed_up(bmark_res)
 ```
@@ -151,7 +150,7 @@ This task has sub-items:
   ```{r eval=FALSE}
   foo <- function(x) {
     x != 0
-    return(100/x)
+    return(100 / x)
   }
   ```
   

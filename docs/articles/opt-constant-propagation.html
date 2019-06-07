@@ -128,8 +128,9 @@
 <a class="sourceLine" id="cb3-9" data-line-number="9">  <span class="st">"for (i in 1:n) {"</span>,</a>
 <a class="sourceLine" id="cb3-10" data-line-number="10">  <span class="st">"  ms_vector[i] &lt;- secs_to_ms * mins_to_secs * hs_to_mins * hours_vector[i]"</span>,</a>
 <a class="sourceLine" id="cb3-11" data-line-number="11">  <span class="st">"}"</span>,</a>
-<a class="sourceLine" id="cb3-12" data-line-number="12">  <span class="dt">sep =</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</a>
-<a class="sourceLine" id="cb3-13" data-line-number="13"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(code)</a></code></pre></div>
+<a class="sourceLine" id="cb3-12" data-line-number="12">  <span class="dt">sep =</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span></a>
+<a class="sourceLine" id="cb3-13" data-line-number="13">)</a>
+<a class="sourceLine" id="cb3-14" data-line-number="14"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(code)</a></code></pre></div>
 <pre><code>## n &lt;- 1000
 ## hours_vector &lt;- runif(n, 0, 24)
 ## ms_vector &lt;- numeric(n)
@@ -154,18 +155,16 @@
 ##   ms_vector[i] &lt;- 1000 * 60 * 60 * hours_vector[i]
 ## }</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">bmark_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">  {</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> code))</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4">  },{</a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">  }</a>
-<a class="sourceLine" id="cb7-7" data-line-number="7">)</a>
-<a class="sourceLine" id="cb7-8" data-line-number="8"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">bmark_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>({</a>
+<a class="sourceLine" id="cb7-2" data-line-number="2">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> code))</a>
+<a class="sourceLine" id="cb7-3" data-line-number="3">}, {</a>
+<a class="sourceLine" id="cb7-4" data-line-number="4">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
+<a class="sourceLine" id="cb7-5" data-line-number="5">})</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-constant-propagation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##           Min.  1st Qu.   Median     Mean 3rd Qu.     Max.
-## Expr_2 28.1905 26.90061 27.12792 29.19392 25.7907 65.32929</code></pre>
+<pre><code>##           Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 27.5155 26.67627 26.33695 29.38792 27.62149 110.7545</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -251,17 +250,17 @@
 <a class="sourceLine" id="cb13-3" data-line-number="3">y &lt;-<span class="st"> </span><span class="dv">1</span></a></code></pre></div>
 <p>In R we can list which <code>base</code> functions modify the environment, for example, <code>assign</code>, <code>rm</code>, etc. However, this would not be a solution, as we can define new functions that wrap the <code>base</code> ones, for instance:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">rm_all &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
-<a class="sourceLine" id="cb14-2" data-line-number="2">  env &lt;-<span class="st"> </span>.GlobalEnv</a>
-<a class="sourceLine" id="cb14-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rm">rm</a></span>(<span class="dt">list =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ls">ls</a></span>(<span class="dt">envir =</span> env), <span class="dt">envir =</span> env)</a>
+<a class="sourceLine" id="cb14-2" data-line-number="2">env &lt;-<span class="st"> </span>.GlobalEnv</a>
+<a class="sourceLine" id="cb14-3" data-line-number="3"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rm">rm</a></span>(<span class="dt">list =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ls">ls</a></span>(<span class="dt">envir =</span> env), <span class="dt">envir =</span> env)</a>
 <a class="sourceLine" id="cb14-4" data-line-number="4">}</a></code></pre></div>
 <p>A possible solution would be to let the user identify which functions edit the environment.</p>
 <ul>
 <li>
 <p>in a <code>roxygen2</code> way:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="co">#o @edits_env rm_all</span></a>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="co"># o @edits_env rm_all</span></a>
 <a class="sourceLine" id="cb15-2" data-line-number="2">...</a></code></pre></div>
 <p>or</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">rm_all</span>() <span class="co">#o @edits_env</span></a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">rm_all</span>() <span class="co"># o @edits_env</span></a></code></pre></div>
 </li>
 <li>
 <p>by parameter:</p>

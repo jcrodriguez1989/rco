@@ -111,7 +111,7 @@
 <a class="sourceLine" id="cb1-5" data-line-number="5">    a &lt;-<span class="st"> </span><span class="dv">25</span> <span class="co"># dead code</span></a>
 <a class="sourceLine" id="cb1-6" data-line-number="6">  }</a>
 <a class="sourceLine" id="cb1-7" data-line-number="7">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(a)</a>
-<a class="sourceLine" id="cb1-8" data-line-number="8">  b &lt;-<span class="st"> </span><span class="dv">24</span>   <span class="co"># dead code</span></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">  b &lt;-<span class="st"> </span><span class="dv">24</span> <span class="co"># dead code</span></a>
 <a class="sourceLine" id="cb1-9" data-line-number="9">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(b) <span class="co"># dead code</span></a>
 <a class="sourceLine" id="cb1-10" data-line-number="10">}</a></code></pre></div>
 <p>In functions, after calling <code>return</code>, the following code would not be executed, so it is dead code and can be eliminated. In this example, resulting in:</p>
@@ -151,8 +151,9 @@
 <a class="sourceLine" id="cb5-8" data-line-number="8">  <span class="st">"    i &lt;- i - 1"</span>,</a>
 <a class="sourceLine" id="cb5-9" data-line-number="9">  <span class="st">"  }"</span>,</a>
 <a class="sourceLine" id="cb5-10" data-line-number="10">  <span class="st">"}"</span>,</a>
-<a class="sourceLine" id="cb5-11" data-line-number="11">  <span class="dt">sep =</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</a>
-<a class="sourceLine" id="cb5-12" data-line-number="12"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(code)</a></code></pre></div>
+<a class="sourceLine" id="cb5-11" data-line-number="11">  <span class="dt">sep =</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span></a>
+<a class="sourceLine" id="cb5-12" data-line-number="12">)</a>
+<a class="sourceLine" id="cb5-13" data-line-number="13"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(code)</a></code></pre></div>
 <pre><code>## i &lt;- 0
 ## n &lt;- 1000
 ## while (i &lt; n) {
@@ -171,18 +172,16 @@
 ##   i &lt;- i + 1
 ## }</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">bmark_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>(</a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">  {</a>
-<a class="sourceLine" id="cb9-3" data-line-number="3">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> code))</a>
-<a class="sourceLine" id="cb9-4" data-line-number="4">  },{</a>
-<a class="sourceLine" id="cb9-5" data-line-number="5">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
-<a class="sourceLine" id="cb9-6" data-line-number="6">  }</a>
-<a class="sourceLine" id="cb9-7" data-line-number="7">)</a>
-<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">bmark_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>({</a>
+<a class="sourceLine" id="cb9-2" data-line-number="2">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> code))</a>
+<a class="sourceLine" id="cb9-3" data-line-number="3">}, {</a>
+<a class="sourceLine" id="cb9-4" data-line-number="4">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
+<a class="sourceLine" id="cb9-5" data-line-number="5">})</a>
+<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-dead-code_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
 <pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 76.00323 73.18381 59.17304 66.01933 53.73879 152.3859</code></pre>
+## Expr_2 77.77906 69.22096 52.54578 65.76184 53.36556 220.3513</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -213,7 +212,7 @@
 <p>When coding, for debugging, sometimes instead of using <code>print</code> or <code>cat</code> we just write the expression. This causes that we get code as for example:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>(x) {</a>
 <a class="sourceLine" id="cb12-2" data-line-number="2">  x <span class="op">!=</span><span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb12-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span><span class="op">/</span>x)</a>
+<a class="sourceLine" id="cb12-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span> <span class="op">/</span><span class="st"> </span>x)</a>
 <a class="sourceLine" id="cb12-4" data-line-number="4">}</a></code></pre></div>
 <p>Here, the expression <code>x != 0</code> would be evaluated each time we call the <code>foo</code> function, but would not have any effect as it is not assigned, nor printed. And thus, could be removed.</p>
 <p>However, removing expressions could result in behaviour missmatches, for instance, the following two codes:</p>
