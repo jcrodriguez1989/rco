@@ -46,8 +46,8 @@ constant_fold_one <- function(text, fold_floats) {
 #
 one_fold <- function(pd, fold_floats) {
   # keep but dont fold comments ( < 0 )
-  new_pd <- pd[pd$parent < 0,]
-  pd <- pd[pd$parent >= 0,]
+  new_pd <- pd[pd$parent < 0, ]
+  pd <- pd[pd$parent >= 0, ]
 
   # start visiting root nodes
   visit_nodes <- get_roots(pd)$id
@@ -79,10 +79,12 @@ one_fold <- function(pd, fold_floats) {
       }
       # it could not be folded, so save parent, and terminal childs
       new_pd <- rbind(new_pd, pd[pd$id == act_parent, ])
-      new_pd <- rbind(new_pd, pd[pd$parent == act_parent & pd$terminal,])
+      new_pd <- rbind(new_pd, pd[pd$parent == act_parent & pd$terminal, ])
       # continue visiting child exprs
-      new_visit_nodes <- c(new_visit_nodes,
-                           pd[pd$parent == act_parent & !pd$terminal, "id"])
+      new_visit_nodes <- c(
+        new_visit_nodes,
+        pd[pd$parent == act_parent & !pd$terminal, "id"]
+      )
     }
     visit_nodes <- new_visit_nodes
   }

@@ -29,11 +29,11 @@ opt_dead_code <- function(texts) {
 dead_code_one <- function(text) {
   fpd <- parse_flat_data(text, include_text = TRUE)
   fpd <- flatten_leaves(fpd)
-  res_fpd <- fpd[fpd$parent < 0,] # keep lines with just comments
-  new_fpd <- fpd[fpd$parent >= 0,] # keep lines with just comments
+  res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
+  new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
   new_fpd <- one_dead_code(new_fpd)
   res_fpd <- rbind(res_fpd, new_fpd)
-  res_fpd <- res_fpd[order(res_fpd$pos_id),]
+  res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   deparse_flat_data(res_fpd)
 }
 
@@ -63,10 +63,11 @@ remove_after_interruption <- function(fpd) {
   res_fpd <- fpd
   # get nodes that are interruption commands
   return_calls <- fpd[
-    fpd$token == "SYMBOL_FUNCTION_CALL" & fpd$text == "return",]
+    fpd$token == "SYMBOL_FUNCTION_CALL" & fpd$text == "return",
+  ]
   # `return` parent is an expression
-  intr <- fpd[fpd$id %in% return_calls$parent,]
-  intr <- rbind(intr, fpd[fpd$token %in% c("BREAK", "NEXT"),])
+  intr <- fpd[fpd$id %in% return_calls$parent, ]
+  intr <- rbind(intr, fpd[fpd$token %in% c("BREAK", "NEXT"), ])
 
   # for each interruption parent, delete children after interruption
   for (i in seq_len(nrow(intr))) {
@@ -74,14 +75,16 @@ remove_after_interruption <- function(fpd) {
       next
     }
     id <- intr$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id,]
-    intr_sibl <- res_fpd[res_fpd$parent == id,]
+    intr_prnt <- res_fpd[res_fpd$id == id, ]
+    intr_sibl <- res_fpd[res_fpd$parent == id, ]
     keep_ids <- intr_sibl[seq_len(which(intr_sibl$id == intr$id[[i]])), "id"]
     # for each opening precedence op, keep one closing
     prec_sibl <- intr_sibl[intr_sibl$token %in% precedence_ops, "id"]
-    keep_ids <- c(keep_ids,
-                  rev(rev(prec_sibl)[seq_len(sum(keep_ids %in% prec_sibl))]))
-    intr_sibl[intr_sibl$id %in% keep_ids,]
+    keep_ids <- c(
+      keep_ids,
+      rev(rev(prec_sibl)[seq_len(sum(keep_ids %in% prec_sibl))])
+    )
+    intr_sibl[intr_sibl$id %in% keep_ids, ]
     remove_ids <- setdiff(intr_sibl$id, keep_ids)
     res_fpd <- remove_nodes(res_fpd, remove_ids)
   }
@@ -107,7 +110,7 @@ remove_constant_conds <- function(fpd) {
 remove_false_while <- function(fpd) {
   res_fpd <- fpd
   # get nodes that are `while`, and their parent
-  while_nodes <- fpd[fpd$token == "WHILE",]
+  while_nodes <- fpd[fpd$token == "WHILE", ]
 
   # for each interruption parent, delete children after interruption
   for (i in seq_len(nrow(while_nodes))) {
@@ -115,11 +118,11 @@ remove_false_while <- function(fpd) {
       next
     }
     id <- while_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id,]
-    intr_sibl <- res_fpd[res_fpd$parent == id,]
+    intr_prnt <- res_fpd[res_fpd$id == id, ]
+    intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # WHILE '(' expr ')' expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
-        !eval(parse(text = intr_sibl$text[[3]]))) {
+      !eval(parse(text = intr_sibl$text[[3]]))) {
       # the condition was a constant and evaluated to FALSE
       res_fpd <- remove_nodes(res_fpd, id)
     }
@@ -134,7 +137,7 @@ remove_false_while <- function(fpd) {
 remove_false_if <- function(fpd) {
   res_fpd <- fpd
   # get nodes that are `if`
-  if_nodes <- fpd[fpd$token == "IF",]
+  if_nodes <- fpd[fpd$token == "IF", ]
 
   # for each interruption parent, delete children after interruption
   for (i in seq_len(nrow(if_nodes))) {
@@ -142,17 +145,17 @@ remove_false_if <- function(fpd) {
       next
     }
     id <- if_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id,]
-    intr_sibl <- res_fpd[res_fpd$parent == id,]
+    intr_prnt <- res_fpd[res_fpd$id == id, ]
+    intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # IF '(' expr ')' expr_or_assign ELSE expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
-        !eval(parse(text = intr_sibl$text[[3]]))) {
+      !eval(parse(text = intr_sibl$text[[3]]))) {
       # the condition was a constant and evaluated to FALSE
       res_fpd <- remove_nodes(res_fpd, id)
       # if it has an else statement, then keep only its `expr`
       else_fpd <- get_ifelse_expr(fpd, id)
       res_fpd <- rbind(res_fpd, else_fpd)
-      res_fpd <- res_fpd[order(res_fpd$pos_id),]
+      res_fpd <- res_fpd[order(res_fpd$pos_id), ]
     }
   }
   return(res_fpd)
@@ -165,7 +168,7 @@ remove_false_if <- function(fpd) {
 remove_true_if <- function(fpd) {
   res_fpd <- fpd
   # get nodes that are `if`
-  if_nodes <- fpd[fpd$token == "IF",]
+  if_nodes <- fpd[fpd$token == "IF", ]
 
   # for each interruption parent, delete children after interruption
   for (i in seq_len(nrow(if_nodes))) {
@@ -173,17 +176,17 @@ remove_true_if <- function(fpd) {
       next
     }
     id <- if_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id,]
-    intr_sibl <- res_fpd[res_fpd$parent == id,]
+    intr_prnt <- res_fpd[res_fpd$id == id, ]
+    intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # IF '(' expr ')' expr_or_assign ELSE expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
-        eval(parse(text = intr_sibl$text[[3]]))) {
+      eval(parse(text = intr_sibl$text[[3]]))) {
       # the condition was a constant and evaluated to TRUE
       res_fpd <- remove_nodes(res_fpd, id)
       # if it has an else statement, then keep only its `expr`
       if_fpd <- get_ifelse_expr(fpd, id, get_if = TRUE)
       res_fpd <- rbind(res_fpd, if_fpd)
-      res_fpd <- res_fpd[order(res_fpd$pos_id),]
+      res_fpd <- res_fpd[order(res_fpd$pos_id), ]
     }
   }
   return(res_fpd)
@@ -197,28 +200,32 @@ remove_true_if <- function(fpd) {
 #
 get_ifelse_expr <- function(fpd, id, get_if = FALSE) {
   token <- ifelse(get_if, "IF", "ELSE")
-  pos   <- ifelse(get_if, 5, 7)
+  pos <- ifelse(get_if, 5, 7)
   res_fpd <- NULL
   act_fpd <- get_children(fpd, id)
-  fst_child <- act_fpd[act_fpd$parent == id,]
+  fst_child <- act_fpd[act_fpd$parent == id, ]
   if (get_if ||
-      (nrow(fst_child) > 5 && fst_child$token[[6]] == "ELSE")) {
+    (nrow(fst_child) > 5 && fst_child$token[[6]] == "ELSE")) {
     # change `expr` parent by `if () { expr } else expr` parent
     if_fpd <- get_children(act_fpd, fst_child$id[[pos]])
-    if_expr_fpd <- if_fpd[if_fpd$parent == fst_child$id[[pos]],]
+    if_expr_fpd <- if_fpd[if_fpd$parent == fst_child$id[[pos]], ]
     if (nrow(if_expr_fpd) > 1 &&
-        if_expr_fpd$token[[1]] == "'{'" &&
-        if_expr_fpd$token[[nrow(if_expr_fpd)]] == "'}'") {
+      if_expr_fpd$token[[1]] == "'{'" &&
+      if_expr_fpd$token[[nrow(if_expr_fpd)]] == "'}'") {
       # remove `{}` from if/else expr
-      if_fpd <- get_children(act_fpd,
-                             if_expr_fpd$id[-c(1, nrow(if_expr_fpd))])
+      if_fpd <- get_children(
+        act_fpd,
+        if_expr_fpd$id[-c(1, nrow(if_expr_fpd))]
+      )
     }
     if (nrow(if_fpd) > 0) {
       # check if it was not an empty expr, i.e., if(cond) {}
       if_fpd[if_fpd$id == fst_child$id[[pos]], "parent"] <-
         act_fpd[act_fpd$id == id, "parent"]
-      if_fpd <- unindent_fpd(if_fpd,
-                             fst_child[fst_child$token == token, "prev_spaces"])
+      if_fpd <- unindent_fpd(
+        if_fpd,
+        fst_child[fst_child$token == token, "prev_spaces"]
+      )
       # copy previous text next spaces and lines
       if_fpd[nrow(if_fpd), c("next_spaces", "next_lines")] <-
         act_fpd[nrow(act_fpd), c("next_spaces", "next_lines")]
@@ -236,7 +243,7 @@ get_ifelse_expr <- function(fpd, id, get_if = FALSE) {
 #
 unindent_fpd <- function(fpd, parent_spaces) {
   # get which are the terminals that start in a new line
-  fpd_terms <- fpd[fpd$terminal,]
+  fpd_terms <- fpd[fpd$terminal, ]
   prnt_diff <- max(0, fpd_terms[1, "prev_spaces"] - parent_spaces)
   new_line_ids <- fpd_terms[!duplicated(fpd_terms$line1), "id"]
   # and remove the identation between them and parent

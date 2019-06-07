@@ -14,12 +14,12 @@ parse_flat_data <- function(text, include_text = NA) {
   pd$next_lines[pd$terminal] <- 0
   pd$prev_spaces[pd$terminal] <- 0
 
-  pd_terms <- pd[pd$terminal,]
+  pd_terms <- pd[pd$terminal, ]
 
   # next_spaces will be the difference between the column next text starts, and
   # the column this text ends
   pd_terms$next_spaces[-nrow(pd_terms)] <-
-    pd_terms$col1[-1] - pd_terms$col2[-nrow(pd_terms)] -1
+    pd_terms$col1[-1] - pd_terms$col2[-nrow(pd_terms)] - 1
   pd[pd$terminal, "next_spaces"] <- pmax(0, pd_terms$next_spaces)
 
   # next_lines will be the difference between the line next text starts, and
@@ -30,17 +30,10 @@ parse_flat_data <- function(text, include_text = NA) {
 
   # prev_spaces will be the column where each text starts, if the previous text
   # had a new line
-  pd_terms$prev_spaces[which(pd_terms$next_lines > 0) +1] <-
-    pd_terms[which(pd_terms$next_lines > 0) +1, "col1"] -1
+  pd_terms$prev_spaces[which(pd_terms$next_lines > 0) + 1] <-
+    pd_terms[which(pd_terms$next_lines > 0) + 1, "col1"] - 1
   pd[pd$terminal, "prev_spaces"] <- pd_terms$prev_spaces
 
-  # pd$token_before <- NA
-  # pd$token_after <- NA
-
-  # terminals <- pd[pd$terminal,]
-  # terminals$token_after <- c(terminals$token[seq(2, nrow(terminals))], NA)
-  # terminals$token_before <- c(NA, terminals$token[seq(1, nrow(terminals)-1)])
-  # pd[pd$terminal,] <- terminals
   return(pd)
 }
 
@@ -73,11 +66,11 @@ deparse_flat_data <- function(fpd) {
 get_children <- function(fpd, ids, include_father = TRUE) {
   act_fpd <- NULL
   if (include_father) {
-    act_fpd <- fpd[fpd$id %in% ids,]
+    act_fpd <- fpd[fpd$id %in% ids, ]
   }
   act_childs <- fpd[fpd$parent %in% ids, "id"]
   while (length(act_childs) > 0) {
-    act_fpd <- rbind(act_fpd, fpd[fpd$id %in% act_childs,])
+    act_fpd <- rbind(act_fpd, fpd[fpd$id %in% act_childs, ])
     act_childs <- fpd[fpd$parent %in% fpd[fpd$id %in% act_childs, "id"], "id"]
   }
   act_fpd <- act_fpd[order(act_fpd$pos_id), ]
@@ -91,8 +84,9 @@ get_children <- function(fpd, ids, include_father = TRUE) {
 flatten_leaves <- function(fpd) {
   parent_ids <- fpd$parent
   one_child_parents <- parent_ids[ # parents with unique child
-    !(duplicated(parent_ids) | duplicated(parent_ids, fromLast = TRUE))]
-  new_fpd <- fpd[!fpd$id %in% one_child_parents,] # remove one_child_parents
+    !(duplicated(parent_ids) | duplicated(parent_ids, fromLast = TRUE))
+  ]
+  new_fpd <- fpd[!fpd$id %in% one_child_parents, ] # remove one_child_parents
   one_child_parents <- one_child_parents[one_child_parents > 0]
   for (ocp in one_child_parents) { # new parent will be the grandpa
     new_fpd[new_fpd$parent == ocp, "parent"] <- fpd[fpd$id == ocp, "parent"]
@@ -118,23 +112,23 @@ eq_assign_to_expr <- function(fpd) {
   # first convert `equal_assign` token to expr
   fpd$token <- sub("^equal_assign$", "expr", fpd$token)
   eq_ass_prnts_id <- fpd[fpd$token == "EQ_ASSIGN", "parent"]
-  eq_ass_prnts <- fpd[fpd$id %in% eq_ass_prnts_id,]
+  eq_ass_prnts <- fpd[fpd$id %in% eq_ass_prnts_id, ]
   if (all(eq_ass_prnts_id > 0) && # all of them have a parent
-      all(eq_ass_prnts$token == "expr") && # all parents are expressions
-      all(sapply(eq_ass_prnts$id, function(id) sum(fpd$parent == id) == 3))) {
+    all(eq_ass_prnts$token == "expr") && # all parents are expressions
+    all(sapply(eq_ass_prnts$id, function(id) sum(fpd$parent == id) == 3))) {
     # all EQ_ASSIGN have 2 siblings ( expr EQ_ASSIGN expr_or_assign )
     return(fpd)
   }
   # if not, for each EQ_ASSIGN create its `expr` parent
-  fpd <- fpd[order(fpd$pos_id),] # pos_id is important here
+  fpd <- fpd[order(fpd$pos_id), ] # pos_id is important here
   eq_assign_ids <- fpd[fpd$token == "EQ_ASSIGN", "id"]
   new_fpd <- fpd
   # equal_assign : expr EQ_ASSIGN (expr | equal_assign)
   for (i in sort(eq_assign_ids, decreasing = TRUE)) {
     act_idx <- which(new_fpd$id == i)
-    act_fpd <- new_fpd[act_idx + -1:1,]
-    new_fpd <- new_fpd[-(act_idx + -1:1),]
-    expr_fpd <- act_fpd[1,]
+    act_fpd <- new_fpd[act_idx + -1:1, ]
+    new_fpd <- new_fpd[-(act_idx + -1:1), ]
+    expr_fpd <- act_fpd[1, ]
     act_fpd[1, "pos_id"] <- act_fpd[1, "pos_id"] + 10e-5
     expr_fpd$token <- "expr"
     expr_fpd$terminal <- FALSE
@@ -142,7 +136,7 @@ eq_assign_to_expr <- function(fpd) {
     expr_fpd$id <- paste0(expr_fpd$id, "_EQ_ASS")
     act_fpd$parent <- expr_fpd$id
     new_fpd <- rbind(new_fpd, expr_fpd, act_fpd)
-    new_fpd <- new_fpd[order(new_fpd$pos_id),]
+    new_fpd <- new_fpd[order(new_fpd$pos_id), ]
   }
   new_fpd
 }
@@ -153,7 +147,7 @@ eq_assign_to_expr <- function(fpd) {
 # @param fpd_replace a fpd that will replace fpd_from.
 #
 replace_pd <- function(fpd_from, fpd_replace) {
-  fpd_replace <- fpd_replace[order(fpd_replace$pos_id),]
+  fpd_replace <- fpd_replace[order(fpd_replace$pos_id), ]
   from_root <- get_roots(fpd_from) # it must be one row
   replace_root <- get_roots(fpd_replace) # it must be one row
   new_fpd <- fpd_replace
@@ -171,18 +165,20 @@ replace_pd <- function(fpd_from, fpd_replace) {
 
   # fix parents for new fpd (not parent, nor first childs)
   new_fpd[fpd_replace$id != replace_root$id &
-            fpd_replace$parent != replace_root$id, "parent"] <-
-    paste0(from_root$id, "_",
-           new_fpd[fpd_replace$id != replace_root$id &
-                     fpd_replace$parent != replace_root$id, "parent"])
+    fpd_replace$parent != replace_root$id, "parent"] <-
+    paste0(
+      from_root$id, "_",
+      new_fpd[fpd_replace$id != replace_root$id &
+        fpd_replace$parent != replace_root$id, "parent"]
+    )
 
   # fix pos_ids
-  new_fpd$pos_id <- from_root$pos_id + seq(0, nrow(new_fpd)-1) * 10e-5
+  new_fpd$pos_id <- from_root$pos_id + seq(0, nrow(new_fpd) - 1) * 10e-5
 
   # copy first prev_spaces, and last next_spaces and lines
-  from_terms <- fpd_from[fpd_from$terminal,]
-  fst_term <- from_terms[which.min(from_terms$pos_id),]
-  last_term <- from_terms[which.max(from_terms$pos_id),]
+  from_terms <- fpd_from[fpd_from$terminal, ]
+  fst_term <- from_terms[which.min(from_terms$pos_id), ]
+  last_term <- from_terms[which.max(from_terms$pos_id), ]
   new_terms <- new_fpd[new_fpd$terminal, "id"]
   new_fpd[new_fpd$id == new_terms[[1]], "prev_spaces"] <-
     fst_term$prev_spaces
@@ -201,6 +197,6 @@ replace_pd <- function(fpd_from, fpd_replace) {
 #
 remove_nodes <- function(fpd, ids) {
   to_remove_fpd <- get_children(fpd, ids)
-  new_fpd <- fpd[!fpd$id %in% to_remove_fpd$id,]
+  new_fpd <- fpd[!fpd$id %in% to_remove_fpd$id, ]
   return(new_fpd)
 }

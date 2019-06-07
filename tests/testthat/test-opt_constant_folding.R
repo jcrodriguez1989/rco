@@ -24,7 +24,8 @@ test_that("correctly constant fold", {
     "for (i in 1:100) {",
     "  i <- i + 7 * 3",
     "}",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_constant_folding(list(code), fold_floats = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- -1",
@@ -77,7 +78,8 @@ test_that("dont fold floats", {
     "for (i in 1:100) {",
     "  i <- i + 7 * 3",
     "}",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_constant_folding(list(code), fold_floats = FALSE)$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- -1",
@@ -119,7 +121,8 @@ test_that("constant fold in while", {
     "    res <- res + 1",
     "  i <- i + 1",
     "}",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "i <- 0;",
@@ -155,7 +158,8 @@ test_that("constant fold in function", {
     "}",
     "",
     "res <- bar(TRUE)",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "foo <- function() {",
@@ -184,7 +188,8 @@ test_that("constant fold in function", {
 test_that("constant fold in function call", {
   code <- paste(
     "sum(1*7, 8/2)",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "sum(7, 4)",

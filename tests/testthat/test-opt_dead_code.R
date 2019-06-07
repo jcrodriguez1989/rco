@@ -22,7 +22,8 @@ test_that("dead code eliminate for command interruption", {
     "  dead_code()",
     "  dead_code()",
     "}",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 0",
@@ -57,7 +58,8 @@ test_that("dead code eliminate after `next`", {
     "    dead_code()",
     "  }",
     "}",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "while (TRUE) {",
@@ -86,7 +88,8 @@ test_that("dead code eliminate after `break`", {
     "    dead_code()",
     "  }",
     "}",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "while (TRUE) {",
@@ -114,7 +117,8 @@ test_that("dead code eliminate after `return`", {
     "    dead_code()",
     "  }",
     "}",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "function(x) {",
@@ -146,7 +150,8 @@ test_that("eliminate FALSE while", {
     "  dead_code()",
     "}",
     "",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 3",
@@ -181,7 +186,8 @@ test_that("eliminate FALSE if", {
     "  not_dead_code()",
     "}",
     "x <- 6",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 4",
@@ -209,7 +215,8 @@ test_that("replace TRUE if", {
     "  dead_code()",
     "}",
     "x <- 6",
-    sep = "\n")
+    sep = "\n"
+  )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 4",
@@ -222,4 +229,3 @@ test_that("replace TRUE if", {
     sep = "\n"
   ))
 })
-
