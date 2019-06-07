@@ -1,0 +1,208 @@
+---
+output: rmarkdown::html_vignette
+title: Constant Propagation
+vignette: >
+  %\VignetteIndexEntry{Constant Propagation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+    microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+    obj <- as.data.frame(obj)
+    summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+    res <- c()
+    for (i in seq_len(nrow(summaries)-1)+1) {
+        res <- rbind(res, summaries[1,] / summaries[i,])
+    }
+    rownames(res) <- levels(obj$expr)[-1]
+    return(res)
+}
+```
+
+# Constant Propagation
+
+## Background
+
+Constant propagation is the process of substituting the values of known constants in expressions, this eliminates cases in which values are copied from one location or variable to another in order to simply assign their value to another variable.
+
+For example, consider the following code:
+
+```{r eval=FALSE}
+x <- 14
+y <- 7 - x / 2
+z <- y * (28 / x + 2) - x
+```
+
+Here, `x` is assigned a constant, and thus, can be propagated (three times). Propagating yields:
+
+```{r eval=FALSE}
+x <- 14
+y <- 7 - 14 / 2
+z <- y * (28 / 14 + 2) - 14
+```
+
+Constant propagation enables the code to assign static values, which is faster than looking up and copying the value of a variable, and also saves time by eliminating assigning a value to a variable that is itself subsequently used only to propagate that value throughout the code. In some cases, copy propagation itself may not provide direct optimizations, but simply facilitates other transformations, such as constant folding, code motion, and dead code elimination. <!-- todo: link these three other optimizations -->
+
+## Example
+
+A simple example would be to have to convert the unit of many temporary samples from hours to miliseconds `miliseconds <- 1000 * 60 * 60 * hours`.
+
+```{r}
+code <- paste(
+  "n <- 1000",
+  "hours_vector <- runif(n, 0, 24)",
+  "ms_vector <- numeric(n)",
+  "hs_to_mins <- 60",
+  "mins_to_secs <- 60",
+  "secs_to_ms <- 1000",
+  "# of course it would be much efficient to do vectorized operations xP",
+  "for (i in 1:n) {",
+  "  ms_vector[i] <- secs_to_ms * mins_to_secs * hs_to_mins * hours_vector[i]",
+  "}",
+  sep = "\n")
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_constant_propagation(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and the speed-up:
+
+```{r}
+bmark_res <- microbenchmark(
+  {
+    eval(parse(text = code))
+  },{
+    eval(parse(text = opt_code))
+  }
+)
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
+
+## Implementation
+
+The `opt_constant_propagation` optimizer analyzes the code from top to bottom. As it goes through the code, it performs two tasks:
+
+* Saves, in the `values` vector, those variables that are assigned a constant value. I.e., if `x <- -3`, then `values$x <- -3`.
+
+* Each variable that is assigned an expression that includes a variable present in `values` is given the corresponding constant value. I.e., `y <- 7 * x + z` is transformed to `y <- 7 * -3 + z`.
+
+Depending on what expression it finds, it applies one of the following criteria:
+
+### `VAR <- CONST`
+
+If it is an assignment of a constant value: then it returns the same expression, and saves `VAR = CONST` in `values`.
+
+This criteria point also includes, multi-assign ( `VAR <- VAR <- CONST` ).
+
+### `VAR * 3 + VAR`
+
+If it is only operators, variables and constants: then it will check if any of the variables is stored in `values` vector, and would replace it in the expression. It will return the modified expression.
+
+### `FUN({FUN_PARAMS})`
+
+If it is a function call: then it returns the same expression, but trying to constant propagate in `{FUN_PARAMS}`, consider the case that the function call is `seq_len(x+30)`, it could be replaced by `seq_len(-3+30)`.
+
+Then, **it empties the `values` vector** ( `values <- c()` ). It should be noted that in R, calling a function can modify the current environment, being the simplest example `rm(list = ls())`, or `assign("x", 4)`.
+
+### `LOOP (COND) { BODY }`
+
+If it is a loop ( `repeat`, `while`, or `for` ): it will get which variables are being assigned in the loop and remove them from `values`, and then propagate in `COND` and `BODY`.
+
+In-loop assigned variables are removed from `values` as, if not, it would try to propagate them, and these variables might change in next execution of `BODY`. For instance:
+
+```{r eval=FALSE}
+x <- 3
+y <- 1 + 1
+while (y < 5) {
+  y <- x
+  x <- x + 1
+}
+```
+
+Would try to propagate to:
+
+```{r eval=FALSE}
+x <- 3
+y <- 1 + 1
+while (y < 5) {
+  y <- 3
+  x <- 3 + 1
+}
+```
+
+which is not equivalent.
+
+### `VAR <- EXPR`
+
+If it is an assignment (of a non constant value): it will keep `VAR <-` and try to propagate on `EXPR`. Moreover, it will remove `VAR` from `values` as it is assigned a non-constant value.
+
+### `FUN ({FUN_PARAMS}) { BODY }`
+
+If it is a function definition: it will propagate on the `BODY` but with an empty `values` vector (the global `values` vector would not be changed). Note that in R, a function definition will have another environment, and thus it should not use the current `values`.
+
+### Other cases
+
+In any other case, it should keep propagating on sub-expressions.
+
+## To-Do
+
+* Recognize functions that modify the environment?
+
+  When `opt_constant_propagation` finds a function call, it deletes the previously found constant-assigned values. This is mainly done to avoid having
+  
+  ```{r eval=FALSE}
+  x <- 1
+  assign("x", 3)
+  y <- x
+  ```
+  
+  Propagated to 
+  
+  ```{r eval=FALSE}
+  x <- 1
+  assign("x", 3)
+  y <- 1
+  ```
+  
+  In R we can list which `base` functions modify the environment, for example, `assign`, `rm`, etc. However, this would not be a solution, as we can define new functions that wrap the `base` ones, for instance:
+  
+  ```{r eval=FALSE}
+  rm_all <- function() {
+    env <- .GlobalEnv
+    rm(list = ls(envir = env), envir = env)
+  }
+  ```
+  
+  A possible solution would be to let the user identify which functions edit the environment.
+  
+  * in a `roxygen2` way:
+    
+    ```{r eval=FALSE}
+    #o @edits_env rm_all
+    ...
+    ```
+    or
+    ```{r eval=FALSE}
+    rm_all() #o @edits_env
+    ```
+  
+  * by parameter:
+  
+    ```{r eval=FALSE}
+    opt_constant_propagation(list(code), env_edit = c("rm_all", ...))
+    ```

@@ -20,7 +20,6 @@ ops <- c(
   "LE",
   "EQ",
   "NE",
-  # "SPECIAL", # todo: research what is considered as SPECIAL
   "'!'",
   "AND",
   "OR",
@@ -35,6 +34,17 @@ precedence_ops <- c(
   "'}'"
 )
 
+loops <- c(
+  "FOR",
+  "WHILE",
+  "REPEAT"
+)
+
+assigns <- c(
+  "LEFT_ASSIGN",
+  "EQ_ASSIGN",
+  "RIGHT_ASSIGN"
+)
 
 # https://svn.r-project.org/R/trunk/src/main/gram.y
 

@@ -68,14 +68,19 @@ deparse_flat_data <- function(fpd) {
 #
 # @param fpd a flat parsed data data.frame to deparse.
 # @param id Numeric indicating the parent ID.
+# @param include_father Logical indicating if keep father node.
 #
-get_children <- function(fpd, id) {
-  act_fpd <- fpd[fpd$id == id,]
-  act_childs <- fpd[fpd$parent == id, "id"]
+get_children <- function(fpd, id, include_father = TRUE) {
+  act_fpd <- NULL
+  if (include_father) {
+    act_fpd <- fpd[fpd$id %in% id,]
+  }
+  act_childs <- fpd[fpd$parent %in% id, "id"]
   while (length(act_childs) > 0) {
     act_fpd <- rbind(act_fpd, fpd[fpd$id %in% act_childs,])
     act_childs <- fpd[fpd$parent %in% fpd[fpd$id %in% act_childs, "id"], "id"]
   }
+  act_fpd <- act_fpd[order(act_fpd$pos_id), ]
   return(act_fpd)
 }
 
@@ -108,6 +113,19 @@ get_roots <- function(fpd) {
 # @param fpd a flat parsed data data.frame .
 #
 eq_assign_to_expr <- function(fpd) {
+  # some R versions (e.g. 3.5.2) dont use the token `equal_assign`, so we
+  # create it.
+  # first convert `equal_assign` token to expr
+  fpd$token <- sub("^equal_assign$", "expr", fpd$token)
+  eq_ass_prnts_id <- fpd[fpd$token == "EQ_ASSIGN", "parent"]
+  eq_ass_prnts <- fpd[fpd$id %in% eq_ass_prnts_id,]
+  if (all(eq_ass_prnts_id > 0) && # all of them have a parent
+      all(eq_ass_prnts$token == "expr") && # all parents are expressions
+      all(sapply(eq_ass_prnts$id, function(id) sum(fpd$parent == id) == 3))) {
+    # all EQ_ASSIGN have 2 siblings ( expr EQ_ASSIGN expr_or_assign )
+    return(fpd)
+  }
+  # if not, for each EQ_ASSIGN create its `expr` parent
   fpd <- fpd[order(fpd$pos_id),] # pos_id is important here
   eq_assign_ids <- fpd[fpd$token == "EQ_ASSIGN", "id"]
   new_fpd <- fpd

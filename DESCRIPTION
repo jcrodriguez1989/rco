@@ -1,7 +1,7 @@
 Package: rco
 Type: Package
 Title: R Code Optimizer
-Version: 0.1.001
+Version: 0.1.002
 Authors@R: c(
     person(given = "Juan Cruz", family = "Rodriguez", 
         role = c("aut", "cre"), email = "jcrodriguez@unc.edu.ar"),
@@ -20,8 +20,6 @@ Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
-Imports:
-    methods
 Suggests: 
     covr,
     knitr,
