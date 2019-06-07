@@ -10,7 +10,7 @@
 #' @export
 #'
 all_optimizers <- list(
-  opt_constant_folding,
-  opt_constant_propagation,
-  opt_dead_code
+  "Constant Folding" = opt_constant_folding,
+  "Constant Propagation" = opt_constant_propagation,
+  "Dead Code Elimination" = opt_dead_code
 )

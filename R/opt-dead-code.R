@@ -33,7 +33,9 @@ dead_code_one <- function(text) {
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
   new_fpd <- one_dead_code(new_fpd)
   res_fpd <- rbind(res_fpd, new_fpd)
-  res_fpd <- res_fpd[order(res_fpd$pos_id), ]
+  if (nrow(res_fpd) > 0) {
+    res_fpd <- res_fpd[order(res_fpd$pos_id), ]
+  }
   deparse_flat_data(res_fpd)
 }
 

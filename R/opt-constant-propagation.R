@@ -32,6 +32,9 @@ constant_prop_one <- function(text) {
   pd <- eq_assign_to_expr(pd)
   res_pd <- pd[pd$parent < 0, ] # keep lines with just comments
   new_pd <- pd[pd$parent >= 0, ] # keep lines with just comments
+  if (nrow(new_pd) == 0) {
+    return(deparse_flat_data(res_pd))
+  }
 
   # propagate until no changes
   old_pd <- NULL

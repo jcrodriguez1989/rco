@@ -6,6 +6,10 @@ parse_flat_data <- function(text, include_text = NA) {
   parsed_text <- base::parse(text = text, keep.source = TRUE)
   pd <- utils::getParseData(parsed_text, includeText = include_text)
 
+  if (nrow(pd) == 0) {
+    return(pd)
+  }
+
   # pos_id to reorder code text
   pd$pos_id <- seq(1L, nrow(pd))
 

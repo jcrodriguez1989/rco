@@ -12,9 +12,8 @@ status](https://codecov.io/gh/jcrodriguez1989/rco/branch/master/graph/badge.svg)
 This project is being supported by [Google Summer of
 Code 2019](https://summerofcode.withgoogle.com/projects/#5337917017292800).
 
-Thanks to the kind mentorship of Drs. [Yihui
-Xie](https://yihui.name/en/) and [Nicolás
-Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
+Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.name/en/)
+and [Dr. Nicolás Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
 
 ## Installation
 
@@ -23,8 +22,9 @@ Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
 To install it run the following from an R console:
 
 ``` r
-if (!require("remotes"))
+if (!require("remotes")) {
   install.packages("remotes")
+}
 remotes::install_github("jcrodriguez1989/rco")
 ```
 
@@ -53,7 +53,8 @@ code <- paste(
   "} else {",
   '  print("Meh!")',
   "}",
-  sep = "\n")
+  sep = "\n"
+)
 ```
 
 We can automatically optimize it by doing:
