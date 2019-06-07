@@ -17,7 +17,8 @@ Performs one constant folding pass.
 Carefully examine the results after running this function!
 }
 \examples{
-code <- paste("i <- 320 * 200 * 32",
+code <- paste(
+  "i <- 320 * 200 * 32",
   "x <- i * 20 + 100",
   sep = "\\n"
 )

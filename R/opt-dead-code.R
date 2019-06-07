@@ -42,10 +42,12 @@ dead_code_one <- function(text) {
 # @param fpd A flat parsed data data.frame .
 #
 one_dead_code <- function(fpd) {
+  # todo: remove not assigned expressions `x + 5` (they were used for debug)?
+
   # first remove code that is after (and equally nested) next, break, or return
   new_fpd <- remove_after_interruption(fpd)
 
-  # work on constant `if` conditions
+  # work on constant `while` and `if` conditions
   new_fpd <- remove_constant_conds(new_fpd)
 
   return(new_fpd)
@@ -62,7 +64,7 @@ remove_after_interruption <- function(fpd) {
   # get nodes that are interruption commands
   return_calls <- fpd[
     fpd$token == "SYMBOL_FUNCTION_CALL" & fpd$text == "return",]
-  # return parent is an expression
+  # `return` parent is an expression
   intr <- fpd[fpd$id %in% return_calls$parent,]
   intr <- rbind(intr, fpd[fpd$token %in% c("BREAK", "NEXT"),])
 

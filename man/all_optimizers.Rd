@@ -15,6 +15,5 @@ List of all the optimizer functions:
   \item Constant Propagation \code{\link{opt_constant_propagation}}
   \item Dead Code Elimination \code{\link{opt_dead_code}}
 }
-Carefully examine the results after running this function!
 }
 \keyword{datasets}

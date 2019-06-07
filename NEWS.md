@@ -1,3 +1,7 @@
+# rco 0.1.003
+
+* Adding Dead Code Elimination optimizer.
+
 # rco 0.1.002
 
 * Adding Constant Propagation optimizer.

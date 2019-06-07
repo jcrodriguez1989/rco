@@ -8,7 +8,8 @@
 #'   folded (will reduce precision).
 #'
 #' @examples
-#' code <- paste("i <- 320 * 200 * 32",
+#' code <- paste(
+#'   "i <- 320 * 200 * 32",
 #'   "x <- i * 20 + 100",
 #'   sep = "\n"
 #' )
