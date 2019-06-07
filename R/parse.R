@@ -119,10 +119,10 @@ eq_assign_to_expr <- function(fpd) {
   fpd$token <- sub("^equal_assign$", "expr", fpd$token)
   eq_ass_prnts_id <- fpd[fpd$token == "EQ_ASSIGN", "parent"]
   eq_ass_prnts <- fpd[fpd$id %in% eq_ass_prnts_id,]
-  if (all(eq_ass_prnts_id != 0) &&
-      all(eq_ass_prnts$token == "expr") &&
+  if (all(eq_ass_prnts_id > 0) && # all of them have a parent
+      all(eq_ass_prnts$token == "expr") && # all parents are expressions
       all(sapply(eq_ass_prnts$id, function(id) sum(fpd$parent == id) == 3))) {
-    # all EQ_ASSIGN parents are `expr` so it is ok
+    # all EQ_ASSIGN have 2 siblings ( expr EQ_ASSIGN expr_or_assign )
     return(fpd)
   }
   # if not, for each EQ_ASSIGN create its `expr` parent
