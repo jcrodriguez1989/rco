@@ -157,9 +157,6 @@ is_constant_var_expr <- function(fpd, id) {
     return(FALSE)
   }
   act_pd <- fpd[fpd$parent == id,]
-  if (nrow(act_pd) != 3) {
-    browser()
-  }
   if (act_pd$token[[1]] %in% c("'('", "'{'") &&
       act_pd$token[[3]] %in% c("')'", "'}'")) {
     return(is_constant_var_expr(fpd, act_pd[2, "id"]))
