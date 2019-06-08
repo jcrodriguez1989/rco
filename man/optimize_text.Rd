@@ -4,7 +4,7 @@
 \alias{optimize_text}
 \title{Optimize text containing code}
 \usage{
-optimize_text(text, optimizers)
+optimize_text(text, optimizers = all_optimizers)
 }
 \arguments{
 \item{text}{A character vector with the code to optimize.}

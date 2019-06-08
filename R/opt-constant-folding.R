@@ -8,7 +8,8 @@
 #'   folded (will reduce precision).
 #'
 #' @examples
-#' code <- paste("i <- 320 * 200 * 32",
+#' code <- paste(
+#'   "i <- 320 * 200 * 32",
 #'   "x <- i * 20 + 100",
 #'   sep = "\n"
 #' )
@@ -33,14 +34,9 @@ opt_constant_folding <- function(texts, fold_floats = FALSE) {
 constant_fold_one <- function(text, fold_floats) {
   pd <- parse_flat_data(text, include_text = TRUE)
   pd <- flatten_leaves(pd)
-
-  # fold until no changes
-  old_pd <- NULL
-  while (!isTRUE(all.equal(old_pd, pd))) {
-    old_pd <- pd
+  if (nrow(pd) > 0) {
     pd <- one_fold(pd, fold_floats)
   }
-
   deparse_flat_data(pd)
 }
 
@@ -52,8 +48,8 @@ constant_fold_one <- function(text, fold_floats) {
 #
 one_fold <- function(pd, fold_floats) {
   # keep but dont fold comments ( < 0 )
-  new_pd <- pd[pd$parent < 0,]
-  pd <- pd[pd$parent >= 0,]
+  new_pd <- pd[pd$parent < 0, ]
+  pd <- pd[pd$parent >= 0, ]
 
   # start visiting root nodes
   visit_nodes <- get_roots(pd)$id
@@ -85,10 +81,12 @@ one_fold <- function(pd, fold_floats) {
       }
       # it could not be folded, so save parent, and terminal childs
       new_pd <- rbind(new_pd, pd[pd$id == act_parent, ])
-      new_pd <- rbind(new_pd, pd[pd$parent == act_parent & pd$terminal,])
+      new_pd <- rbind(new_pd, pd[pd$parent == act_parent & pd$terminal, ])
       # continue visiting child exprs
-      new_visit_nodes <- c(new_visit_nodes,
-                           pd[pd$parent == act_parent & !pd$terminal, "id"])
+      new_visit_nodes <- c(
+        new_visit_nodes,
+        pd[pd$parent == act_parent & !pd$terminal, "id"]
+      )
     }
     visit_nodes <- new_visit_nodes
   }

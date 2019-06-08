@@ -1,0 +1,174 @@
+---
+output: rmarkdown::html_vignette
+title: Dead Code Elimination
+vignette: >
+  %\VignetteIndexEntry{Dead Code Elimination}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
+}
+```
+
+# Dead Code Elimination
+
+## Background
+
+Dead Code Elimination is an optimization to remove code which does not affect the program results. You might wonder why you would write this type of source code, but it can easily creep into large, long-lived programs even at the source code level. Removing such code has several benefits: it shrinks program size, an important consideration in some contexts, and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure.
+
+For example, consider the following code:
+
+```{r eval=FALSE}
+foo <- function() {
+  a <- 24
+  if (a > 25) {
+    return(25)
+    a <- 25 # dead code
+  }
+  return(a)
+  b <- 24 # dead code
+  return(b) # dead code
+}
+```
+
+In functions, after calling `return`, the following code would not be executed, so it is dead code and can be eliminated. In this example, resulting in:
+
+```{r eval=FALSE}
+foo <- function() {
+  a <- 24
+  if (a > 25) {
+    return(25)
+  }
+  return(a)
+}
+```
+
+Also, after constant [propagating](opt-constant-propagation.html) and [folding](opt-constant-folding.html) we would get:
+
+```{r eval=FALSE}
+foo <- function() {
+  a <- 24
+  if (FALSE) { # dead code
+    return(25) # dead code
+  } # dead code
+  return(a)
+}
+```
+
+So it could be reduced to:
+
+```{r eval=FALSE}
+foo <- function() {
+  a <- 24
+  return(a)
+}
+```
+
+This dead code optimizer also removes code after `next` or `break` calls.
+
+## Example
+
+Consider the following (useless) example:
+
+```{r}
+code <- paste(
+  "i <- 0",
+  "n <- 1000",
+  "while (i < n) {",
+  "  if (TRUE) {",
+  "    i <- i + 1",
+  "  } else {",
+  "    i <- i - 1",
+  "  }",
+  "}",
+  sep = "\n"
+)
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_dead_code(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and the speed-up:
+
+```{r message=FALSE}
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
+
+## Implementation
+
+The `opt_dead_code` optimizer performs two main tasks:
+
+### Remove code after interruption commands
+
+All the code, that is equally-nested, found after a `break`, `next`, or `return` call is removed. Something important to note is that it assumes that **the `return` function has not been overwritten**.
+
+### Remove constant conditionals
+
+This task has sub-items:
+
+  * Remove `FALSE` whiles: `while (FALSE) { expr }` expressions are removed from the code.
+  
+  * Remove `FALSE` ifs: `if (FALSE) { expr }` expressions are removed. And `if (FALSE) { expr1 } else { expr2 }` is replaced by `expr2`.
+  
+  * Replace `TRUE` ifs: `if (TRUE) { expr }` is replaced by `expr`. And `if (TRUE) { expr1 } else { expr2 }` is replaced by `expr1`.
+
+## To-Do
+
+* Remove not assigned expressions?
+
+  When coding, for debugging, sometimes instead of using `print` or `cat` we just write the expression. This causes that we get code as for example:
+  
+  ```{r eval=FALSE}
+  foo <- function(x) {
+    x != 0
+    return(100 / x)
+  }
+  ```
+  
+  Here, the expression `x != 0` would be evaluated each time we call the `foo` function, but would not have any effect as it is not assigned, nor printed. And thus, could be removed.
+  
+  However, removing expressions could result in behaviour missmatches, for instance, the following two codes:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    x != 0
+    return(100)
+  }
+  bar <- function() {
+    return(100)
+  }
+  
+  foo()
+  bar()
+  ```
+  
+  The `foo` call would give an error, while the `bar` call would not.

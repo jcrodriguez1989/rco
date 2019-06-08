@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Optimize `.R` files — optimize_files • rco</title>
+<title>All optimizers list — all_optimizers • rco</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,13 +30,13 @@
 
 
 
-<meta property="og:title" content="Optimize `.R` files — optimize_files" />
+<meta property="og:title" content="All optimizers list — all_optimizers" />
 
-<meta property="og:description" content="Performs the desired optimization strategies in the files specified.
-Carefully examine the results after running this function!
-If several files interact between them (functions from one file use
-functions from the other), then optimizing all of them together gives more
-information to rco." />
+<meta property="og:description" content="List of all the optimizer functions:
+Constant Folding opt_constant_folding
+Constant Propagation opt_constant_propagation
+Dead Code Elimination opt_dead_code
+" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -124,48 +124,35 @@ information to rco." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Optimize `.R` files</h1>
-    <small class="dont-index">Source: <a href='https://github.com/jcrodriguez1989/rco/blob/master/R/optimize-files.R'><code>R/optimize-files.R</code></a></small>
-    <div class="hidden name"><code>optimize_files.Rd</code></div>
+    <h1>All optimizers list</h1>
+    <small class="dont-index">Source: <a href='https://github.com/jcrodriguez1989/rco/blob/master/R/optimizers.R'><code>R/optimizers.R</code></a></small>
+    <div class="hidden name"><code>all_optimizers.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Performs the desired optimization strategies in the files specified.
-Carefully examine the results after running this function!
-If several files interact between them (functions from one file use
-functions from the other), then optimizing all of them together gives more
-information to rco.</p>
+    <p>List of all the optimizer functions:</p><ul>
+<li><p>Constant Folding <code><a href='opt_constant_folding.html'>opt_constant_folding</a></code></p></li>
+<li><p>Constant Propagation <code><a href='opt_constant_propagation.html'>opt_constant_propagation</a></code></p></li>
+<li><p>Dead Code Elimination <code><a href='opt_dead_code.html'>opt_dead_code</a></code></p></li>
+</ul>
     
     </div>
 
-    <pre class="usage"><span class='fu'>optimize_files</span>(<span class='no'>files</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>, <span class='kw'>overwrite</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>files</th>
-      <td><p>A character vector with paths to files to optimize.</p></td>
-    </tr>
-    <tr>
-      <th>optimizers</th>
-      <td><p>A list of optimizer functions.</p></td>
-    </tr>
-    <tr>
-      <th>overwrite</th>
-      <td><p>A logical indicating if files should be overwritten, or
-saved into new files with "optimized_" prefix.</p></td>
-    </tr>
-    </table>
+    <pre class="usage"><span class='no'>all_optimizers</span></pre>
+        
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+
+    <p>An object of class <code>list</code> of length 3.</p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#format">Format</a></li>
+          </ul>
 
   </div>
 </div>

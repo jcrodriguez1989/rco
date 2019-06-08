@@ -28,8 +28,10 @@ test_that("optimizer dont change files w/overwrite", {
 
   # tests that the file optimized file didnt change (as it could not be
   # optimized)
-  expect_equal(read_code_file(tmp_file1),
-               read_code_file(tmp_file1_copy))
+  expect_equal(
+    read_code_file(tmp_file1),
+    read_code_file(tmp_file1_copy)
+  )
 
   # test that no "optimized_" file was created
   expect_true(!file.exists(tmp_file1_opt))
@@ -47,8 +49,10 @@ test_that("optimizer dont change files wo/overwrite", {
   optimize_files(tmp_file1, list(testing_optimizer_no_edit), overwrite = FALSE)
 
   # tests that the file optimized file didnt change
-  expect_equal(read_code_file(tmp_file1),
-               read_code_file(tmp_file1_copy))
+  expect_equal(
+    read_code_file(tmp_file1),
+    read_code_file(tmp_file1_copy)
+  )
 
   # test that no "optimized_" file was created (as it could not be optimized)
   expect_true(!file.exists(tmp_file1_opt))
@@ -68,8 +72,10 @@ test_that("optimizer change files w/overwrite", {
   optimize_files(tmp_file1, list(testing_optimizer_edit), overwrite = TRUE)
 
   # tests that the file was optimized
-  expect_equal(read_code_file(tmp_file1),
-               read_code_file(tmp_file1_manual_opt))
+  expect_equal(
+    read_code_file(tmp_file1),
+    read_code_file(tmp_file1_manual_opt)
+  )
   # and overwritten
   expect_true(!isTRUE(all.equal(
     read_code_file(tmp_file1),
@@ -94,8 +100,10 @@ test_that("optimizer change files wo/overwrite", {
   optimize_files(tmp_file1, list(testing_optimizer_edit), overwrite = FALSE)
 
   # tests that the file was optimized
-  expect_equal(read_code_file(tmp_file1_opt),
-               read_code_file(tmp_file1_manual_opt))
+  expect_equal(
+    read_code_file(tmp_file1_opt),
+    read_code_file(tmp_file1_manual_opt)
+  )
   # and not overwritten
   expect_true(isTRUE(all.equal(
     read_code_file(tmp_file1),

@@ -7,24 +7,24 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 library("rco")
 library("microbenchmark")
 library("ggplot2")
 autoplot.microbenchmark <- function(obj) {
-    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
-    microbenchmark:::autoplot.microbenchmark(obj)
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
 }
 speed_up <- function(obj) {
-    levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
-    obj <- as.data.frame(obj)
-    summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
-    res <- c()
-    for (i in seq_len(nrow(summaries)-1)+1) {
-        res <- rbind(res, summaries[1,] / summaries[i,])
-    }
-    rownames(res) <- levels(obj$expr)[-1]
-    return(res)
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
 }
 ```
 
@@ -52,7 +52,8 @@ code <- paste(
   "for (i in seq_along(hours_vector)) {",
   "  ms_vector[i] <- 1000 * 60 * 60 * hours_vector[i]",
   "}",
-  sep = "\n")
+  sep = "\n"
+)
 cat(code)
 ```
 
@@ -65,14 +66,12 @@ cat(opt_code$codes[[1]])
 
 And if we measure the execution time of each one, and the speed-up:
 
-```{r}
-bmark_res <- microbenchmark(
-  {
-    eval(parse(text = code))
-  },{
-    eval(parse(text = opt_code))
-  }
-)
+```{r message=FALSE}
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
 autoplot(bmark_res)
 speed_up(bmark_res)
 ```
@@ -92,9 +91,9 @@ rco:::precedence_ops
 When constant folding, we can have floating-point precision issues, for instance, consider the following code:
 
 ```{r}
-x <- 1/(2+1)
-y <- 1/(2+1)
-z <- 1/(2+1)
+x <- 1 / (2 + 1)
+y <- 1 / (2 + 1)
+z <- 1 / (2 + 1)
 x + y + z == 1
 ```
 
@@ -106,7 +105,8 @@ code <- paste(
   "y <- 1/(2+1)",
   "z <- 1/(2+1)",
   "x + y + z == 1",
-  sep = "\n")
+  sep = "\n"
+)
 opt_code <- opt_constant_folding(list(code), fold_floats = TRUE)$codes[[1]]
 cat(opt_code)
 ```
@@ -132,9 +132,10 @@ Consider this nice example where a sub-expression folding causes precision loss,
 
 ```{r}
 opt_code <- opt_constant_folding(list(paste(
-  "x <- 1/(2+1)",     # will not fold it because we lose precision
+  "x <- 1/(2+1)", # will not fold it because we lose precision
   "y <- 1/(2+1) > 3", # however, folded or not, it is not > 3, so folds it
-  sep = "\n")), fold_floats = FALSE)$codes[[1]]
+  sep = "\n"
+)), fold_floats = FALSE)$codes[[1]]
 cat(opt_code)
 ```
 
@@ -160,8 +161,8 @@ cat(opt_code)
   
   ```{r eval=FALSE}
   foo <- function(x) {
-    while(TRUE) {
-      x <- x+1
+    while (TRUE) {
+      x <- x + 1
     }
   }
   foo(3)

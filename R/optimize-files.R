@@ -13,7 +13,8 @@
 #'
 #' @export
 #'
-optimize_files <- function(files, optimizers, overwrite = FALSE) {
+optimize_files <- function(files, optimizers = all_optimizers,
+                           overwrite = FALSE) {
   # read files content
   codes <- lapply(files, read_code_file)
   names(codes) <- files
