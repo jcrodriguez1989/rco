@@ -132,7 +132,9 @@
 <a class="sourceLine" id="cb3-14" data-line-number="14">)</a></code></pre></div>
 <p>We can automatically optimize it by doing:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(code)</a></code></pre></div>
-<pre><code>## # I want to know my age in seconds!
+<pre><code>## Called from: remove_unassigned_exprs(new_fpd)
+## debug at /home/jcrodriguez/Dropbox/R/rco/R/opt-dead-code.R#271: fpd
+## # I want to know my age in seconds!
 ## years_old &lt;- 29
 ## days_old &lt;- 365 * 29 # leap years don't exist
 ## hours_old &lt;- 24 * days_old
@@ -145,7 +147,9 @@
 ## }</code></pre>
 <p>After one optimization pass we can see that it has only propagated the <code>years_old</code> variable. Another pass:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code)</a></code></pre></div>
-<pre><code>## # I want to know my age in seconds!
+<pre><code>## Called from: remove_unassigned_exprs(new_fpd)
+## debug at /home/jcrodriguez/Dropbox/R/rco/R/opt-dead-code.R#271: fpd
+## # I want to know my age in seconds!
 ## years_old &lt;- 29
 ## days_old &lt;- 10585 # leap years don't exist
 ## hours_old &lt;- 24 * 10585
@@ -158,7 +162,9 @@
 ## }</code></pre>
 <p>Now, it has folded the <code>days_old</code> variable, and then propagated it. Another pass:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code)</a></code></pre></div>
-<pre><code>## # I want to know my age in seconds!
+<pre><code>## Called from: remove_unassigned_exprs(new_fpd)
+## debug at /home/jcrodriguez/Dropbox/R/rco/R/opt-dead-code.R#271: fpd
+## # I want to know my age in seconds!
 ## years_old &lt;- 29
 ## days_old &lt;- 10585 # leap years don't exist
 ## hours_old &lt;- 254040
@@ -171,7 +177,9 @@
 ## }</code></pre>
 <p>It has folded the <code>hours_old</code> variable, and then propagated it. Another pass:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code)</a></code></pre></div>
-<pre><code>## # I want to know my age in seconds!
+<pre><code>## Called from: remove_unassigned_exprs(new_fpd)
+## debug at /home/jcrodriguez/Dropbox/R/rco/R/opt-dead-code.R#271: fpd
+## # I want to know my age in seconds!
 ## years_old &lt;- 29
 ## days_old &lt;- 10585 # leap years don't exist
 ## hours_old &lt;- 254040
@@ -184,7 +192,9 @@
 ## }</code></pre>
 <p>It has folded the <code>seconds_old</code> variable, and then propagated it into the <code>if</code> condition. Another pass:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code)</a></code></pre></div>
-<pre><code>## # I want to know my age in seconds!
+<pre><code>## Called from: remove_unassigned_exprs(new_fpd)
+## debug at /home/jcrodriguez/Dropbox/R/rco/R/opt-dead-code.R#271: fpd
+## # I want to know my age in seconds!
 ## years_old &lt;- 29
 ## days_old &lt;- 10585 # leap years don't exist
 ## hours_old &lt;- 254040
