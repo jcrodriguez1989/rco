@@ -40,7 +40,7 @@ constant_prop_one <- function(text) {
   old_pd <- NULL
   while (!isTRUE(all.equal(old_pd, new_pd))) {
     old_pd <- new_pd
-    new_pd <- one_propagate(new_pd, c())$fpd
+    new_pd <- one_propagate(new_pd, list())$fpd
   }
   res_pd <- rbind(res_pd, new_pd)
   res_pd <- res_pd[order(res_pd$pos_id), ]
@@ -50,7 +50,7 @@ constant_prop_one <- function(text) {
 # Executes constant propagation of a tree
 #
 # @param fpd a flat parsed data data.frame .
-# @param values A named vector of variables and their value .
+# @param values A named list of variables and their value.
 #
 one_propagate <- function(fpd, values) {
   act_nodes <- get_roots(fpd)
@@ -74,13 +74,13 @@ one_propagate <- function(fpd, values) {
       )
       # replace the constant var by the value and replace in fpd
     } else if (is_function_call(fpd, act_node$id)) {
-      # if function call, then empty the values  :'(
+      # if function call, then empty the values :'(
       # ( e.g. rm(list=ls()) )
       res_fpd <- rbind(
         res_fpd,
         replace_constant_vars(act_fpd, act_node$id, values)
       )
-      values <- c()
+      values <- list()
     } else if (is_loop(fpd, act_node$id)) {
       # if it is a loop, then remove the in-loop assigned variables from values
       loop_ass_vars <- get_assigned_vars(fpd, act_node$id)
@@ -91,15 +91,15 @@ one_propagate <- function(fpd, values) {
       # work on loop condition, and on body
       exprs_fpd <- childs[!childs$terminal, ]
       loop_values <- values
-      for (i in seq_len(nrow(exprs_fpd))) {
-        res <- one_propagate(get_children(fpd, exprs_fpd[i, "id"]), loop_values)
+      for (j in seq_len(nrow(exprs_fpd))) {
+        res <- one_propagate(get_children(fpd, exprs_fpd[j, "id"]), loop_values)
         res_fpd <- rbind(res_fpd, res$fpd)
         # cant keep these values, because maybe the loop is never executed
         loop_values <- res$values
       }
       if (has_function_call(fpd, act_node$id)) {
         # but if the loop had a function call, we should delete values
-        values <- c()
+        values <- list()
       }
     } else if (is_if(fpd, act_node$id)) {
       # if it is an if, then remove the in-if/else assigned vars from values
@@ -110,14 +110,14 @@ one_propagate <- function(fpd, values) {
       res_fpd <- rbind(res_fpd, childs[childs$terminal, ])
       # work on if/else exprs
       exprs_fpd <- childs[!childs$terminal, ]
-      for (i in seq_len(nrow(exprs_fpd))) {
-        res <- one_propagate(get_children(fpd, exprs_fpd[i, "id"]), values)
+      for (j in seq_len(nrow(exprs_fpd))) {
+        res <- one_propagate(get_children(fpd, exprs_fpd[j, "id"]), values)
         res_fpd <- rbind(res_fpd, res$fpd)
         # cant keep res$values, because maybe the if condition is FALSE
       }
       if (has_function_call(fpd, act_node$id)) {
         # but if the if/else had a function call, we should delete values
-        values <- c()
+        values <- list()
       }
     } else if (is_assignment(fpd, act_node$id)) {
       # note that it is an assignment, but not of constant value
@@ -153,13 +153,13 @@ one_propagate <- function(fpd, values) {
       res_fpd <- rbind(res_fpd, act_node)
       res_fpd <- rbind(res_fpd, childs[childs$terminal, ])
       exprs_fpd <- childs[!childs$terminal, ]
-      for (i in seq_len(nrow(exprs_fpd) - 1)) {
+      for (j in seq_len(max(0, nrow(exprs_fpd) - 1))) {
         # dont propagate in function arg expressions
-        res_fpd <- rbind(res_fpd, get_children(act_fpd, exprs_fpd[i, "id"]))
+        res_fpd <- rbind(res_fpd, get_children(act_fpd, exprs_fpd[j, "id"]))
       }
       # propagate on the function body ( with new env c() )
       res <- one_propagate(
-        get_children(act_fpd, exprs_fpd[nrow(exprs_fpd), "id"]), c()
+        get_children(act_fpd, exprs_fpd[nrow(exprs_fpd), "id"]), list()
       )
       res_fpd <- rbind(res_fpd, res$fpd)
     } else {
@@ -196,10 +196,18 @@ is_constant_var_expr <- function(fpd, id) {
     act_pd$token[[3]] %in% c("')'", "'}'")) {
     return(is_constant_var_expr(fpd, act_pd[2, "id"]))
   }
-  is_constant_or_minus(fpd, act_pd[3, "id"]) ||
-    is_constant_or_minus(fpd, act_pd[1, "id"]) ||
-    is_constant_var_expr(fpd, act_pd[3, "id"]) ||
-    is_constant_var_expr(fpd, act_pd[1, "id"])
+
+  if (act_pd[2, "token"] == "RIGHT_ASSIGN") {
+    return(
+      is_constant_or_minus(fpd, act_pd[1, "id"]) ||
+        is_constant_var_expr(fpd, act_pd[1, "id"])
+    )
+  } else {
+    return(
+      is_constant_or_minus(fpd, act_pd[3, "id"]) ||
+        is_constant_var_expr(fpd, act_pd[3, "id"])
+    )
+  }
 }
 
 # Returns a logical indicating if a node is a constant or -constant
@@ -227,11 +235,16 @@ get_constant_var <- function(fpd, id) {
   }
   act_pd <- fpd[fpd$parent == id, ]
   act_pd <- get_children(fpd, id)
-  act_var <- act_pd[act_pd$token == "SYMBOL", "text"]
+  act_var_txts <- act_pd[act_pd$token %in% c("SYMBOL", "STR_CONST"), "text"]
+  n_assigns <- sum(act_pd$token %in% assigns)
+  act_var <- act_var_txts[seq_len(n_assigns)]
+  if ("RIGHT_ASSIGN" %in% act_pd) {
+    act_var <- rev(act_var_txts)[seq_len(n_assigns)]
+  }
   act_code <- act_pd[act_pd$token %in% c("'-'", constants), ]
   res <- eval(parse(text = paste0(act_code$text)))
-  res <- rep(res, length(act_var))
-  names(res) <- act_var
+  res <- rep(list(res), length(act_var))
+  names(res) <- gsub("\"", "", act_var)
   return(res)
 }
 
@@ -250,7 +263,7 @@ only_uses_ops <- function(fpd, id) {
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
-# @param constant_vars A character vector with named constant vars
+# @param constant_vars A named list of variables and their value.
 #
 replace_constant_vars <- function(fpd, id, constant_vars) {
   new_fpd <- fpd[!fpd$text %in% names(constant_vars), ]
@@ -262,6 +275,8 @@ replace_constant_vars <- function(fpd, id, constant_vars) {
       # if it was a string, we have to take care of ' and " mixing
       act_val <- gsub('"', '\\"', act_val, fixed = TRUE)
       act_val <- paste0('"', act_val, '"')
+    } else if (is.null(act_val)) {
+      act_val <- "NULL"
     }
     new_act_fpd <- flatten_leaves(parse_flat_data(act_val))
     # new ids will be old_id + _ + new_id
@@ -329,7 +344,7 @@ is_if <- function(fpd, id) {
 #
 is_assignment <- function(fpd, id) {
   # it has to be one of
-  #   SYMBOL {LEFT_ASSIGN EQ_ASSIGN}_ASSIGN expr
+  #   {SYMBOL STR_CONST} {LEFT_ASSIGN EQ_ASSIGN}_ASSIGN expr
   #   expr RIGHT_ASSIGN SYMBOL
   act_pd <- fpd[fpd$parent == id, ]
   child <- get_children(fpd, id)
@@ -339,10 +354,10 @@ is_assignment <- function(fpd, id) {
       (act_pd$token[[1]] %in% c("'('", "'{'") &&
         act_pd$token[[3]] %in% c("')'", "'}'") &&
         is_assignment(fpd, act_pd[2, "id"])) ||
-        (act_pd$token[[1]] == "SYMBOL" &&
+        (act_pd$token[[1]] %in% c("SYMBOL", "STR_CONST") &&
           act_pd$token[[2]] %in% c("LEFT_ASSIGN", "EQ_ASSIGN")) ||
         (
-          act_pd$token[[3]] == "SYMBOL" &&
+          act_pd$token[[3]] %in% c("SYMBOL", "STR_CONST") &&
             act_pd$token[[2]] == "RIGHT_ASSIGN"
         )
     )
