@@ -139,7 +139,8 @@ information to rco.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>optimize_files</span>(<span class='no'>files</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>, <span class='kw'>overwrite</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>optimize_files</span>(<span class='no'>files</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>, <span class='kw'>overwrite</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>iterations</span> <span class='kw'>=</span> <span class='fl'>Inf</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -156,6 +157,11 @@ information to rco.</p>
       <th>overwrite</th>
       <td><p>A logical indicating if files should be overwritten, or
 saved into new files with "optimized_" prefix.</p></td>
+    </tr>
+    <tr>
+      <th>iterations</th>
+      <td><p>Numeric indicating the number of times optimizers should
+pass. If there was no change after current pass, it will stop.</p></td>
     </tr>
     </table>
     

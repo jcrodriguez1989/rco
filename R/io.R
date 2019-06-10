@@ -3,7 +3,8 @@
 # @param file A character vector containing the code file path.
 #
 read_code_file <- function(file) {
-  base::readLines(file, encoding = "UTF-8", warn = FALSE)
+  res <- base::readLines(file, encoding = "UTF-8", warn = FALSE)
+  paste(res, collapse = "\n")
 }
 
 # Writes code to a con (normally a file path)

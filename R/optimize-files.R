@@ -10,22 +10,30 @@
 #' @param optimizers A list of optimizer functions.
 #' @param overwrite A logical indicating if files should be overwritten, or
 #'   saved into new files with "optimized_" prefix.
+#' @param iterations Numeric indicating the number of times optimizers should
+#'   pass. If there was no change after current pass, it will stop.
 #'
 #' @export
 #'
 optimize_files <- function(files, optimizers = all_optimizers,
-                           overwrite = FALSE) {
+                           overwrite = FALSE, iterations = Inf) {
   # read files content
   codes <- lapply(files, read_code_file)
   names(codes) <- files
 
+  n_iter <- 0
   optim_codes <- codes
-  # apply one by one each optimization strategy.
-  # note that they are applied one after the other (in order)
-  for (act_optim in optimizers) {
-    optim_res <- act_optim(optim_codes)
-    optim_codes <- optim_res$codes
-    # todo: think! will I need anything else to get from an optimizing function?
+  act_codes <- NA
+  while (n_iter < iterations && !isTRUE(all.equal(act_codes, optim_codes))) {
+    act_codes <- optim_codes
+    # apply one by one each optimization strategy.
+    # note that they are applied one after the other (in order)
+    for (act_optim in optimizers) {
+      optim_res <- act_optim(optim_codes)
+      optim_codes <- optim_res$codes
+    }
+    n_iter <- n_iter + 1
+    cat(paste0("Optimization number ", n_iter, "\n"))
   }
 
   # check which codes had been optimized

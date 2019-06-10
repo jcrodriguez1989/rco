@@ -4,7 +4,8 @@
 \alias{optimize_files}
 \title{Optimize `.R` files}
 \usage{
-optimize_files(files, optimizers = all_optimizers, overwrite = FALSE)
+optimize_files(files, optimizers = all_optimizers, overwrite = FALSE,
+  iterations = Inf)
 }
 \arguments{
 \item{files}{A character vector with paths to files to optimize.}
@@ -13,6 +14,9 @@ optimize_files(files, optimizers = all_optimizers, overwrite = FALSE)
 
 \item{overwrite}{A logical indicating if files should be overwritten, or
 saved into new files with "optimized_" prefix.}
+
+\item{iterations}{Numeric indicating the number of times optimizers should
+pass. If there was no change after current pass, it will stop.}
 }
 \description{
 Performs the desired optimization strategies in the files specified.

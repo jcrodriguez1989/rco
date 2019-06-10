@@ -62,31 +62,31 @@ code <- paste(
 We can automatically optimize it by doing:
 
 ```{r}
-opt_code <- optimize_text(code)
+opt_code <- optimize_text(code, iterations = 1)
 ```
 
 After one optimization pass we can see that it has only propagated the `years_old` variable. Another pass:
 
 ```{r}
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
 Now, it has folded the `days_old` variable, and then propagated it. Another pass:
 
 ```{r}
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
 It has folded the `hours_old` variable, and then propagated it. Another pass:
 
 ```{r}
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
 It has folded the `seconds_old` variable, and then propagated it into the `if` condition. Another pass:
 
 ```{r}
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
 Now, it has folded the `if` condition, and as it was `TRUE` it just kept its body, as testing the condition or the `else` clause were dead code.
