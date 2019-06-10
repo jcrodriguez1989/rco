@@ -68,6 +68,38 @@ test_that("correctly constant propagate", {
   ))
 })
 
+test_that("correctly constant strings", {
+  code <- paste(
+    'xs1 <- ""',
+    "ys1 <- xs1",
+    "xs2 <- ''",
+    "ys2 <- xs2",
+    "xs3 <- \"Instituto 'ACC'.\"",
+    "ys3 <- xs3",
+    'xs4 <- \'Instituto "ACC".\'',
+    "ys4 <- xs4",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]; cat(opt_code)
+  expect_equal(opt_code, paste(
+    'xs1 <- ""',
+    'ys1 <- ""',
+    "xs2 <- ''",
+    'ys2 <- ""',
+    "xs3 <- \"Instituto 'ACC'.\"",
+    "ys3 <- \"Instituto 'ACC'.\"",
+    'xs4 <- \'Instituto "ACC".\'',
+    'ys4 <- "Instituto \\"ACC\\"."',
+    sep = "\n"
+  ))
+
+  env1 <- new.env()
+  eval(parse(text = code), envir = env1)
+  env2 <- new.env()
+  eval(parse(text = opt_code), envir = env2)
+  expect_equal(as.list(env1), as.list(env2))
+})
+
 test_that("constant propagate in while", {
   code <- paste(
     "x <- 1",

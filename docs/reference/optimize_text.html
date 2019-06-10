@@ -133,7 +133,7 @@ Carefully examine the results after running this function!</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>optimize_text</span>(<span class='no'>text</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>)</pre>
+    <pre class="usage"><span class='fu'>optimize_text</span>(<span class='no'>text</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>, <span class='kw'>iterations</span> <span class='kw'>=</span> <span class='fl'>Inf</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -145,6 +145,11 @@ Carefully examine the results after running this function!</p>
     <tr>
       <th>optimizers</th>
       <td><p>A list of optimizer functions.</p></td>
+    </tr>
+    <tr>
+      <th>iterations</th>
+      <td><p>Numeric indicating the number of times optimizers should
+pass. If there was no change after current pass, it will stop.</p></td>
     </tr>
     </table>
     

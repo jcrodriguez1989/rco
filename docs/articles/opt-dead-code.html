@@ -164,26 +164,24 @@
 ##   }
 ## }</code></pre>
 <p>Then, the automatically optimized code would be:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="../reference/opt_dead_code.html">opt_dead_code</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(code))</a></code></pre></div>
-<pre><code>## Called from: remove_unassigned_exprs(new_fpd)
-## debug at /home/jcrodriguez/Dropbox/R/rco/R/opt-dead-code.R#271: fpd</code></pre>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(opt_code<span class="op">$</span>codes[[<span class="dv">1</span>]])</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="../reference/opt_dead_code.html">opt_dead_code</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(code))</a>
+<a class="sourceLine" id="cb7-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(opt_code<span class="op">$</span>codes[[<span class="dv">1</span>]])</a></code></pre></div>
 <pre><code>## i &lt;- 0
 ## n &lt;- 1000
 ## while (i &lt; n) {
 ##   i &lt;- i + 1
 ## }</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">bmark_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>({</a>
-<a class="sourceLine" id="cb11-2" data-line-number="2">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> code))</a>
-<a class="sourceLine" id="cb11-3" data-line-number="3">}, {</a>
-<a class="sourceLine" id="cb11-4" data-line-number="4">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
-<a class="sourceLine" id="cb11-5" data-line-number="5">})</a>
-<a class="sourceLine" id="cb11-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">bmark_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>({</a>
+<a class="sourceLine" id="cb9-2" data-line-number="2">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> code))</a>
+<a class="sourceLine" id="cb9-3" data-line-number="3">}, {</a>
+<a class="sourceLine" id="cb9-4" data-line-number="4">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
+<a class="sourceLine" id="cb9-5" data-line-number="5">})</a>
+<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-dead-code_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.    Max.
-## Expr_2 78.51418 70.34745 57.10968 63.89037 50.53919 188.005</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 78.90395 71.91721 54.28166 64.61706 52.03862 196.3707</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -212,22 +210,22 @@
 <li>
 <p>Remove not assigned expressions?</p>
 <p>When coding, for debugging, sometimes instead of using <code>print</code> or <code>cat</code> we just write the expression. This causes that we get code as for example:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>(x) {</a>
-<a class="sourceLine" id="cb14-2" data-line-number="2">  x <span class="op">!=</span><span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb14-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span> <span class="op">/</span><span class="st"> </span>x)</a>
-<a class="sourceLine" id="cb14-4" data-line-number="4">}</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>(x) {</a>
+<a class="sourceLine" id="cb12-2" data-line-number="2">  x <span class="op">!=</span><span class="st"> </span><span class="dv">0</span></a>
+<a class="sourceLine" id="cb12-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span> <span class="op">/</span><span class="st"> </span>x)</a>
+<a class="sourceLine" id="cb12-4" data-line-number="4">}</a></code></pre></div>
 <p>Here, the expression <code>x != 0</code> would be evaluated each time we call the <code>foo</code> function, but would not have any effect as it is not assigned, nor printed. And thus, could be removed.</p>
 <p>However, removing expressions could result in behaviour missmatches, for instance, the following two codes:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
-<a class="sourceLine" id="cb15-2" data-line-number="2">  x <span class="op">!=</span><span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb15-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb15-4" data-line-number="4">}</a>
-<a class="sourceLine" id="cb15-5" data-line-number="5">bar &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
-<a class="sourceLine" id="cb15-6" data-line-number="6">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb15-7" data-line-number="7">}</a>
-<a class="sourceLine" id="cb15-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb15-9" data-line-number="9"><span class="kw">foo</span>()</a>
-<a class="sourceLine" id="cb15-10" data-line-number="10"><span class="kw"><a href="https://www.rdocumentation.org/packages/grDevices/topics/plotmath">bar</a></span>()</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
+<a class="sourceLine" id="cb13-2" data-line-number="2">  x <span class="op">!=</span><span class="st"> </span><span class="dv">0</span></a>
+<a class="sourceLine" id="cb13-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span>)</a>
+<a class="sourceLine" id="cb13-4" data-line-number="4">}</a>
+<a class="sourceLine" id="cb13-5" data-line-number="5">bar &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
+<a class="sourceLine" id="cb13-6" data-line-number="6">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span>)</a>
+<a class="sourceLine" id="cb13-7" data-line-number="7">}</a>
+<a class="sourceLine" id="cb13-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb13-9" data-line-number="9"><span class="kw">foo</span>()</a>
+<a class="sourceLine" id="cb13-10" data-line-number="10"><span class="kw"><a href="https://www.rdocumentation.org/packages/grDevices/topics/plotmath">bar</a></span>()</a></code></pre></div>
 <p>The <code>foo</code> call would give an error, while the <code>bar</code> call would not.</p>
 </li>
 </ul>

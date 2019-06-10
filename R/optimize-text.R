@@ -5,14 +5,19 @@
 #'
 #' @param text A character vector with the code to optimize.
 #' @param optimizers A list of optimizer functions.
+#' @param iterations Numeric indicating the number of times optimizers should
+#'   pass. If there was no change after current pass, it will stop.
 #'
 #' @export
 #'
-optimize_text <- function(text, optimizers = all_optimizers) {
+optimize_text <- function(text, optimizers = all_optimizers, iterations = Inf) {
   # create a temp file to write text, and apply optimizers
   tmp_file <- tempfile()
   write_code_file(text, tmp_file)
-  optimize_files(tmp_file, optimizers, overwrite = TRUE)
+  optimize_files(tmp_file, optimizers,
+    overwrite = TRUE,
+    iterations = iterations
+  )
   res <- paste(read_code_file(tmp_file), collapse = "\n")
   cat(res)
   return(invisible(res))

@@ -257,9 +257,13 @@ replace_constant_vars <- function(fpd, id, constant_vars) {
   to_edit_fpd <- fpd[fpd$text %in% names(constant_vars), ]
   for (i in seq_len(nrow(to_edit_fpd))) {
     act_fpd <- to_edit_fpd[i, ]
-    new_act_fpd <- flatten_leaves(
-      parse_flat_data(constant_vars[[act_fpd$text]])
-    )
+    act_val <- constant_vars[[act_fpd$text]]
+    if (is.character(act_val)) {
+      # if it was a string, we have to take care of ' and " mixing
+      act_val <- gsub('"', '\\"', act_val, fixed = TRUE)
+      act_val <- paste0('"', act_val, '"')
+    }
+    new_act_fpd <- flatten_leaves(parse_flat_data(act_val))
     # new ids will be old_id + _ + new_id
     new_act_fpd$id <- paste0(act_fpd$id, "_", new_act_fpd$id)
     # keep old parent for new fpd
