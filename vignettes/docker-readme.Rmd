@@ -1,8 +1,13 @@
 ---
-output: github_document
+output: rmarkdown::html_vignette
+title: Docker file
+vignette: >
+  %\VignetteIndexEntry{Docker file}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-# rco - Docker file
+# Docker file
 
 The rco Docker image will optimize any CRAN package, using the latest GitHub `rco` stable version.
 If the package to optimize has a `testthat` suite, then it will test the original and optimized versions, and show the obtained speed-up.

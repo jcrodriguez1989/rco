@@ -38,7 +38,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fa fa-home"></span>
      
   </a>
 </li>
@@ -47,7 +47,7 @@
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
+    Optimizers
      
     <span class="caret"></span>
   </a>
@@ -63,8 +63,20 @@
     </li>
   </ul>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
 <li>
-  <a href="../news/index.html">Changelog</a>
+      <a href="../articles/docker-readme.html">Docker Image</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="../news/index.html">News</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
@@ -145,8 +157,8 @@
 <a class="sourceLine" id="cb5-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-constant-folding_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 29.88629 29.46345 28.78184 30.05594 26.66113 89.66029</code></pre>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.    Max.
+## Expr_2 29.32265 27.50634 27.41973 31.23052 27.69184 114.065</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
