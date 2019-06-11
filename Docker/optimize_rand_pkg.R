@@ -25,8 +25,8 @@ if (pkg_name == "") {
   act_pkg <- packages[sample(seq_len(nrow(packages)), 1), ]
   pkg_name <- act_pkg$Package
   cat(paste0(
-    "Package to test: ", pkg_name, "\n",
-    act_pkg$Title, "\n"
+    "\nPackage to test: ", pkg_name, "\n",
+    act_pkg$Title, "\n\n"
   ))
 }
 
