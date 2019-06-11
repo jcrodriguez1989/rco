@@ -16,7 +16,7 @@ if (pkg_name == "") {
   # get all CRAN packages list
   url <- paste0(cran_url, "web/packages/available_packages_by_date.html")
   packages <- url %>%
-    html() %>%
+    read_html() %>%
     html_nodes(xpath = "/html/body/table") %>%
     html_table()
   packages <- packages[[1]]
@@ -32,7 +32,7 @@ if (pkg_name == "") {
 
 pkg_url <- paste0(cran_url, "package=", pkg_name)
 pkg_dwn_link <- pkg_url %>%
-  html() %>%
+  read_html() %>%
   html_nodes(xpath = "/html/body/table") %>%
   html_table()
 pkg_dwn_link <- pkg_dwn_link[[2]]
