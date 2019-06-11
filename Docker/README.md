@@ -23,7 +23,7 @@ The docker image basic usage will optimize a random CRAN package, this
 is done with:
 
 ``` bash
-docker run rco
+docker run jcrodriguez1989/rco
 ```
 
 We can also specify a package to optimize, using the `RCO_PKG`
@@ -31,7 +31,7 @@ environment variable, for example, if we want to optimize the `rflights`
 package:
 
 ``` bash
-docker run -e RCO_PKG=rflights rco
+docker run -e RCO_PKG=rflights jcrodriguez1989/rco
 ```
 
 Also, if we want to get the resulting optimized files we can set a
@@ -40,14 +40,15 @@ docker shared folder, with:
 ``` bash
 # Replace DEST_FOLDER path, with your desired output path
 DEST_FOLDER=/tmp/rco_dock_res
-docker run -v $DEST_FOLDER:/rco_results rco
+docker run -v $DEST_FOLDER:/rco_results jcrodriguez1989/rco
 ```
 
 In summary, if we want to optimize the `rflights` package and save its
-results, we can do:
+results, we can
+do:
 
 ``` bash
-docker run -e RCO_PKG=rflights -v $DEST_FOLDER:/rco_results rco
+docker run -e RCO_PKG=rflights -v $DEST_FOLDER:/rco_results jcrodriguez1989/rco
 ```
 
 And in the `DEST_FOLDER` we will have files as:

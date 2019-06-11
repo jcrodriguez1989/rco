@@ -266,8 +266,10 @@ only_uses_ops <- function(fpd, id) {
 # @param constant_vars A named list of variables and their value.
 #
 replace_constant_vars <- function(fpd, id, constant_vars) {
-  new_fpd <- fpd[!fpd$text %in% names(constant_vars), ]
-  to_edit_fpd <- fpd[fpd$text %in% names(constant_vars), ]
+  # only edit SYMBOLS that are in the constant vars
+  to_edit <- fpd$token == "SYMBOL" & fpd$text %in% names(constant_vars)
+  new_fpd <- fpd[!to_edit, ]
+  to_edit_fpd <- fpd[to_edit, ]
   for (i in seq_len(nrow(to_edit_fpd))) {
     act_fpd <- to_edit_fpd[i, ]
     act_val <- constant_vars[[act_fpd$text]]

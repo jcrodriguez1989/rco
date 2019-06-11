@@ -122,15 +122,15 @@
 <h2 class="hasAnchor">
 <a href="#usage" class="anchor"></a>Usage</h2>
 <p>The docker image basic usage will optimize a random CRAN package, this is done with:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="ex">docker</span> run rco</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="ex">docker</span> run jcrodriguez1989/rco</a></code></pre></div>
 <p>We can also specify a package to optimize, using the <code>RCO_PKG</code> environment variable, for example, if we want to optimize the <code>rflights</code> package:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="ex">docker</span> run -e RCO_PKG=rflights rco</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="ex">docker</span> run -e RCO_PKG=rflights jcrodriguez1989/rco</a></code></pre></div>
 <p>Also, if we want to get the resulting optimized files we can set a docker shared folder, with:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># Replace DEST_FOLDER path, with your desired output path</span></a>
 <a class="sourceLine" id="cb4-2" data-line-number="2"><span class="va">DEST_FOLDER=</span>/tmp/rco_dock_res</a>
-<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="ex">docker</span> run -v <span class="va">$DEST_FOLDER</span>:/rco_results rco</a></code></pre></div>
+<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="ex">docker</span> run -v <span class="va">$DEST_FOLDER</span>:/rco_results jcrodriguez1989/rco</a></code></pre></div>
 <p>In summary, if we want to optimize the <code>rflights</code> package and save its results, we can do:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="ex">docker</span> run -e RCO_PKG=rflights -v <span class="va">$DEST_FOLDER</span>:/rco_results rco</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="ex">docker</span> run -e RCO_PKG=rflights -v <span class="va">$DEST_FOLDER</span>:/rco_results jcrodriguez1989/rco</a></code></pre></div>
 <p>And in the <code>DEST_FOLDER</code> we will have files as:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="fu">ls</span> <span class="va">$DEST_FOLDER</span></a>
 <a class="sourceLine" id="cb6-2" data-line-number="2"><span class="co">## rflights  rflights_0.1.0.tar.gz  rflights_opt</span></a></code></pre></div>
