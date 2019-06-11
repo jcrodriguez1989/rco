@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 library("devtools")
-library("rvest")
+library("rvest", quietly = TRUE)
 
 options(repos = list(CRAN = "http://mirror.las.iastate.edu/CRAN/"))
 
@@ -15,19 +15,34 @@ if (pkg_name == "") {
   # sample a CRAN package
   # get all CRAN packages list
   url <- paste0(cran_url, "web/packages/available_packages_by_date.html")
+  xpath <- "/html/body/table"
+  testthat_pkgs <- Sys.getenv("RCO_W_TESTTHAT") != ""
+  if (testthat_pkgs) {
+    # check pkg that Suggests `testthat`
+    url <- paste0(cran_url, "web/packages/testthat/index.html")
+    xpath <- "/html/body/table[3]"
+  }
   packages <- url %>%
     read_html() %>%
-    html_nodes(xpath = "/html/body/table") %>%
+    html_nodes(xpath = xpath) %>%
     html_table()
   packages <- packages[[1]]
 
   # sample one package and download it
-  act_pkg <- packages[sample(seq_len(nrow(packages)), 1), ]
-  pkg_name <- act_pkg$Package
-  cat(paste0(
-    "\nPackage to test: ", pkg_name, "\n",
-    act_pkg$Title, "\n\n"
-  ))
+  if (!testthat_pkgs) {
+    act_pkg <- packages[sample(seq_len(nrow(packages)), 1), ]
+    pkg_name <- act_pkg$Package
+    cat(paste0(
+      "\nPackage to test: ", pkg_name, "\n",
+      act_pkg$Title, "\n\n"
+    ))
+  } else {
+    packages <- unlist(strsplit(packages[,2], ", "))
+    pkg_name <- packages[sample(seq_along(packages), 1)]
+    cat(paste0(
+      "\nPackage to test: ", pkg_name, "\n\n"
+    ))
+  }
 }
 
 pkg_url <- paste0(cran_url, "package=", pkg_name)
@@ -74,6 +89,7 @@ if (!(file.exists(paste0(pkg_dir, "/tests/testthat.R")) &&
   cat("Package does not contain testthat suite.\n")
   quit(save = "no")
 }
+
 if (sum(opt_files) == 0) {
   cat("Package not optimized.\n")
   quit(save = "no")
