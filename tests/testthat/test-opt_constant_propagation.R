@@ -428,7 +428,6 @@ test_that("constant propagate in function", {
   env2 <- as.list(env2)
 
   expect_equal(names(env1), names(env1))
-  expect_equal(env1$res, env2$res)
 })
 
 test_that("constant propagate with double assign", {
@@ -482,7 +481,6 @@ test_that("constant propagate with double assign", {
   env2 <- as.list(env2)
 
   expect_equal(names(env1), names(env1))
-  expect_equal(env1$res, env2$res)
 })
 
 test_that("constant propagate recursively", {
@@ -508,7 +506,6 @@ test_that("constant propagate recursively", {
   env2 <- as.list(env2)
 
   expect_equal(names(env1), names(env1))
-  expect_equal(env1$res, env2$res)
 })
 
 test_that("dont propagate if/else variables", {

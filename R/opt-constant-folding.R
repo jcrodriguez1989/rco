@@ -65,6 +65,10 @@ one_fold <- function(pd, fold_floats) {
         }, silent = TRUE)
         if (!inherits(eval_val, "try-error")) {
           # it was correctly evaluated then create the fpd of the eval val
+          if (is.null(eval_val)) {
+            # there was a bug when eval_val was NULL
+            eval_val <- "NULL"
+          }
           res <- parse_flat_data(eval_val, include_text = TRUE)
           res <- flatten_leaves(res)
           if (all(res$token %in% c("expr", "'-'", constants))) {

@@ -195,6 +195,20 @@ test_that("constant fold in function call", {
     "sum(7, 4)",
     sep = "\n"
   ))
+})
+
+test_that("constant fold NULL function", {
+  code <- paste(
+    "foo <- function(n) {}",
+    "res <- foo()",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function(n) NULL",
+    "res <- foo()",
+    sep = "\n"
+  ))
 
   env1 <- new.env()
   eval(parse(text = code), envir = env1)
