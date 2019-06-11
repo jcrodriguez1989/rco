@@ -6,3 +6,4 @@
 ^README\.Rmd$
 ^docs$
 ^_pkgdown\.yml$
+^Docker$

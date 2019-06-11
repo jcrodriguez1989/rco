@@ -60,9 +60,10 @@ code <- paste(
 We can automatically optimize it by doing:
 
 ``` r
-opt_code <- optimize_text(code)
+opt_code <- optimize_text(code, iterations = 1)
 ```
 
+    ## Optimization number 1
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 365 * 29 # leap years don't exist
@@ -79,9 +80,10 @@ After one optimization pass we can see that it has only propagated the
 `years_old` variable. Another pass:
 
 ``` r
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
+    ## Optimization number 1
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -98,9 +100,10 @@ Now, it has folded the `days_old` variable, and then propagated it.
 Another pass:
 
 ``` r
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
+    ## Optimization number 1
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -117,9 +120,10 @@ It has folded the `hours_old` variable, and then propagated it. Another
 pass:
 
 ``` r
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
+    ## Optimization number 1
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -136,9 +140,10 @@ It has folded the `seconds_old` variable, and then propagated it into
 the `if` condition. Another pass:
 
 ``` r
-opt_code <- optimize_text(opt_code)
+opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
+    ## Optimization number 1
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
