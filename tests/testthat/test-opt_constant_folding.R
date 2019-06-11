@@ -220,3 +220,21 @@ test_that("constant fold NULL function", {
   expect_equal(names(env1), names(env1))
   expect_equal(env1$res, env2$res)
 })
+
+test_that("dont constant fold not assigned exprs", {
+  code <- paste(
+    "-2",
+    "2",
+    "NULL",
+    "\"hola\"",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "-2",
+    "2",
+    "NULL",
+    "\"hola\"",
+    sep = "\n"
+  ))
+})
