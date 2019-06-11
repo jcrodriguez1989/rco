@@ -5,7 +5,7 @@ FROM r-base:latest
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update
-RUN apt --assume-yes install libcurl4-openssl-dev libgit2-dev libssl-dev libxml2-dev 
+RUN apt --assume-yes install libcurl4-openssl-dev libgit2-dev libssl-dev libxml2-dev
 
 RUN R -e "\
   options(repos = \
@@ -15,11 +15,12 @@ RUN R -e "\
   install.packages('rvest'); \
   install.packages('withr');"
 
-# Copy the script  
+# Copy the script
 RUN mkdir /rco_files
 WORKDIR /rco_files
 COPY optimize_rand_pkg.R ./
 
 # Run the script and save results in /rco_results
+RUN mkdir /rco_results
 CMD R -e "source('optimize_rand_pkg.R')"\
-  && mv /rco_files/* /rco_results/ 
+  && mv /rco_files/* /rco_results/
