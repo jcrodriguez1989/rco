@@ -59,10 +59,14 @@ one_fold <- function(pd, fold_floats) {
       act_pd <- get_children(pd, act_parent)
       if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr"))) {
         # all the children are terminals or ops. try to evaluate it
-        act_code <- pd[pd$id == act_parent, "text"]
-        eval_val <- try({
-          eval(parse(text = act_code))
-        }, silent = TRUE)
+        act_code_pd <- pd[pd$id == act_parent,]
+        if (act_code_pd$token %in% c("STR_CONST", "NULL_CONST")) {
+          eval_val <- act_code_pd$text
+        } else {
+          eval_val <- try({
+            eval(parse(text = act_code_pd$text))
+          }, silent = TRUE)
+        }
         if (!inherits(eval_val, "try-error")) {
           # it was correctly evaluated then create the fpd of the eval val
           if (is.null(eval_val)) {
