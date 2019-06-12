@@ -238,3 +238,15 @@ test_that("dont constant fold not assigned exprs", {
     sep = "\n"
   ))
 })
+
+test_that("add spaces when folding {const_expr}", {
+  code <- paste(
+    "if(TRUE){-3}else{NULL}",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "if(TRUE) -3 else NULL ",
+    sep = "\n"
+  ))
+})

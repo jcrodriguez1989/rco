@@ -75,6 +75,13 @@ one_fold <- function(pd, fold_floats) {
           }
           res <- parse_flat_data(eval_val, include_text = TRUE)
           res <- flatten_leaves(res)
+          if (grepl("^\\{.+\\}$", act_code_pd$text)) {
+            # if it was `{expr}`, then add spaces in both sides
+            # there was a bug when folding `if(TRUE){-3}else{NULL}`
+            n_terms <- sum(res$terminal)
+            res[res$terminal,][1, "prev_spaces"] <- 1
+            res[res$terminal,][n_terms, "next_spaces"] <- 1
+          }
           if (all(res$token %in% c("expr", "'-'", constants))) {
             # it is a constant or -constant
             # replace the parent expr by the new expr (folded)

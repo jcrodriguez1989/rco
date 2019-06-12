@@ -184,12 +184,18 @@ replace_pd <- function(fpd_from, fpd_replace) {
   fst_term <- from_terms[which.min(from_terms$pos_id), ]
   last_term <- from_terms[which.max(from_terms$pos_id), ]
   new_terms <- new_fpd[new_fpd$terminal, "id"]
-  new_fpd[new_fpd$id == new_terms[[1]], "prev_spaces"] <-
-    fst_term$prev_spaces
-  new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_spaces"] <-
-    last_term$next_spaces
-  new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_lines"] <-
-    last_term$next_lines
+  if (fst_term$prev_spaces != 0) {
+    new_fpd[new_fpd$id == new_terms[[1]], "prev_spaces"] <-
+      fst_term$prev_spaces
+  }
+  if (last_term$next_spaces != 0) {
+    new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_spaces"] <-
+      last_term$next_spaces
+  }
+  if (last_term$next_lines != 0) {
+    new_fpd[new_fpd$id == new_terms[[length(new_terms)]], "next_lines"] <-
+      last_term$next_lines
+  }
 
   return(new_fpd)
 }
