@@ -79,6 +79,13 @@ remove_after_interruption <- function(fpd) {
     id <- intr$parent[[i]]
     intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
+    if (nrow(intr_sibl) > 5 &&
+        all(intr_sibl$token[c(1, 6)] == c("IF", "ELSE"))) {
+      # if these are intr siblings, then it is something like
+      # if (cond) return(...) else ...
+      # so dont remove
+      next
+    }
     keep_ids <- intr_sibl[seq_len(which(intr_sibl$id == intr$id[[i]])), "id"]
     # for each opening precedence op, keep one closing
     prec_sibl <- intr_sibl[intr_sibl$token %in% precedence_ops, "id"]

@@ -37,7 +37,7 @@ if (pkg_name == "") {
       act_pkg$Title, "\n\n"
     ))
   } else {
-    packages <- unlist(strsplit(packages[,2], ", "))
+    packages <- unlist(strsplit(packages[, 2], ", "))
     pkg_name <- packages[sample(seq_along(packages), 1)]
     cat(paste0(
       "\nPackage to test: ", pkg_name, "\n\n"
@@ -83,15 +83,31 @@ with_dir(pkg_dir_opt, {
   cat(paste0(paste(act_files[opt_files], collapse = "\n"), "\n"))
 })
 
+if (sum(opt_files) == 0) {
+  cat("Package not optimized.\n")
+  quit(save = "no")
+}
+
+# try to show diff between files
+if (.Platform$OS.type == "unix") {
+  bash_cmd <- paste(
+    paste0('ORIG_DIR="', pkg_name, '/R"'),
+    paste0('OPT_DIR="', pkg_name, '_opt/R"'),
+    "for FILE in $(ls $ORIG_DIR); do",
+    '  echo "********************************"',
+    "  echo $FILE",
+    "  diff $ORIG_DIR/$FILE $OPT_DIR/$FILE",
+    "done",
+    "",
+    sep = "\n"
+  )
+  try(system(bash_cmd))
+}
+
 # We finnished if the package does not have test cases or was not optimized
 if (!(file.exists(paste0(pkg_dir, "/tests/testthat.R")) &&
   file.exists(paste0(pkg_dir, "/tests/testthat/")))) {
   cat("Package does not contain testthat suite.\n")
-  quit(save = "no")
-}
-
-if (sum(opt_files) == 0) {
-  cat("Package not optimized.\n")
   quit(save = "no")
 }
 

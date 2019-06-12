@@ -229,3 +229,21 @@ test_that("replace TRUE if", {
     sep = "\n"
   ))
 })
+
+test_that("dont eliminate in `if return() else ...`", {
+  code <- paste(
+    'if (rhs) rhs else return(0L)',
+    'if (rhs) return(1L) else rhs',
+    'if (rhs) return(0L) else rhs',
+    'if (rhs) rhs else return(1L)',
+    sep = "\n"
+  )
+  opt_code <- opt_dead_code(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    'if (rhs) rhs else return(0L)',
+    'if (rhs) return(1L) else rhs',
+    'if (rhs) return(0L) else rhs',
+    'if (rhs) rhs else return(1L)',
+    sep = "\n"
+  ))
+})

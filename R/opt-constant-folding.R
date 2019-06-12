@@ -60,38 +60,13 @@ one_fold <- function(pd, fold_floats) {
       if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr"))) {
         # all the children are terminals or ops. try to evaluate it
         act_code_pd <- pd[pd$id == act_parent,]
-        if (act_code_pd$token %in% c("STR_CONST", "NULL_CONST")) {
-          eval_val <- act_code_pd$text
-        } else {
-          eval_val <- try({
-            eval(parse(text = act_code_pd$text))
-          }, silent = TRUE)
-        }
-        if (!inherits(eval_val, "try-error")) {
-          # it was correctly evaluated then create the fpd of the eval val
-          if (is.null(eval_val)) {
-            # there was a bug when eval_val was NULL
-            eval_val <- "NULL"
-          }
-          res <- parse_flat_data(eval_val, include_text = TRUE)
-          res <- flatten_leaves(res)
-          if (grepl("^\\{.+\\}$", act_code_pd$text)) {
-            # if it was `{expr}`, then add spaces in both sides
-            # there was a bug when folding `if(TRUE){-3}else{NULL}`
-            n_terms <- sum(res$terminal)
-            res[res$terminal,][1, "prev_spaces"] <- 1
-            res[res$terminal,][n_terms, "next_spaces"] <- 1
-          }
-          if (all(res$token %in% c("expr", "'-'", constants))) {
-            # it is a constant or -constant
-            # replace the parent expr by the new expr (folded)
-            if (fold_floats || !"NUM_CONST" %in% res$token ||
-              floor(eval_val) == eval_val) {
-              act_new_fpd <- replace_pd(act_pd, res)
-              new_pd <- rbind(new_pd, act_new_fpd)
-              next
-            }
-          }
+        folded_fpd <- get_folded_fpd(act_code_pd, fold_floats)
+        if (!is.null(folded_fpd)) {
+          # it is a constant or -constant
+          # replace the parent expr by the new expr (folded)
+          act_new_fpd <- replace_pd(act_pd, folded_fpd)
+          new_pd <- rbind(new_pd, act_new_fpd)
+          next
         }
       }
       # it could not be folded, so save parent, and terminal childs
@@ -108,4 +83,55 @@ one_fold <- function(pd, fold_floats) {
 
   new_pd <- new_pd[order(new_pd$pos_id), ]
   return(new_pd)
+}
+
+# Returns a folded fpd, if it only had constants and operators.
+# If it could not fold then it returns NULL
+#
+# @param fpd a flat parsed data data.frame .
+# @param fold_floats Logical indicating if floating-point results should be
+#   folded (will reduce precision).
+#
+get_folded_fpd <- function(fpd, fold_floats) {
+  if (fpd$token %in% constants) {
+    return(NULL)
+  }
+  eval_val <- try({
+    eval(parse(text = fpd$text))
+  }, silent = TRUE)
+  if (inherits(eval_val, "try-error")) {
+    return(NULL)
+  }
+
+  # it was correctly evaluated then create the fpd of the eval val
+  eval_val_str <- eval_val
+  if (is.null(eval_val)) {
+    # there was a bug when eval_val was NULL
+    eval_val_str <- "NULL"
+  } else if (is.character(eval_val)) {
+    # there was a bug when evaluated `expr` returned a string
+    eval_val_str <- paste0('"', eval_val, '"')
+  } else if (is.integer(eval_val)) {
+    # if it is an integer, then dont remove the "L"
+    eval_val_str <- paste0(eval_val, "L")
+  }
+  res <- parse_flat_data(eval_val_str, include_text = TRUE)
+  res <- flatten_leaves(res)
+  if (grepl("^\\{.+\\}$", fpd$text)) {
+    # if it was `{expr}`, then add spaces in both sides
+    # there was a bug when folding `if(TRUE){-3}else{NULL}`
+    n_terms <- sum(res$terminal)
+    res[res$terminal,][1, "prev_spaces"] <- 1
+    res[res$terminal,][n_terms, "next_spaces"] <- 1
+  }
+  if (!all(res$token %in% c("expr", "'-'", constants))) {
+    return(NULL)
+  }
+
+  # it is a constant or -constant
+  if (!(fold_floats || !"NUM_CONST" %in% res$token ||
+        floor(eval_val) == eval_val)) {
+    return(NULL)
+  }
+  return(res)
 }
