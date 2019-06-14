@@ -59,7 +59,7 @@ one_fold <- function(pd, fold_floats) {
       act_pd <- get_children(pd, act_parent)
       if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr"))) {
         # all the children are terminals or ops. try to evaluate it
-        act_code_pd <- pd[pd$id == act_parent,]
+        act_code_pd <- pd[pd$id == act_parent, ]
         folded_fpd <- get_folded_fpd(act_code_pd, fold_floats)
         if (!is.null(folded_fpd)) {
           # it is a constant or -constant
@@ -121,8 +121,8 @@ get_folded_fpd <- function(fpd, fold_floats) {
     # if it was `{expr}`, then add spaces in both sides
     # there was a bug when folding `if(TRUE){-3}else{NULL}`
     n_terms <- sum(res$terminal)
-    res[res$terminal,][1, "prev_spaces"] <- 1
-    res[res$terminal,][n_terms, "next_spaces"] <- 1
+    res[res$terminal, ][1, "prev_spaces"] <- 1
+    res[res$terminal, ][n_terms, "next_spaces"] <- 1
   }
   if (!all(res$token %in% c("expr", "'-'", constants))) {
     return(NULL)
@@ -130,7 +130,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
 
   # it is a constant or -constant
   if (!(fold_floats || !"NUM_CONST" %in% res$token ||
-        floor(eval_val) == eval_val)) {
+    floor(eval_val) == eval_val)) {
     return(NULL)
   }
   return(res)

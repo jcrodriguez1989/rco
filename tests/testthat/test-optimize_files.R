@@ -69,8 +69,10 @@ test_that("optimizer change files w/overwrite", {
   write_code_file(code, tmp_file1)
   write_code_file(c("hw <- 'hw'", "", code), tmp_file1_manual_opt)
   expect_true(file.copy(tmp_file1, tmp_file1_copy))
-  optimize_files(tmp_file1, list(testing_optimizer_edit), overwrite = TRUE,
-                 iterations = 1)
+  optimize_files(tmp_file1, list(testing_optimizer_edit),
+    overwrite = TRUE,
+    iterations = 1
+  )
 
   # tests that the file was optimized
   expect_equal(
@@ -98,8 +100,10 @@ test_that("optimizer change files wo/overwrite", {
   write_code_file(code, tmp_file1)
   write_code_file(c("hw <- 'hw'", "", code), tmp_file1_manual_opt)
   expect_true(file.copy(tmp_file1, tmp_file1_copy))
-  optimize_files(tmp_file1, list(testing_optimizer_edit), overwrite = FALSE,
-                 iterations = 1)
+  optimize_files(tmp_file1, list(testing_optimizer_edit),
+    overwrite = FALSE,
+    iterations = 1
+  )
 
   # tests that the file was optimized
   expect_equal(

@@ -25,7 +25,9 @@ test_that("optimizing text", {
   expect_equal(code, opt_code_no_change)
 
   opt_code_change <-
-    optimize_text(code, optimizers = list(testing_optimizer_edit),
-                  iterations = 1)
+    optimize_text(code,
+      optimizers = list(testing_optimizer_edit),
+      iterations = 1
+    )
   expect_true(!isTRUE(all.equal(code, opt_code_change)))
 })
