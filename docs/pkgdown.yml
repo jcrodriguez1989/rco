@@ -2,6 +2,7 @@ pandoc: 2.3.1
 pkgdown: 1.3.0
 pkgdown_sha: ~
 articles:
+  contributing-an-optimizer: contributing-an-optimizer.html
   docker-readme: docker-readme.html
   opt-constant-folding: opt-constant-folding.html
   opt-constant-propagation: opt-constant-propagation.html

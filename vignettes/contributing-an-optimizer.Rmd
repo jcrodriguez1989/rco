@@ -1,0 +1,138 @@
+---
+output: rmarkdown::html_vignette
+title: Contributing an optimizer
+vignette: >
+  %\VignetteIndexEntry{Contributing an optimizer}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Contributing an optimizer
+
+`rco` is an open source package, and the contributions to the development of the library are more than welcome. In this guide is detailed what is the procedure commonly followed to develop a new optimizer.
+
+Developing a new optimizer will require four steps that are explained below: writing the code, the test cases, the vignette, and some additional files.
+
+## Writing the code
+
+All the code developed for the new optimizer will go in a file named `R/opt-**optimizer-name**.R`.
+
+An optimizer will be a single function (one exported), which should be called `opt_**optimizer_name**`. This function will take as input a `texts` parameter that contains a string list (character vector) with the code to optimize. An example of this, with just one code to optimize, would be:
+
+```{r eval=FALSE}
+texts <- list(
+  paste(
+    "i <- 320 * 200 * 32",
+    "x <- i * 20 + 100",
+    sep = "\n"
+  )
+)
+```
+
+All other parameters that the function `opt_**optimizer_name**` takes as input must have an associated default parameter, for example, `opt_**optimizer_name** <- function(texts, param1 = FALSE) { ... }`.
+
+As output, the developed function must return a list with a field `codes` that must have the same format as the `texts` input but with the code optimized.
+
+To document code we use the [`roxygen2`](https://cran.r-project.org/package=roxygen2) package. You should give a brief description of the new optimizer, of the input parameters, and an example of use.
+
+As skeleton to use to develop the new optimizer we propose to follow:
+
+```{r eval=FALSE}
+#' Optimizer: **New Optimizer Name**
+#' 
+#' **New optimizer description**
+#' Carefully examine the results after running this function!
+#' 
+#' @param texts A list of character vectors with the code to optimize.
+#' **Other parameters description**
+#' 
+#' @examples
+#' **New optimizer example of use**
+#' 
+#' @export
+#' 
+opt_**optimizer_name** <- function(texts) {
+  # todo: **list of possible improvements for the optimizer**
+  res <- list()
+  **new optimizer code**
+  res$codes <- **...**
+  return(res)
+}
+```
+
+For the parsing and tokenization of the code we suggest to use the functions developed in `R/parse.R`.
+
+## Writing the tests
+
+For testing, we use the [`testthat`](https://cran.r-project.org/package=testthat) package. All the code for testing the new optimizer will go in a file named `tests/testthat/test-opt_**optimizer_name**.R`.
+
+Please create a test suite that covers a large percentage of possible use and border cases.
+
+As skeleton to use to develop the new optimizer's test suite we propose to follow:
+
+```{r eval=FALSE}
+context("opt_**optimizer_name**")
+
+test_that("**test name**", {
+  **...**
+})
+
+**more test cases**
+```
+
+## Writing the vignette
+
+When developing a new optimizer, we create a vignette to explain it. This documentation will not only be a vignette of the package but will also be part of the [`rco` website](https://jcrodriguez1989.github.io/rco/).
+
+For writing vignettes, we use the [`knitr`](https://cran.r-project.org/package=knitr) and [`rmarkdown`](https://cran.r-project.org/package=rmarkdown) packages. The new vignette will go in a file named `vignettes/opt-**optimizer-name**.Rmd`, and must follow the skeleton:
+
+```{r eval=FALSE}
+---
+output: rmarkdown::html_vignette
+title: **New Optimizer Name**
+vignette: >
+  %\VignetteIndexEntry{**New Optimizer Name**}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# **New Optimizer Name**
+
+## Background
+
+## Example
+
+## Implementation
+
+## **Additional headings** (optional)
+
+## To-Do (optional)
+```
+
+The `Background` section must introduce the reader to why this optimization provides improvements, and what it does. The `Example` section must give a real example to be optimized, and show the improvements it gave in terms of execution speed, memory usage, or others. The `Implementation` section must show the idea beneath the optimizer coding, this section intends to ease the understanding of the developed code if it is needed to be edited or improved. Then, as many sections as necessary can be included, where questions and challenges related to the optimizer are explained or commented. Finally, if a list of possible improvements for the optimizer were detailed, each of them should be discussed in the `To-Do` section.
+
+## Writing additional files
+
+### `DESCRIPTION`
+
+Package Version must be bumped, if the current version is `x.y.z` then it should be updated to `x.y.(z+1)`.
+
+### `NEWS.md`
+
+A entry to the `NEWS.md` file should be added:
+
+```{r eval=FALSE}
+# rco **x.y.(z+1)**
+
+  - Adding **New Optimizer Name** optimizer.
+
+**...**
+```
+
+### `R/optimizers.R`
+
+The new optimizer function must be added to the `all_optimizers` list with its name. Also add it in its documentation, as the other optimizers are itemized.
+
+### `_pkgdown.yml`
+
+Add the new optimizer's vignette in the website, for this, follow as it is done with the rest of the optimizers.

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Optimize `.R` files — optimize_files • rco</title>
+<title>Contributing to rco • rco</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -25,19 +25,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
-<link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script>
+<link href="pkgdown.css" rel="stylesheet">
+<script src="pkgdown.js"></script>
 
 
 
-<meta property="og:title" content="Optimize `.R` files — optimize_files" />
-
-<meta property="og:description" content="Performs the desired optimization strategies in the files specified.
-Carefully examine the results after running this function!
-If several files interact between them (functions from one file use
-functions from the other), then optimizing all of them together gives more
-information to rco." />
-<meta name="twitter:card" content="summary" />
+<meta property="og:title" content="Contributing to rco" />
 
 
 
@@ -54,7 +47,7 @@ information to rco." />
   </head>
 
   <body>
-    <div class="container template-reference-topic">
+    <div class="container template-title-body">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -66,7 +59,7 @@ information to rco." />
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">rco</a>
+        <a class="navbar-link" href="index.html">rco</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.3</span>
       </span>
     </div>
@@ -74,13 +67,13 @@ information to rco." />
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
+  <a href="index.html">
     <span class="fa fa-home"></span>
      
   </a>
 </li>
 <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -90,13 +83,13 @@ information to rco." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/opt-constant-folding.html">Constant Folding</a>
+      <a href="articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
-      <a href="../articles/opt-constant-propagation.html">Constant Propagation</a>
+      <a href="articles/opt-constant-propagation.html">Constant Propagation</a>
     </li>
     <li>
-      <a href="../articles/opt-dead-code.html">Dead Code Elimination</a>
+      <a href="articles/opt-dead-code.html">Dead Code Elimination</a>
     </li>
   </ul>
 </li>
@@ -108,15 +101,15 @@ information to rco." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+      <a href="articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
     </li>
     <li>
-      <a href="../articles/docker-readme.html">Docker Image</a>
+      <a href="articles/docker-readme.html">Docker Image</a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="news/index.html">News</a>
 </li>
       </ul>
       
@@ -137,59 +130,56 @@ information to rco." />
       </header>
 
 <div class="row">
-  <div class="col-md-9 contents">
+  <div class="contents col-md-9">
     <div class="page-header">
-    <h1>Optimize `.R` files</h1>
-    <small class="dont-index">Source: <a href='https://github.com/jcrodriguez1989/rco/blob/master/R/optimize-files.R'><code>R/optimize-files.R</code></a></small>
-    <div class="hidden name"><code>optimize_files.Rd</code></div>
+      <h1>Contributing to rco</h1>
     </div>
 
-    <div class="ref-description">
-    
-    <p>Performs the desired optimization strategies in the files specified.
-Carefully examine the results after running this function!
-If several files interact between them (functions from one file use
-functions from the other), then optimizing all of them together gives more
-information to rco.</p>
-    
-    </div>
+<div id="contributing-to-rco" class="section level1">
 
-    <pre class="usage"><span class='fu'>optimize_files</span>(<span class='no'>files</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>, <span class='kw'>overwrite</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>iterations</span> <span class='kw'>=</span> <span class='fl'>Inf</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>files</th>
-      <td><p>A character vector with paths to files to optimize.</p></td>
-    </tr>
-    <tr>
-      <th>optimizers</th>
-      <td><p>A list of optimizer functions.</p></td>
-    </tr>
-    <tr>
-      <th>overwrite</th>
-      <td><p>A logical indicating if files should be overwritten, or
-saved into new files with "optimized_" prefix.</p></td>
-    </tr>
-    <tr>
-      <th>iterations</th>
-      <td><p>Numeric indicating the number of times optimizers should
-pass. If there was no change after current pass, it will stop.</p></td>
-    </tr>
-    </table>
-    
-
-  </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-                </ul>
-
-  </div>
+<p>This outlines how to propose a change to rco.</p>
+<div id="fixing-typos" class="section level3">
+<h3 class="hasAnchor">
+<a href="#fixing-typos" class="anchor"></a>Fixing typos</h3>
+<p>Small typos or grammatical errors in documentation may be edited directly using the GitHub web interface, so long as the changes are made in the <em>source</em> file.</p>
+<ul>
+<li>YES: you edit a roxygen comment in a <code>.R</code> file below <code>R/</code>.</li>
+<li>NO: you edit an <code>.Rd</code> file below <code>man/</code>.</li>
+</ul>
 </div>
+<div id="prerequisites" class="section level3">
+<h3 class="hasAnchor">
+<a href="#prerequisites" class="anchor"></a>Prerequisites</h3>
+<p>Before you make a <strong>substantial</strong> pull request, you should always file an issue and make sure someone from the team agrees that it’s a problem. If you’ve found a bug, create an associated issue and illustrate the bug with a minimal <a href="https://www.tidyverse.org/help/#reprex">reprex</a>.</p>
+</div>
+<div id="pull-request-process" class="section level3">
+<h3 class="hasAnchor">
+<a href="#pull-request-process" class="anchor"></a>Pull request process</h3>
+<ul>
+<li>We recommend that you create a Git branch for each pull request (PR).<br>
+</li>
+<li>Look at the Travis and AppVeyor build status before and after making changes. The <code>README</code> should contain badges for any continuous integration services used by the package.<br>
+</li>
+<li>New code should follow the tidyverse <a href="http://style.tidyverse.org">style guide</a>. You can use the <a href="https://CRAN.R-project.org/package=styler">styler</a> package to apply these styles, but please don’t restyle code that has nothing to do with your PR.<br>
+</li>
+<li>We use <a href="https://cran.r-project.org/package=roxygen2">roxygen2</a>, with <a href="https://cran.r-project.org/web/packages/roxygen2/vignettes/markdown.html">Markdown syntax</a>, for documentation.<br>
+</li>
+<li>We use <a href="https://cran.r-project.org/package=testthat">testthat</a>. Contributions with test cases included are easier to accept.<br>
+</li>
+<li>For user-facing changes, add a bullet to the top of <code>NEWS.md</code> below the current development version header describing the changes made followed by your GitHub username, and links to relevant issue(s)/PR(s).</li>
+</ul>
+</div>
+<div id="code-of-conduct" class="section level3">
+<h3 class="hasAnchor">
+<a href="#code-of-conduct" class="anchor"></a>Code of Conduct</h3>
+<p>Please note that the rco project is released with a <a href="CODE_OF_CONDUCT.html">Contributor Code of Conduct</a>. By contributing to this project you agree to abide by its terms.</p>
+</div>
+</div>
+
+  </div>
+
+</div>
+
 
       <footer>
       <div class="copyright">
