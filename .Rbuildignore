@@ -7,3 +7,5 @@
 ^docs$
 ^_pkgdown\.yml$
 ^Docker$
+^\.github$
+^CODE_OF_CONDUCT\.md$
