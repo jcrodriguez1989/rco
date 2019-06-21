@@ -83,7 +83,7 @@ one_propagate <- function(fpd, values) {
       values <- list()
     } else if (is_loop(fpd, act_node$id)) {
       # if it is a loop, then remove the in-loop assigned variables from values
-      loop_ass_vars <- get_assigned_vars(fpd, act_node$id)
+      loop_ass_vars <- ocp_get_assigned_vars(fpd, act_node$id)
       values <- values[!names(values) %in% loop_ass_vars]
       childs <- fpd[fpd$parent == act_node$id, ]
       res_fpd <- rbind(res_fpd, act_node)
@@ -103,7 +103,7 @@ one_propagate <- function(fpd, values) {
       }
     } else if (is_if(fpd, act_node$id)) {
       # if it is an if, then remove the in-if/else assigned vars from values
-      if_ass_vars <- get_assigned_vars(fpd, act_node$id)
+      if_ass_vars <- ocp_get_assigned_vars(fpd, act_node$id)
       values <- values[!names(values) %in% if_ass_vars]
       childs <- fpd[fpd$parent == act_node$id, ]
       res_fpd <- rbind(res_fpd, act_node)
@@ -403,7 +403,7 @@ get_assigned_var <- function(fpd, id) {
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
 #
-get_assigned_vars <- function(fpd, id) {
+ocp_get_assigned_vars <- function(fpd, id) {
   act_ids <- id
   res <- c()
   while (length(act_ids) > 0) {

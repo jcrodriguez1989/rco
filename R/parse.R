@@ -210,3 +210,12 @@ remove_nodes <- function(fpd, ids) {
   new_fpd <- fpd[!fpd$id %in% to_remove_fpd$id, ]
   return(new_fpd)
 }
+
+# Returns the ids of the specified tokens
+#
+# @param fpd a flat parsed data data.frame .
+# @param tokens a character vector of tokens.
+#
+get_ids_of_token <- function(fpd, tokens) {
+  fpd$id[fpd$token %in% tokens]
+}
