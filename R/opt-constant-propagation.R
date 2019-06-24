@@ -97,7 +97,7 @@ one_propagate <- function(fpd, values) {
         # cant keep these values, because maybe the loop is never executed
         loop_values <- res$values
       }
-      if (has_function_call(fpd, act_node$id)) {
+      if (ocp_has_function_call(fpd, act_node$id)) {
         # but if the loop had a function call, we should delete values
         values <- list()
       }
@@ -115,7 +115,7 @@ one_propagate <- function(fpd, values) {
         res_fpd <- rbind(res_fpd, res$fpd)
         # cant keep res$values, because maybe the if condition is FALSE
       }
-      if (has_function_call(fpd, act_node$id)) {
+      if (ocp_has_function_call(fpd, act_node$id)) {
         # but if the if/else had a function call, we should delete values
         values <- list()
       }
@@ -314,7 +314,7 @@ is_function_call <- function(fpd, id) {
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
 #
-has_function_call <- function(fpd, id) {
+ocp_has_function_call <- function(fpd, id) {
   act_pd <- get_children(fpd, id)
   "SYMBOL_FUNCTION_CALL" %in% act_pd$token
 }

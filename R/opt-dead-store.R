@@ -44,13 +44,13 @@ dead_store_one <- function(text) {
 # @param fpd A flat parsed data data.frame .
 #
 one_dead_store <- function(fpd) {
-  browser()
   res_fpd <- fpd
   # dead store happens only into functions, so get the expr of each function
   fun_ids <- get_ids_of_token(fpd, "FUNCTION")
   fun_prnt_ids <- fpd$parent[fpd$id %in% fun_ids]
   fun_expr_ids <- sapply(fun_prnt_ids, function(act_prnt_id) {
-    rev(fpd$id[fpd$parent == act_prnt_id & fpd$token == "expr"])[[1]]
+    rev(fpd$id[fpd$parent == act_prnt_id &
+                 fpd$token %in% c("expr", constants)])[[1]]
   })
 
   # for each function expr do a dead store removal
@@ -59,13 +59,56 @@ one_dead_store <- function(fpd) {
       next
     }
     act_fpd <- get_children(res_fpd, id)
+    if (ods_has_function_call(act_fpd, id)) {
+      next
+    }
+
     ass_vars <- ods_get_assigned_vars(act_fpd, id)
-    # get used vars
-    # get if function calls
+    used_vars <- get_used_vars(act_fpd, id)
+    # we are going to remove the variables that are assigned, but not used
+    ass_to_remove <- setdiff(ass_vars, used_vars)
+    # each of these vars has an assignment operator as sibling
+    symbs_to_remove_ids <- act_fpd[act_fpd$text %in% ass_to_remove, "id"]
+
+    # get parents
+    exprs_to_repl_ids <- act_fpd$parent[act_fpd$id %in% symbs_to_remove_ids]
+
+    for (ass_id in exprs_to_repl_ids) {
+      ass_fpd <- get_children(res_fpd, ass_id)
+      new_ass_fpd <- ass_fpd
+      act_prnt <- ass_fpd[ass_fpd$id == ass_id, ]
+      act_sblngs <- ass_fpd[ass_fpd$parent == ass_id, ]
+      keep_fpd <- act_sblngs[3, ]
+      if (act_sblngs$token[[2]] == "RIGHT_ASSIGN") {
+        keep_fpd <- act_sblngs[1, ]
+      }
+      keep_fpd$parent <- act_prnt$parent
+      new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
+                                   c(ass_id, act_sblngs$id), ]
+      new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
+      new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
+      new_ass_fpd <- replace_pd(ass_fpd, new_ass_fpd)
+      res_fpd <- rbind(
+        remove_nodes(res_fpd, ass_id),
+        new_ass_fpd
+      )
+    }
   }
 
+  return(res_fpd)
+}
 
-  return(new_fpd)
+# Returns a logical indicating if a node has a function call different than
+# `return`
+#
+# @param fpd a flat parsed data data.frame .
+# @param id Numeric indicating the node ID.
+#
+ods_has_function_call <- function(fpd, id) {
+  # todo: here, we could check if the function call is inside a function def
+  # then we may not do a next. (research)
+  act_fpd <- get_children(fpd, id)
+  any(act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text != "return")
 }
 
 # Returns the names of the vars that are beign assigned in an expr
@@ -74,11 +117,43 @@ one_dead_store <- function(fpd) {
 # @param id Numeric indicating the node ID.
 #
 ods_get_assigned_vars <- function(fpd, id) {
-  act_ids <- id
-  res <- c()
-  while (length(act_ids) > 0) {
-    res <- c(res, sapply(act_ids, get_assigned_var, fpd = fpd))
-    act_ids <- fpd[fpd$parent %in% act_ids & !fpd$terminal, "id"]
-  }
+  act_fpd <- get_children(fpd, id)
+  ass_prnt_ids <- act_fpd[act_fpd$token %in% assigns, "parent"]
+  # return all the SYMBOL texts from the right/left of '->'/'<-','=' assinments
+  res <- sapply(ass_prnt_ids, function(act_prnt) {
+    ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
+    if (ass_sblngs$token[[2]] == "RIGHT_ASSIGN") {
+      res_fpd <- get_children(act_fpd, ass_sblngs$id[[3]])
+    } else {
+      res_fpd <- get_children(act_fpd, ass_sblngs$id[[1]])
+    }
+    return(res_fpd[res_fpd$token == "SYMBOL", "text"])
+  })
+  unique(res[res != ""])
+}
+
+# Returns the names of the vars that are beign used in an expr.
+# Not counting assignations.
+#
+# @param fpd a flat parsed data data.frame .
+# @param id Numeric indicating the node ID.
+#
+get_used_vars <- function(fpd, id) {
+  act_fpd <- get_children(fpd, id)
+  ass_prnt_ids <- act_fpd[act_fpd$token %in% assigns, "parent"]
+  # remove SYMBOLs that are being assigned
+  assigned_ids <- sapply(ass_prnt_ids, function(act_prnt) {
+    ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
+    if (ass_sblngs$token[[2]] == "RIGHT_ASSIGN") {
+      res_fpd <- get_children(act_fpd, ass_sblngs$id[[3]])
+    } else {
+      res_fpd <- get_children(act_fpd, ass_sblngs$id[[1]])
+    }
+    # these ids must be removed
+    return(res_fpd[res_fpd$token == "SYMBOL", "id"])
+  })
+  res <- act_fpd[
+    act_fpd$token %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL") &
+      !act_fpd$id %in% assigned_ids, "text"]
   unique(res[res != ""])
 }
