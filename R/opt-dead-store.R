@@ -17,6 +17,8 @@
 #' @export
 #'
 opt_dead_store <- function(texts) {
+  # todo: implement intelligent dead store? for example:
+  # a <- 2; a <- 3; return(a) # remove first assign
   res <- list()
   res$codes <- lapply(texts, dead_store_one)
   return(res)
@@ -31,11 +33,18 @@ dead_store_one <- function(text) {
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
-  new_fpd <- one_dead_store(new_fpd)
+
+  # eliminate until no changes
+  old_fpd <- NULL
+  while (!isTRUE(all.equal(old_fpd, new_fpd))) {
+    old_fpd <- new_fpd
+    new_fpd <- one_dead_store(new_fpd)
+  }
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
+
   deparse_flat_data(res_fpd)
 }
 
@@ -48,9 +57,10 @@ one_dead_store <- function(fpd) {
   # dead store happens only into functions, so get the expr of each function
   fun_ids <- get_ids_of_token(fpd, "FUNCTION")
   fun_prnt_ids <- fpd$parent[fpd$id %in% fun_ids]
+  # get each function expression
   fun_expr_ids <- sapply(fun_prnt_ids, function(act_prnt_id) {
     rev(fpd$id[fpd$parent == act_prnt_id &
-                 fpd$token %in% c("expr", constants)])[[1]]
+      fpd$token %in% c("expr", constants)])[[1]]
   })
 
   # for each function expr do a dead store removal
@@ -59,13 +69,17 @@ one_dead_store <- function(fpd) {
       next
     }
     act_fpd <- get_children(res_fpd, id)
+    # if has a function call then we cant determine if vars are dead store or
+    # not. As they can be used in these functions
     if (ods_has_function_call(act_fpd, id)) {
       next
     }
 
     ds_elim_fun <- dead_store_in_fun(act_fpd)
-    res_fpd <- rbind(remove_nodes(res_fpd, id),
-                     ds_elim_fun)
+    res_fpd <- rbind(
+      remove_nodes(res_fpd, id),
+      ds_elim_fun
+    )
   }
 
   return(res_fpd)
@@ -95,7 +109,7 @@ dead_store_in_fun <- function(fpd) {
     }
     keep_fpd$parent <- act_prnt$parent
     new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
-                                 c(act_prnt_id, act_sblngs$id), ]
+      c(act_prnt_id, act_sblngs$id), ]
     new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
     new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
     new_ass_fpd <- replace_pd(ass_fpd, new_ass_fpd)
@@ -121,13 +135,18 @@ ods_has_function_call <- function(fpd, id) {
 }
 
 # Returns the names of the vars that are beign assigned in an expr
+# `=` , `<-`, `->` . Discards `<<-` and `->>`
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
 #
 ods_get_assigned_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
-  ass_prnt_ids <- act_fpd[act_fpd$token %in% assigns, "parent"]
+  ass_prnt_ids <- act_fpd[
+    act_fpd$token %in% assigns &
+      !act_fpd$text %in% c("<<-", "->>"),
+    "parent"
+  ]
   # return all the SYMBOL texts from the right/left of '->'/'<-','=' assinments
   res <- sapply(ass_prnt_ids, function(act_prnt) {
     ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
@@ -163,6 +182,7 @@ get_used_vars <- function(fpd, id) {
   })
   res <- act_fpd[
     act_fpd$token %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL") &
-      !act_fpd$id %in% assigned_ids, "text"]
+      !act_fpd$id %in% assigned_ids, "text"
+  ]
   unique(res[res != ""])
 }
