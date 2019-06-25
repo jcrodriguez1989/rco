@@ -60,17 +60,17 @@ test_that("dead store eliminate both assigned", {
   expect_equal(opt_code, paste(
     "foo <- function() {",
     "  8818",
-    "  return(x)",
+    "  return(NULL)",
     "}",
     "",
     "foo <- function() {",
     "  8818",
-    "  return(x)",
+    "  return(NULL)",
     "}",
     "",
     "foo <- function() {",
-    "  8818",
-    "  return(x)",
+    "  8818 ",
+    "  return(NULL)",
     "}",
     sep = "\n"
   ))

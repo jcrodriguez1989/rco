@@ -63,38 +63,47 @@ one_dead_store <- function(fpd) {
       next
     }
 
-    ass_vars <- ods_get_assigned_vars(act_fpd, id)
-    used_vars <- get_used_vars(act_fpd, id)
-    # we are going to remove the variables that are assigned, but not used
-    ass_to_remove <- setdiff(ass_vars, used_vars)
-    # each of these vars has an assignment operator as sibling
-    symbs_to_remove_ids <- act_fpd[act_fpd$text %in% ass_to_remove, "id"]
-
-    # get parents
-    exprs_to_repl_ids <- act_fpd$parent[act_fpd$id %in% symbs_to_remove_ids]
-
-    for (ass_id in exprs_to_repl_ids) {
-      ass_fpd <- get_children(res_fpd, ass_id)
-      new_ass_fpd <- ass_fpd
-      act_prnt <- ass_fpd[ass_fpd$id == ass_id, ]
-      act_sblngs <- ass_fpd[ass_fpd$parent == ass_id, ]
-      keep_fpd <- act_sblngs[3, ]
-      if (act_sblngs$token[[2]] == "RIGHT_ASSIGN") {
-        keep_fpd <- act_sblngs[1, ]
-      }
-      keep_fpd$parent <- act_prnt$parent
-      new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
-                                   c(ass_id, act_sblngs$id), ]
-      new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
-      new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
-      new_ass_fpd <- replace_pd(ass_fpd, new_ass_fpd)
-      res_fpd <- rbind(
-        remove_nodes(res_fpd, ass_id),
-        new_ass_fpd
-      )
-    }
+    ds_elim_fun <- dead_store_in_fun(act_fpd)
+    res_fpd <- rbind(remove_nodes(res_fpd, id),
+                     ds_elim_fun)
   }
 
+  return(res_fpd)
+}
+
+# Executes dead store elimination in the expr of a function definition
+#
+# @param fpd A flat parsed data data.frame .
+#
+dead_store_in_fun <- function(fpd) {
+  res_fpd <- fpd
+  expr_id <- get_roots(fpd)$id
+  ass_vars <- ods_get_assigned_vars(fpd, expr_id)
+  used_vars <- get_used_vars(fpd, expr_id)
+  # we are going to remove the variables that are assigned, but not used
+  ass_to_remove <- setdiff(ass_vars, used_vars)
+
+  for (act_var in ass_to_remove) {
+    act_prnt_id <- res_fpd[res_fpd$text == act_var, "parent"]
+    ass_fpd <- get_children(res_fpd, act_prnt_id)
+    new_ass_fpd <- ass_fpd
+    act_prnt <- ass_fpd[ass_fpd$id == act_prnt_id, ]
+    act_sblngs <- ass_fpd[ass_fpd$parent == act_prnt_id, ]
+    keep_fpd <- act_sblngs[3, ]
+    if (act_sblngs$token[[2]] == "RIGHT_ASSIGN") {
+      keep_fpd <- act_sblngs[1, ]
+    }
+    keep_fpd$parent <- act_prnt$parent
+    new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
+                                 c(act_prnt_id, act_sblngs$id), ]
+    new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
+    new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
+    new_ass_fpd <- replace_pd(ass_fpd, new_ass_fpd)
+    res_fpd <- rbind(
+      remove_nodes(res_fpd, act_prnt_id),
+      new_ass_fpd
+    )
+  }
   return(res_fpd)
 }
 
