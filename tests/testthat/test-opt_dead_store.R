@@ -155,3 +155,49 @@ test_that("dont dead store <<-", {
     sep = "\n"
   ))
 })
+
+test_that("eliminate twice dead store", {
+  code <- paste(
+    "foo <- function() {",
+    "  a <- 0",
+    "  a <- 1",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  0",
+    "  1",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("dead store eliminate in loop", {
+  code <- paste(
+    "foo <- function() {",
+    "  a <- 0",
+    "  i <- 0",
+    "  while (i < 1000) {",
+    "    i <- i + 1",
+    "    a <- i^2",
+    "  }",
+    "  return(i)",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  0",
+    "  i <- 0",
+    "  while (i < 1000) {",
+    "    i <- i + 1",
+    "    i^2",
+    "  }",
+    "  return(i)",
+    "}",
+    sep = "\n"
+  ))
+})

@@ -19,6 +19,7 @@
 opt_dead_store <- function(texts) {
   # todo: implement intelligent dead store? for example:
   # a <- 2; a <- 3; return(a) # remove first assign
+  # todo: remove all variables that do not affect the returned value
   res <- list()
   res$codes <- lapply(texts, dead_store_one)
   return(res)
@@ -98,25 +99,31 @@ dead_store_in_fun <- function(fpd) {
   ass_to_remove <- setdiff(ass_vars, used_vars)
 
   for (act_var in ass_to_remove) {
-    act_prnt_id <- res_fpd[res_fpd$text == act_var, "parent"]
-    ass_fpd <- get_children(res_fpd, act_prnt_id)
-    new_ass_fpd <- ass_fpd
-    act_prnt <- ass_fpd[ass_fpd$id == act_prnt_id, ]
-    act_sblngs <- ass_fpd[ass_fpd$parent == act_prnt_id, ]
-    keep_fpd <- act_sblngs[3, ]
-    if (act_sblngs$token[[2]] == "RIGHT_ASSIGN") {
-      keep_fpd <- act_sblngs[1, ]
+    act_prnt_ids <- res_fpd[res_fpd$text == act_var, "parent"]
+    for (act_prnt_id in act_prnt_ids) {
+      # eliminate each assignation of the dead store
+      if (!act_prnt_id %in% res_fpd$id) {
+        next
+      }
+      ass_fpd <- get_children(res_fpd, act_prnt_id)
+      new_ass_fpd <- ass_fpd
+      act_prnt <- ass_fpd[ass_fpd$id == act_prnt_id, ]
+      act_sblngs <- ass_fpd[ass_fpd$parent == act_prnt_id, ]
+      keep_fpd <- act_sblngs[3, ]
+      if (act_sblngs$token[[2]] == "RIGHT_ASSIGN") {
+        keep_fpd <- act_sblngs[1, ]
+      }
+      keep_fpd$parent <- act_prnt$parent
+      new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
+        c(act_prnt_id, act_sblngs$id), ]
+      new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
+      new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
+      new_ass_fpd <- replace_pd(ass_fpd, new_ass_fpd)
+      res_fpd <- rbind(
+        remove_nodes(res_fpd, act_prnt_id),
+        new_ass_fpd
+      )
     }
-    keep_fpd$parent <- act_prnt$parent
-    new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
-      c(act_prnt_id, act_sblngs$id), ]
-    new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
-    new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
-    new_ass_fpd <- replace_pd(ass_fpd, new_ass_fpd)
-    res_fpd <- rbind(
-      remove_nodes(res_fpd, act_prnt_id),
-      new_ass_fpd
-    )
   }
   return(res_fpd)
 }
