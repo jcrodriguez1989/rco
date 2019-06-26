@@ -61,7 +61,7 @@ one_dead_store <- function(fpd) {
   # get each function expression
   fun_expr_ids <- sapply(fun_prnt_ids, function(act_prnt_id) {
     rev(fpd$id[fpd$parent == act_prnt_id &
-      fpd$token %in% c("expr", constants)])[[1]]
+      fpd$token %in% c("expr", "SYMBOL", constants)])[[1]]
   })
 
   # for each function expr do a dead store removal
