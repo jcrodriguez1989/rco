@@ -52,7 +52,7 @@ foo <- function(x) {
 }
 ```
 
-After applying other optimizations, such as [Constant Propagation](opt-constant-propagation.html), some variables become Dead Stores.
+After applying other optimizations, such as [Constant Propagation](opt-constant-propagation.html), some variables become dead stores.
 
 For example, consider:
 
@@ -84,7 +84,7 @@ foo <- function(x) {
 }
 ```
 
-And thus, `n` would become a Dead Store.
+And thus, `n` would become a dead store.
 
 ## Example
 
@@ -129,35 +129,79 @@ speed_up(bmark_res)
 
 ## Implementation
 
+A dead store will be an assignment of a variable that is not read by any subsequent instruction. To be considered dead store, the assignment must be given within the definition of a function, since otherwise, the assignment would affect the global environment and therefore could be aimed to be used by the user.
+
+The `opt_dead_store` detects which code chunks are function definitions. Then for each function, the optimizer gets it expression, detects dead stores, i.e., assigned but not read variables, and eliminates them.
 
 ## To-Do
 
-<!-- * Remove not assigned expressions? -->
+* Intelligent dead store?
+  
+  If within a function, a variable is assigned multiple times, but just the last assignation is read, then the optimizer could keep just the last one.
+  
+  For example:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    a <- 8
+    a <- 8818
+    return(a ^ 2)
+  }
+  ```
+  Would be equivalent to:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    8
+    a <- 8818
+    return(a ^ 2)
+  }
+  ```
 
-<!--   When coding, for debugging, sometimes instead of using `print` or `cat` we just write the expression. This causes that we get code as for example: -->
-
-<!--   ```{r eval=FALSE} -->
-<!--   foo <- function(x) { -->
-<!--     x != 0 -->
-<!--     return(100 / x) -->
-<!--   } -->
-<!--   ``` -->
-
-<!--   Here, the expression `x != 0` would be evaluated each time we call the `foo` function, but would not have any effect as it is not assigned, nor printed. And thus, could be removed. -->
-
-<!--   However, removing expressions could result in behaviour missmatches, for instance, the following two codes: -->
-
-<!--   ```{r eval=FALSE} -->
-<!--   foo <- function() { -->
-<!--     x != 0 -->
-<!--     return(100) -->
-<!--   } -->
-<!--   bar <- function() { -->
-<!--     return(100) -->
-<!--   } -->
-
-<!--   foo() -->
-<!--   bar() -->
-<!--   ``` -->
-
-<!--   The `foo` call would give an error, while the `bar` call would not. -->
+* Remove variables that do not affect the returned value?
+  
+  Eliminate all those variables that are assigned, read or not, but that do not affect the value returned by the function.
+  
+  For example:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    a <- 8818
+    b <- 0
+    c <- 1000
+    res <- 0
+    for (b < c) {
+      b <- b + 1
+      res <- res + b
+    }
+    return(a ^ 2)
+  }
+  ```
+  Would be equivalent to:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    a <- 8818
+    return(a ^ 2)
+  }
+  ```
+* Recognize functions that use variables from the external environment?
+  
+  If within the definition of a function, a function call appears, then it is not possible to determine if the assignments are dead stores, since the function call may use variables from its parent environment.
+  
+  For example:
+  
+  ```{r eval=FALSE}
+  bar <- function() {
+    a <- 3
+    foo <- function() {
+      return(a ^ 2)
+    }
+    foo()
+  }
+  bar()
+  ```
+  
+  In this example, inside the `bar` definition, `a` is not a dead store.
+  
+  The `opt_dead_store` aborts if it finds a function call. In this sense, if we could determine which functions are self-contained, then the optimizer could continue with its normal execution if self-contained functions are called.
