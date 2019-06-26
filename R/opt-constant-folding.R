@@ -108,6 +108,9 @@ get_folded_fpd <- function(fpd, fold_floats) {
   if (is.null(eval_val)) {
     # there was a bug when eval_val was NULL
     eval_val_str <- "NULL"
+  } else if (is.na(eval_val)) {
+    # there was a bug when eval_val was NA
+    eval_val_str <- na_to_correct_str(eval_val)
   } else if (is.character(eval_val)) {
     # there was a bug when evaluated `expr` returned a string
     eval_val_str <- paste0('"', eval_val, '"')
@@ -115,6 +118,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     # if it is an integer, then dont remove the "L"
     eval_val_str <- paste0(eval_val, "L")
   }
+
   res <- parse_flat_data(eval_val_str, include_text = TRUE)
   res <- flatten_leaves(res)
   if (grepl("^\\{.+\\}$", fpd$text)) {
@@ -129,9 +133,27 @@ get_folded_fpd <- function(fpd, fold_floats) {
   }
 
   # it is a constant or -constant
-  if (!(fold_floats || !"NUM_CONST" %in% res$token ||
-    floor(eval_val) == eval_val)) {
+  if (!fold_floats && "NUM_CONST" %in% res$token && !is.na(eval_val) &&
+      floor(eval_val) != eval_val) {
     return(NULL)
   }
   return(res)
+}
+
+# Returns the corresponding string for NA value
+# NA_character_ if class(na) == "character"
+#
+# @param na a NA value.
+#
+na_to_correct_str <- function(na) {
+  if (!is.na(na)) {
+    return(na)
+  }
+  switch(class(na),
+         "character" = "NA_character_",
+         "complex" = "NA_complex_",
+         "integer" = "NA_integer_",
+         "numeric" = "NA_real_",
+         "logical" = "NA"
+         )
 }
