@@ -231,7 +231,7 @@ test_that("dont constant fold not assigned exprs", {
   )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "(-2)",
+    "-2",
     "2",
     "NULL",
     "\"hola\"",
@@ -247,7 +247,7 @@ test_that("add spaces when folding {const_expr}", {
   )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "if(TRUE) (-3) else NULL ",
+    "if(TRUE){-3}else NULL ",
     "if(TRUE) 3 else NULL ",
     sep = "\n"
   ))
@@ -262,7 +262,7 @@ test_that("dont fold integer 'L' symbol", {
   )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "do_range_int <- function(x, halt_if_min = 1L, halt_if_max = (-1L)) {",
+    "do_range_int <- function(x, halt_if_min = 1L, halt_if_max = -1L) {",
     "  .Call(`_hutilscpp_do_range_int`, x, halt_if_min, halt_if_max)",
     "}",
     sep = "\n"

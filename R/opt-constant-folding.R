@@ -57,8 +57,10 @@ one_fold <- function(pd, fold_floats) {
     new_visit_nodes <- c()
     for (act_parent in visit_nodes) {
       act_pd <- get_children(pd, act_parent)
-      if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr"))) {
+      if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr")) &&
+          !is_minus_constant(act_pd, act_parent)) {
         # all the children are terminals or ops. try to evaluate it
+        # And it is not just -constant
         act_code_pd <- pd[pd$id == act_parent, ]
         folded_fpd <- get_folded_fpd(act_code_pd, fold_floats)
         if (!is.null(folded_fpd)) {
@@ -161,4 +163,17 @@ na_to_correct_str <- function(na) {
          "numeric" = "NA_real_",
          "logical" = "NA"
          )
+}
+
+# Returns a logical indicating if a node is -constant
+# Can have precedence ops
+#
+# @param fpd a flat parsed data data.frame .
+# @param id Numeric indicating the node ID.
+#
+is_minus_constant <- function(fpd, id) {
+  act_fpd <- get_children(fpd, id)
+  all(act_fpd$token %in% c(constants, ops, precedence_ops, "expr")) &&
+    sum(act_fpd$token %in% constants) == 1 &&
+    sum(act_fpd$token == "'-'") == 1
 }
