@@ -96,6 +96,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
   if (fpd$token %in% constants) {
     return(NULL)
   }
+
   eval_val <- try({
     eval(parse(text = fpd$text))
   }, silent = TRUE)
@@ -118,6 +119,10 @@ get_folded_fpd <- function(fpd, fold_floats) {
     # if it is an integer, then dont remove the "L"
     eval_val_str <- paste0(eval_val, "L")
   }
+  if (is.numeric(eval_val) && !is.na(eval_val) && eval_val < 0) {
+    # put parentheses to negative numbers
+    eval_val_str <- paste0("(", eval_val_str, ")")
+  }
 
   res <- parse_flat_data(eval_val_str, include_text = TRUE)
   res <- flatten_leaves(res)
@@ -128,7 +133,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     res[res$terminal, ][1, "prev_spaces"] <- 1
     res[res$terminal, ][n_terms, "next_spaces"] <- 1
   }
-  if (!all(res$token %in% c("expr", "'-'", constants))) {
+  if (!all(res$token %in% c("expr", "'-'", "'('", "')'", constants))) {
     return(NULL)
   }
 
