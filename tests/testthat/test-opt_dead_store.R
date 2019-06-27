@@ -227,3 +227,23 @@ test_that("dead store eliminate lists", {
     sep = "\n"
   ))
 })
+
+test_that("dead store dont eliminate pkg name", {
+  code <- paste(
+    "foo <- function() {",
+    "  stats <- 8818",
+    "  stats::acf(4)",
+    "  return(NULL)",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  8818",
+    "  stats::acf(4)",
+    "  return(NULL)",
+    "}",
+    sep = "\n"
+  ))
+})

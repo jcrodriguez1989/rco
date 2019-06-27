@@ -41,6 +41,7 @@ dead_store_one <- function(text) {
     old_fpd <- new_fpd
     new_fpd <- one_dead_store(new_fpd)
   }
+
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
@@ -82,7 +83,6 @@ dead_store_in_fun <- function(fpd, id) {
   expr_id <- rev(fpd$id[fpd$parent == id &
                           fpd$token %in% c("expr", "SYMBOL", constants)])[[1]]
 
-  browser()
   # we are going to remove the variables that are assigned, but not used
   ass_vars <- ods_get_assigned_vars(fpd, expr_id)
   used_vars <- get_used_vars(fpd, expr_id)
@@ -167,7 +167,7 @@ get_used_vars <- function(fpd, id) {
 #
 remove_assigns <- function(fpd, vars) {
   for (act_var in vars) {
-    act_prnt_ids <- fpd[fpd$text == act_var, "parent"]
+    act_prnt_ids <- fpd[fpd$text == act_var & fpd$token == "SYMBOL", "parent"]
     for (act_prnt_id in act_prnt_ids) {
       # eliminate each assignation of the dead store
       if (!act_prnt_id %in% fpd$id) {
