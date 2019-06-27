@@ -28,7 +28,7 @@ test_that("correctly constant fold", {
   )
   opt_code <- opt_constant_folding(list(code), fold_floats = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
-    "x <- -1",
+    "x <- (-1)",
     "x <- 0.999232",
     "x <- 0.3168",
     "x <- 0.999232",
@@ -82,7 +82,7 @@ test_that("dont fold floats", {
   )
   opt_code <- opt_constant_folding(list(code), fold_floats = FALSE)$codes[[1]]
   expect_equal(opt_code, paste(
-    "x <- -1",
+    "x <- (-1)",
     "x <- 1 - 12 / 15625",
     "x <- 990 / 3125",
     "x <- 2 - 12 / 15625 - 1",
@@ -242,11 +242,13 @@ test_that("dont constant fold not assigned exprs", {
 test_that("add spaces when folding {const_expr}", {
   code <- paste(
     "if(TRUE){-3}else{NULL}",
+    "if(TRUE){3}else{NULL}",
     sep = "\n"
   )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "if(TRUE) -3 else NULL ",
+    "if(TRUE){-3}else NULL ",
+    "if(TRUE) 3 else NULL ",
     sep = "\n"
   ))
 })
@@ -283,6 +285,20 @@ test_that("dont fold NA_*_", {
     "a <-  NA_integer_ ",
     "a <-  NA_real_ ",
     "a <-  NA ",
+    sep = "\n"
+  ))
+})
+
+test_that("dont fold (-n)", {
+  code <- paste(
+    "numb <- 2",
+    "(-1) ^ numb",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "numb <- 2",
+    "(-1) ^ numb",
     sep = "\n"
   ))
 })
