@@ -6,7 +6,8 @@ library("rvest", quietly = TRUE)
 options(repos = list(CRAN = "http://mirror.las.iastate.edu/CRAN/"))
 
 # install latest rco
-install_github("jcrodriguez1989/rco")
+git_ref <- Sys.getenv("RCO_GIT_REF", unset = "master")
+install_github("jcrodriguez1989/rco", ref = git_ref)
 
 cran_url <- "https://cran.r-project.org/"
 pkg_name <- Sys.getenv("RCO_PKG")

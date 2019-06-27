@@ -4,7 +4,7 @@
 \name{all_optimizers}
 \alias{all_optimizers}
 \title{All optimizers list}
-\format{An object of class \code{list} of length 3.}
+\format{An object of class \code{list} of length 4.}
 \usage{
 all_optimizers
 }
@@ -14,6 +14,7 @@ List of all the optimizer functions:
   \item Constant Folding \code{\link{opt_constant_folding}}
   \item Constant Propagation \code{\link{opt_constant_propagation}}
   \item Dead Code Elimination \code{\link{opt_dead_code}}
+  \item Dead Store Elimination \code{\link{opt_dead_store}}
 }
 }
 \keyword{datasets}

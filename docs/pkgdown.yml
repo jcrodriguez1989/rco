@@ -7,4 +7,5 @@ articles:
   opt-constant-folding: opt-constant-folding.html
   opt-constant-propagation: opt-constant-propagation.html
   opt-dead-code: opt-dead-code.html
+  opt-dead-store: opt-dead-store.html
 

@@ -1,0 +1,187 @@
+---
+output: rmarkdown::html_vignette
+title: Dead Store Elimination
+vignette: >
+  %\VignetteIndexEntry{Dead Store Elimination}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
+}
+```
+
+# Dead Store Elimination
+
+## Background
+
+Dead Store Elimination is an optimization that intends to remove a local variable that is assigned a value but is not read by any subsequent instruction.
+
+For instance, consider the following code:
+
+```{r eval=FALSE}
+foo <- function(x) {
+  i <- 8818
+  return(x ^ 3)
+}
+```
+
+Variable `i` is never used, so this assignation could be removed, resulting in:
+
+```{r eval=FALSE}
+foo <- function(x) {
+  8818 # could be removed by Dead Expression Elimination
+  return(x ^ 3)
+}
+```
+
+After applying other optimizations, such as [Constant Propagation](opt-constant-propagation.html), some variables become dead stores.
+
+For example, consider:
+
+```{r eval=FALSE}
+foo <- function(x) {
+  i <- 0
+  n <- 8818
+  res <- 0
+  while (i < n) {
+    res <- res + i
+    i <- i + 1
+  }
+  return(res)
+}
+```
+
+After Constant Propagation would return:
+
+```{r eval=FALSE}
+foo <- function(x) {
+  i <- 0
+  n <- 8818
+  res <- 0
+  while (i < 8818) {
+    res <- res + i
+    i <- i + 1
+  }
+  return(res)
+}
+```
+
+And thus, `n` would become a dead store.
+
+## Example
+
+Consider the following (useless) example:
+
+```{r}
+code <- paste(
+  "foo <- function(n) {",
+  "  i <- 0",
+  "  res <- 0",
+  "  while (i < n) {",
+  "    res <- res + i",
+  "    i <- i + 1",
+  "    a <- i + 1",
+  "  }",
+  "  res",
+  "}",
+  "foo(10000)",
+  sep = "\n"
+)
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_dead_store(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and the speed-up:
+
+```{r message=FALSE}
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
+
+## Implementation
+
+A dead store will be an assignment of a variable that is not read by any subsequent instruction. To be considered dead store, the assignment must be given within the definition of a function, since otherwise, the assignment would affect the global environment and therefore could be aimed to be used by the user.
+
+The `opt_dead_store` detects which code chunks are function definitions. Then for each function, the optimizer gets it expression, detects dead stores, i.e., assigned but not read variables, and eliminates them.
+
+## To-Do
+
+* Intelligent dead store?
+  
+  If within a function, a variable is assigned multiple times, but just the last assignation is read, then the optimizer could keep just the last one.
+  
+  For example:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    a <- 8
+    a <- 8818
+    return(a ^ 2)
+  }
+  ```
+  Would be equivalent to:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    8
+    a <- 8818
+    return(a ^ 2)
+  }
+  ```
+
+* Remove variables that do not affect the returned value?
+  
+  Eliminate all those variables that are assigned, read or not, but that do not affect the value returned by the function.
+  
+  For example:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    a <- 8818
+    b <- 0
+    c <- 1000
+    res <- 0
+    for (b < c) {
+      b <- b + 1
+      res <- res + b
+    }
+    return(a ^ 2)
+  }
+  ```
+  Would be equivalent to:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    a <- 8818
+    return(a ^ 2)
+  }
+  ```

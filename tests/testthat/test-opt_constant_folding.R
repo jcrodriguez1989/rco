@@ -266,3 +266,23 @@ test_that("dont fold integer 'L' symbol", {
     sep = "\n"
   ))
 })
+
+test_that("dont fold NA_*_", {
+  code <- paste(
+    "a <- { NA_character_ }",
+    "a <- { NA_complex_ }",
+    "a <- { NA_integer_ }",
+    "a <- { NA_real_ }",
+    "a <- { NA }",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "a <-  NA_character_ ",
+    "a <-  NA_complex_ ",
+    "a <-  NA_integer_ ",
+    "a <-  NA_real_ ",
+    "a <-  NA ",
+    sep = "\n"
+  ))
+})

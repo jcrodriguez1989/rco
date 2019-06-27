@@ -1,3 +1,7 @@
+# rco 0.1.004
+
+  - Adding Dead Store Elimination optimizer.
+
 # rco 0.1.003
 
   - Adding Dead Code Elimination optimizer.
