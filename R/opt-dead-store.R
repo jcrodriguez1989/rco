@@ -41,6 +41,7 @@ dead_store_one <- function(text) {
     old_fpd <- new_fpd
     new_fpd <- one_dead_store(new_fpd)
   }
+
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
@@ -109,17 +110,20 @@ ods_get_assigned_vars <- function(fpd, id) {
     "parent"
   ]
 
-  # return all the SYMBOL texts from the right/left of '->'/'<-','=' assinments
-  res <- sapply(ass_prnt_ids, function(act_prnt) {
+  # return the SYMBOL text from the right/left of '->'/'<-','=' assinment
+  res <- unlist(sapply(ass_prnt_ids, function(act_prnt) {
     ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
+    ass_idx <- 1
     if (ass_sblngs$token[[2]] == "RIGHT_ASSIGN") {
-      res_fpd <- get_children(act_fpd, ass_sblngs$id[[3]])
-    } else {
-      res_fpd <- get_children(act_fpd, ass_sblngs$id[[1]])
+      ass_idx <- 3
     }
-    return(res_fpd[res_fpd$token == "SYMBOL", "text"])
-  })
-  unique(res[res != ""])
+    var <- NULL
+    if (ass_sblngs$token[[ass_idx]] == "SYMBOL") {
+      var <- ass_sblngs$text[[ass_idx]]
+    }
+    var
+  }))
+  unique(res)
 }
 
 # Returns the names of the vars that are beign used in an expr.
@@ -135,22 +139,25 @@ get_used_vars <- function(fpd, id) {
   ass_prnt_ids <- act_fpd[act_fpd$token %in% assigns, "parent"]
 
   # remove SYMBOLs that are being assigned
-  assigned_ids <- sapply(ass_prnt_ids, function(act_prnt) {
+  assigned_ids <- unlist(sapply(ass_prnt_ids, function(act_prnt) {
     ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
+    ass_idx <- 1
     if (ass_sblngs$token[[2]] == "RIGHT_ASSIGN") {
-      res_fpd <- get_children(act_fpd, ass_sblngs$id[[3]])
-    } else {
-      res_fpd <- get_children(act_fpd, ass_sblngs$id[[1]])
+      ass_idx <- 3
     }
-    # these ids must be removed
-    return(res_fpd[res_fpd$token == "SYMBOL", "id"])
-  })
+    var <- NULL
+    if (ass_sblngs$token[[ass_idx]] == "SYMBOL") {
+      var <- ass_sblngs$id[[ass_idx]]
+    }
+    var
+  }))
 
   res <- act_fpd[
     act_fpd$token %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL") &
       !act_fpd$id %in% assigned_ids, "text"
   ]
-  unique(res[res != ""])
+
+  unique(res)
 }
 
 # Returns a new fpd with desired assignations removed.
@@ -160,7 +167,7 @@ get_used_vars <- function(fpd, id) {
 #
 remove_assigns <- function(fpd, vars) {
   for (act_var in vars) {
-    act_prnt_ids <- fpd[fpd$text == act_var, "parent"]
+    act_prnt_ids <- fpd[fpd$text == act_var & fpd$token == "SYMBOL", "parent"]
     for (act_prnt_id in act_prnt_ids) {
       # eliminate each assignation of the dead store
       if (!act_prnt_id %in% fpd$id) {

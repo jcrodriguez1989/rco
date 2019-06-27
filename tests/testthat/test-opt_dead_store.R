@@ -201,3 +201,49 @@ test_that("dead store eliminate in loop", {
     sep = "\n"
   ))
 })
+
+test_that("dead store eliminate lists", {
+  code <- paste(
+    "foo <- function() {",
+    "  a <- list()",
+    "  a$zero <- 0",
+    "  b <- 1:3",
+    "  a[b] <- 1:3",
+    "  c <- 1:3",
+    "  return(NULL)",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  a <- list()",
+    "  a$zero <- 0",
+    "  b <- 1:3",
+    "  a[b] <- 1:3",
+    "  1:3",
+    "  return(NULL)",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("dead store dont eliminate pkg name", {
+  code <- paste(
+    "foo <- function() {",
+    "  stats <- 8818",
+    "  stats::acf(4)",
+    "  return(NULL)",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  8818",
+    "  stats::acf(4)",
+    "  return(NULL)",
+    "}",
+    sep = "\n"
+  ))
+})
