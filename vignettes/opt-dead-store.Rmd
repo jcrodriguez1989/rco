@@ -185,23 +185,3 @@ The `opt_dead_store` detects which code chunks are function definitions. Then fo
     return(a ^ 2)
   }
   ```
-* Recognize functions that use variables from the external environment?
-  
-  If within the definition of a function, a function call appears, then it is not possible to determine if the assignments are dead stores, since the function call may use variables from its parent environment.
-  
-  For example:
-  
-  ```{r eval=FALSE}
-  bar <- function() {
-    a <- 3
-    foo <- function() {
-      return(a ^ 2)
-    }
-    foo()
-  }
-  bar()
-  ```
-  
-  In this example, inside the `bar` definition, `a` is not a dead store.
-  
-  The `opt_dead_store` aborts if it finds a function call. In this sense, if we could determine which functions are self-contained, then the optimizer could continue with its normal execution if self-contained functions are called.

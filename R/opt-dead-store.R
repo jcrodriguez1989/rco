@@ -58,26 +58,11 @@ one_dead_store <- function(fpd) {
   # dead store happens only into functions, so get the expr of each function
   fun_ids <- get_ids_of_token(fpd, "FUNCTION")
   fun_prnt_ids <- fpd$parent[fpd$id %in% fun_ids]
-  # get each function expression
-  fun_expr_ids <- sapply(fun_prnt_ids, function(act_prnt_id) {
-    rev(fpd$id[fpd$parent == act_prnt_id &
-      fpd$token %in% c("expr", "SYMBOL", constants)])[[1]]
-  })
 
   # for each function expr do a dead store removal
-  for (id in fun_expr_ids) {
-    if (!id %in% res_fpd$id) {
-      next
-    }
-    act_fpd <- get_children(res_fpd, id)
-    # if has a function call then we cant determine if vars are dead store or
-    # not. As they can be used in these functions
-    if (ods_has_function_call(act_fpd, id)) {
-      next
-    }
-
+  for (id in fun_prnt_ids) {
     # eliminate dead stores from a function, and replace it in res_fpd
-    ds_elim_fun <- dead_store_in_fun(act_fpd)
+    ds_elim_fun <- dead_store_in_fun(res_fpd, id)
     res_fpd <- rbind(
       remove_nodes(res_fpd, id),
       ds_elim_fun
@@ -90,59 +75,22 @@ one_dead_store <- function(fpd) {
 # Executes dead store elimination in the expr of a function definition
 #
 # @param fpd A flat parsed data data.frame .
+# @param id Numeric indicating the node ID of the function def expression.
 #
-dead_store_in_fun <- function(fpd) {
-  res_fpd <- fpd
-  expr_id <- get_roots(fpd)$id
+dead_store_in_fun <- function(fpd, id) {
+  # get the expression of the function
+  expr_id <- rev(fpd$id[fpd$parent == id &
+                          fpd$token %in% c("expr", "SYMBOL", constants)])[[1]]
 
   # we are going to remove the variables that are assigned, but not used
   ass_vars <- ods_get_assigned_vars(fpd, expr_id)
   used_vars <- get_used_vars(fpd, expr_id)
   ass_to_remove <- setdiff(ass_vars, used_vars)
 
-  for (act_var in ass_to_remove) {
-    act_prnt_ids <- res_fpd[res_fpd$text == act_var, "parent"]
-    for (act_prnt_id in act_prnt_ids) {
-      # eliminate each assignation of the dead store
-      if (!act_prnt_id %in% res_fpd$id) {
-        next
-      }
-      ass_fpd <- get_children(res_fpd, act_prnt_id)
-      new_ass_fpd <- ass_fpd
-      act_prnt <- ass_fpd[ass_fpd$id == act_prnt_id, ]
-      act_sblngs <- ass_fpd[ass_fpd$parent == act_prnt_id, ]
+  res_fpd <- get_children(fpd, id)
+  res_fpd <- remove_assigns(res_fpd, ass_to_remove)
 
-      # keep only the expression
-      keep_fpd <- act_sblngs[3, ]
-      if (act_sblngs$token[[2]] == "RIGHT_ASSIGN") {
-        keep_fpd <- act_sblngs[1, ]
-      }
-      keep_fpd$parent <- act_prnt$parent
-      new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
-        c(act_prnt_id, act_sblngs$id), ]
-      new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
-      new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
-      new_ass_fpd <- replace_pd(ass_fpd, new_ass_fpd)
-      res_fpd <- rbind(
-        remove_nodes(res_fpd, act_prnt_id),
-        new_ass_fpd
-      )
-    }
-  }
   return(res_fpd)
-}
-
-# Returns a logical indicating if a node has a function call different than
-# `return`
-#
-# @param fpd a flat parsed data data.frame .
-# @param id Numeric indicating the node ID.
-#
-ods_has_function_call <- function(fpd, id) {
-  # todo: here, we could check if the function call is inside a function def
-  # then we may not do a next. (research)
-  act_fpd <- get_children(fpd, id)
-  any(act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text != "return")
 }
 
 # Returns the names of the vars that are beign assigned in an expr
@@ -153,11 +101,14 @@ ods_has_function_call <- function(fpd, id) {
 #
 ods_get_assigned_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
+
+  # get assignation exprs ids
   ass_prnt_ids <- act_fpd[
     act_fpd$token %in% assigns &
       !act_fpd$text %in% c("<<-", "->>"),
     "parent"
   ]
+
   # return all the SYMBOL texts from the right/left of '->'/'<-','=' assinments
   res <- sapply(ass_prnt_ids, function(act_prnt) {
     ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
@@ -179,7 +130,10 @@ ods_get_assigned_vars <- function(fpd, id) {
 #
 get_used_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
+
+  # get assignation exprs ids
   ass_prnt_ids <- act_fpd[act_fpd$token %in% assigns, "parent"]
+
   # remove SYMBOLs that are being assigned
   assigned_ids <- sapply(ass_prnt_ids, function(act_prnt) {
     ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
@@ -191,9 +145,57 @@ get_used_vars <- function(fpd, id) {
     # these ids must be removed
     return(res_fpd[res_fpd$token == "SYMBOL", "id"])
   })
+
   res <- act_fpd[
     act_fpd$token %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL") &
       !act_fpd$id %in% assigned_ids, "text"
   ]
   unique(res[res != ""])
+}
+
+# Returns a new fpd with desired assignations removed.
+#
+# @param fpd a flat parsed data data.frame .
+# @param vars Character vector with names of vars to remove.
+#
+remove_assigns <- function(fpd, vars) {
+  for (act_var in vars) {
+    act_prnt_ids <- fpd[fpd$text == act_var, "parent"]
+    for (act_prnt_id in act_prnt_ids) {
+      # eliminate each assignation of the dead store
+      if (!act_prnt_id %in% fpd$id) {
+        next
+      }
+
+      ass_fpd <- get_children(fpd, act_prnt_id)
+      new_ass_fpd <- ass_fpd
+      act_prnt <- ass_fpd[ass_fpd$id == act_prnt_id, ]
+      act_sblngs <- ass_fpd[ass_fpd$parent == act_prnt_id, ]
+
+      # keep only the expression
+      keep_fpd <- act_sblngs[3, ]
+      if (act_sblngs$token[[2]] == "RIGHT_ASSIGN") {
+        keep_fpd <- act_sblngs[1, ]
+      }
+
+      # remove assignment parent expr and siblings
+      new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
+                                   c(act_prnt_id, act_sblngs$id), ]
+      new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
+
+      # the expr to keep will skip the assignment expr in the tree
+      new_ass_fpd[new_ass_fpd$id == keep_fpd$id, "parent"] <- act_prnt$parent
+
+      # some fixes on the resulting fpd
+      new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
+      new_ass_fpd[, c("next_spaces", "next_lines", "prev_spaces")] <-
+        replace_pd(ass_fpd, new_ass_fpd)[
+          , c("next_spaces", "next_lines", "prev_spaces")]
+      fpd <- rbind(
+        remove_nodes(fpd, act_prnt_id),
+        new_ass_fpd
+      )
+    }
+  }
+  return(fpd)
 }

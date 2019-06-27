@@ -210,7 +210,7 @@
 <p><img src="opt-dead-store_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
 <pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 20.38872 21.13406 21.22279 25.81681 22.69814 230.1455</code></pre>
+## Expr_2 23.03922 23.62017 23.91128 27.14801 22.59018 161.7632</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -258,21 +258,6 @@
 <a class="sourceLine" id="cb15-2" data-line-number="2">  a &lt;-<span class="st"> </span><span class="dv">8818</span></a>
 <a class="sourceLine" id="cb15-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(a <span class="op">^</span><span class="st"> </span><span class="dv">2</span>)</a>
 <a class="sourceLine" id="cb15-4" data-line-number="4">}</a></code></pre></div>
-</li>
-<li>
-<p>Recognize functions that use variables from the external environment?</p>
-<p>If within the definition of a function, a function call appears, then it is not possible to determine if the assignments are dead stores, since the function call may use variables from its parent environment.</p>
-<p>For example:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">bar &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
-<a class="sourceLine" id="cb16-2" data-line-number="2">  a &lt;-<span class="st"> </span><span class="dv">3</span></a>
-<a class="sourceLine" id="cb16-3" data-line-number="3">  foo &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
-<a class="sourceLine" id="cb16-4" data-line-number="4">    <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(a <span class="op">^</span><span class="st"> </span><span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb16-5" data-line-number="5">  }</a>
-<a class="sourceLine" id="cb16-6" data-line-number="6">  <span class="kw">foo</span>()</a>
-<a class="sourceLine" id="cb16-7" data-line-number="7">}</a>
-<a class="sourceLine" id="cb16-8" data-line-number="8"><span class="kw"><a href="https://www.rdocumentation.org/packages/grDevices/topics/plotmath">bar</a></span>()</a></code></pre></div>
-<p>In this example, inside the <code>bar</code> definition, <code>a</code> is not a dead store.</p>
-<p>The <code>opt_dead_store</code> aborts if it finds a function call. In this sense, if we could determine which functions are self-contained, then the optimizer could continue with its normal execution if self-contained functions are called.</p>
 </li>
 </ul>
 </div>
