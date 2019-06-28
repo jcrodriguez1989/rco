@@ -24,7 +24,7 @@ test_that("keep new lines", {
     "j <- 0",
     sep = "\n"
   )
-  parsed_data <- rco:::parse_flat_data(code)
-  deparsed_data <- rco:::deparse_flat_data(parsed_data)
+  parsed_data <- parse_flat_data(code)
+  deparsed_data <- deparse_flat_data(parsed_data)
   expect_equal(code, deparsed_data)
 })
