@@ -13,6 +13,8 @@
 optimize_text <- function(text, optimizers = all_optimizers, iterations = Inf) {
   # create a temp file to write text, and apply optimizers
   tmp_file <- tempfile()
+  # take care of \
+  text <- gsub("\\", "\\\\", text, fixed = TRUE)
   write_code_file(text, tmp_file)
   optimize_files(tmp_file, optimizers,
     overwrite = TRUE,
