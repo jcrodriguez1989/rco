@@ -274,6 +274,8 @@ replace_constant_vars <- function(fpd, id, constant_vars) {
     act_fpd <- to_edit_fpd[i, ]
     act_val <- constant_vars[[act_fpd$text]]
     if (is.character(act_val)) {
+      # if it was a string, we have to take care of \
+      act_val <- gsub("\\", "\\\\", act_val, fixed = TRUE)
       # if it was a string, we have to take care of ' and " mixing
       act_val <- gsub('"', '\\"', act_val, fixed = TRUE)
       act_val <- paste0('"', act_val, '"')
