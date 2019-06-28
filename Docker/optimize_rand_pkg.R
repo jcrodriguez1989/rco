@@ -74,7 +74,7 @@ library("rco")
 
 sessionInfo()
 
-cat("\nStarting optimization.\n")
+cat("Starting optimization.\n")
 
 with_dir(pkg_dir_opt, {
   act_files <- dir("R")
