@@ -48,7 +48,10 @@ parse_flat_data <- function(text) {
 deparse_flat_data <- function(fpd) {
   fpd_terms <- fpd[fpd$terminal, ]
 
-  res <- ""
+  # adding trailing new lines
+  prev_lines <- ifelse(nrow(fpd_terms) > 0, fpd_terms$line1[[1]] - 1, 0)
+
+  res <- ifelse(prev_lines > 0, paste(rep("\n", prev_lines), collapse = ""), "")
   for (i in seq_len(nrow(fpd_terms))) {
     act_pd <- fpd_terms[i, ]
     res <- paste0(res, paste0(

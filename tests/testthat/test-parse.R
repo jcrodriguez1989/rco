@@ -14,3 +14,17 @@ test_that("correctly parse and deparse text", {
   deparsed_data <- deparse_flat_data(parsed_data)
   expect_equal(code, deparsed_data)
 })
+
+test_that("keep new lines", {
+  code <- paste(
+    "",
+    "",
+    "i <- 0",
+    "",
+    "j <- 0",
+    sep = "\n"
+  )
+  parsed_data <- rco:::parse_flat_data(code)
+  deparsed_data <- rco:::deparse_flat_data(parsed_data)
+  expect_equal(code, deparsed_data)
+})
