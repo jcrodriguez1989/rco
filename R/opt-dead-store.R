@@ -30,7 +30,7 @@ opt_dead_store <- function(texts) {
 # @param text A character vector with code to optimize.
 #
 dead_store_one <- function(text) {
-  fpd <- parse_flat_data(text, include_text = TRUE)
+  fpd <- parse_flat_data(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments

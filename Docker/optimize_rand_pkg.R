@@ -74,6 +74,8 @@ library("rco")
 
 sessionInfo()
 
+cat("Starting optimization.\n")
+
 with_dir(pkg_dir_opt, {
   act_files <- dir("R")
   opt_files <- optimize_files(paste0("R/", act_files), overwrite = TRUE)
@@ -97,7 +99,7 @@ if (.Platform$OS.type == "unix") {
     "for FILE in $(ls $ORIG_DIR); do",
     '  echo "********************************"',
     "  echo $FILE",
-    "  diff $ORIG_DIR/$FILE $OPT_DIR/$FILE",
+    "  diff -b $ORIG_DIR/$FILE $OPT_DIR/$FILE",
     "done",
     "",
     sep = "\n"
@@ -113,7 +115,7 @@ if (!(file.exists(paste0(pkg_dir, "/tests/testthat.R")) &&
 }
 
 # install package from CRAN (to solve dependencies)
-install.packages(pkg_name)
+install.packages(pkg_name, quiet = TRUE)
 
 # test and time both packages
 with_dir(pkg_dir, {
@@ -138,9 +140,8 @@ test_res_opt <- lapply(test_res_opt, function(act_res)
   sapply(act_res$results, function(act_res_res)
     is(act_res_res, "expectation_success")))
 
-if (!all.equal(test_res, test_res_opt)) {
-  error("Differing test results.\n")
-  quit(save = "no")
+if (!isTRUE(all.equal(test_res, test_res_opt))) {
+  cat("\nDiffering test results.\n")
 }
 
 test_speedup <- test_time / test_time_opt
