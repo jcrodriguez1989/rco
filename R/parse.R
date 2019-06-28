@@ -2,9 +2,9 @@
 #
 # @param text Text to parse.
 #
-parse_flat_data <- function(text, include_text = NA) {
+parse_flat_data <- function(text) {
   parsed_text <- base::parse(text = text, keep.source = TRUE)
-  pd <- utils::getParseData(parsed_text, includeText = include_text)
+  pd <- utils::getParseData(parsed_text, includeText = TRUE)
 
   if (nrow(pd) == 0) {
     return(pd)

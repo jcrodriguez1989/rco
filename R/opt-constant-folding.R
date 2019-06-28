@@ -32,7 +32,7 @@ opt_constant_folding <- function(texts, fold_floats = FALSE) {
 #   folded (will reduce precision).
 #
 constant_fold_one <- function(text, fold_floats) {
-  pd <- parse_flat_data(text, include_text = TRUE)
+  pd <- parse_flat_data(text)
   pd <- flatten_leaves(pd)
   if (nrow(pd) > 0) {
     pd <- one_fold(pd, fold_floats)
@@ -126,7 +126,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     eval_val_str <- paste0("(", eval_val_str, ")")
   }
 
-  res <- parse_flat_data(eval_val_str, include_text = TRUE)
+  res <- parse_flat_data(eval_val_str)
   res <- flatten_leaves(res)
   if (grepl("^\\{.+\\}$", fpd$text)) {
     # if it was `{expr}`, then add spaces in both sides

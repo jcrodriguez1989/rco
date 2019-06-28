@@ -27,7 +27,7 @@ opt_constant_propagation <- function(texts) {
 # @param text A character vector with code to optimize.
 #
 constant_prop_one <- function(text) {
-  pd <- parse_flat_data(text, include_text = TRUE)
+  pd <- parse_flat_data(text)
   pd <- flatten_leaves(pd)
   pd <- eq_assign_to_expr(pd)
   res_pd <- pd[pd$parent < 0, ] # keep lines with just comments
@@ -279,7 +279,10 @@ replace_constant_vars <- function(fpd, id, constant_vars) {
       act_val <- paste0('"', act_val, '"')
     } else if (is.null(act_val)) {
       act_val <- "NULL"
+    } else if (is.na(act_val)) {
+      act_val <- "NA"
     }
+
     new_act_fpd <- flatten_leaves(parse_flat_data(act_val))
     # new ids will be old_id + _ + new_id
     new_act_fpd$id <- paste0(act_fpd$id, "_", new_act_fpd$id)
