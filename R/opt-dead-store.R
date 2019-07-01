@@ -168,6 +168,12 @@ get_used_vars <- function(fpd, id) {
 remove_assigns <- function(fpd, vars) {
   for (act_var in vars) {
     act_prnt_ids <- fpd[fpd$text == act_var & fpd$token == "SYMBOL", "parent"]
+    # remove `<<-` `->>` and `:=` parents
+    act_prnt_ids <- fpd$parent[
+      fpd$parent %in% act_prnt_ids &
+        fpd$token %in% assigns &
+        fpd$text %in% c("<-", "=", "->")]
+
     for (act_prnt_id in act_prnt_ids) {
       # eliminate each assignation of the dead store
       if (!act_prnt_id %in% fpd$id) {
