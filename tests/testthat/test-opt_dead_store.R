@@ -247,3 +247,19 @@ test_that("dead store dont eliminate pkg name", {
     sep = "\n"
   ))
 })
+
+test_that("dead store dont eliminate :=", {
+  code <- paste(
+    "foo <- function() {",
+    "  data <- data[,RandomVariableForImputation:=NULL]",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  data <- data[,RandomVariableForImputation:=NULL]",
+    "}",
+    sep = "\n"
+  ))
+})

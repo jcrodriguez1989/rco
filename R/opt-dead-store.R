@@ -95,7 +95,7 @@ dead_store_in_fun <- function(fpd, id) {
 }
 
 # Returns the names of the vars that are beign assigned in an expr
-# `=` , `<-`, `->` . Discards `<<-` and `->>`
+# `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=``
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
@@ -106,7 +106,7 @@ ods_get_assigned_vars <- function(fpd, id) {
   # get assignation exprs ids
   ass_prnt_ids <- act_fpd[
     act_fpd$token %in% assigns &
-      !act_fpd$text %in% c("<<-", "->>"),
+      !act_fpd$text %in% c("<<-", "->>", ":="),
     "parent"
   ]
 
