@@ -302,3 +302,31 @@ test_that("dont fold (-n)", {
     sep = "\n"
   ))
 })
+
+test_that("folding nested if else", {
+  code <- paste(
+    "if (a) {",
+    "  if (b) {",
+    "    1",
+    "  } else {",
+    "    2",
+    "  }",
+    "} else {",
+    "  if (c) {",
+    "    3",
+    "  } else {",
+    "    4",
+    "  }",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "if (a) {",
+    "  if (b)  1 else  2 ",
+    "} else {",
+    "  if (c)  3 else  4 ",
+    "}",
+    sep = "\n"
+  ))
+})

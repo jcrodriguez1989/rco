@@ -116,7 +116,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     eval_val_str <- na_to_correct_str(eval_val)
   } else if (is.character(eval_val)) {
     # there was a bug when evaluated `expr` returned a string
-    eval_val_str <- paste0('"', eval_val, '"')
+    eval_val_str <- deparse(eval_val)
   } else if (is.integer(eval_val)) {
     # if it is an integer, then dont remove the "L"
     eval_val_str <- paste0(eval_val, "L")
