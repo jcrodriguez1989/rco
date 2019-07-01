@@ -54,7 +54,6 @@ pkg_dwn_link <- pkg_url %>%
 pkg_dwn_link <- pkg_dwn_link[[2]]
 pkg_dwn_file <- pkg_dwn_link[grep("source:", pkg_dwn_link[, 1]), 2]
 pkg_dwn_link <- paste0(cran_url, "src/contrib/", pkg_dwn_file)
-# dwn_dir <- tempdir()
 dwn_dir <- getwd()
 lib_file <- paste0(dwn_dir, "/", pkg_dwn_file)
 download.file(pkg_dwn_link, lib_file)
