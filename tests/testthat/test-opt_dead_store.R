@@ -247,3 +247,45 @@ test_that("dead store dont eliminate pkg name", {
     sep = "\n"
   ))
 })
+
+test_that("dead store dont eliminate :=", {
+  code <- paste(
+    "foo <- function() {",
+    "  data <- data[,RandomVariableForImputation:=NULL]",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  data <- data[,RandomVariableForImputation:=NULL]",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("dead store dont eliminate mixing assigners", {
+  code <- paste(
+    "foo <- function() {",
+    "  a <- 3",
+    "  a = 3",
+    "  a := 3",
+    "  a <<- 3",
+    "  3 ->> a",
+    "  3 -> a",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_store(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  3",
+    "  3",
+    "  a := 3",
+    "  a <<- 3",
+    "  3 ->> a",
+    "  3 ",
+    "}",
+    sep = "\n"
+  ))
+})
