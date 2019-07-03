@@ -33,14 +33,7 @@ common_subexpr_one <- function(text) {
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
-
-  # eliminate until no changes
-  old_fpd <- NULL
-  while (!isTRUE(all.equal(old_fpd, new_fpd))) {
-    old_fpd <- new_fpd
-    new_fpd <- one_common_subexpr(new_fpd)
-  }
-
+  new_fpd <- one_common_subexpr(new_fpd)
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
@@ -64,9 +57,8 @@ one_common_subexpr <- function(fpd) {
   for (env_parent_id in env_parent_ids) {
     res_fpd <- common_subexpr_in_env(res_fpd, env_parent_id)
   }
-  browser()
 
-  return(res_fpd)
+  res_fpd
 }
 
 # Executes common subexpr elimination in the expr of an env
@@ -75,6 +67,7 @@ one_common_subexpr <- function(fpd) {
 # @param id Numeric indicating the node ID of the env expression.
 #
 common_subexpr_in_env <- function(fpd, id) {
+  res_fpd <- remove_nodes(fpd, id)
   act_fpd <- get_children(fpd, id)
   # get and remove function definitions (as they have own env)
   fun_def_prnt_ids <- act_fpd[act_fpd$token == "FUNCTION", "parent"]
@@ -91,7 +84,9 @@ common_subexpr_in_env <- function(fpd, id) {
     }
     env_fpd <- subexpr_elim(env_fpd, act_ids)
   }
-  browser()
+
+  res_fpd <- rbind(res_fpd, env_fpd, get_children(act_fpd, fun_def_prnt_ids))
+  res_fpd[order(res_fpd$pos_id), ]
 }
 
 # Returns a list, where each field is a vector of 2 IDs that use the same expr
@@ -119,13 +114,11 @@ get_common_subexprs <- function(fpd, id) {
   # get common subexpressions, and return a list with their ids
   common_subexprs <- env_subexprs[duplicated(env_subexprs[, "text"]), ,
                                   drop = FALSE]
-  do.call(c, lapply(
-    unique(common_subexprs[, "text"]), function(act_common) {
-      act_ids <- env_subexprs[env_subexprs[, "text"] == act_common, "expr_id"]
-      combns <- combn(act_ids, 2)
-      lapply(seq_len(ncol(combns)), function(i) combns[, i])
-    }
-  ))
+  res <- lapply(unique(common_subexprs[, "text"]), function(act_common) {
+    env_subexprs[env_subexprs[, "text"] == act_common, "expr_id"]
+  })
+
+  res[order(sapply(res, length), decreasing = TRUE)]
 }
 
 # If possible, returns a new fpd where common subexpressions were replaced by a
@@ -135,10 +128,7 @@ get_common_subexprs <- function(fpd, id) {
 # @param ids Numeric vector indicating the node IDs of each common subexpr.
 #
 subexpr_elim <- function(fpd, ids) {
-  # get vars involved in the subexprs
-  vars_inv <- get_children(fpd, ids[[1]])
-  vars_inv <- vars_inv[vars_inv$token == "SYMBOL", "text"]
-
+  res_fpd <- fpd
   # get subexprs parents
   subexprs_parents <- lapply(ids, function(id) get_all_parents(fpd, id))
   # get the first parent in common
@@ -146,15 +136,64 @@ subexpr_elim <- function(fpd, ids) {
   for (i in seq_along(subexprs_parents)[-1]) {
     common_parent <- intersect(common_parent, subexprs_parents[[i]])
   }
+  common_parent <- common_parent[[1]]
+
+  # get place where tmp var should go (we assume pos_ids are ordered, and it
+  # will go before the following expr)
+  fst_expr_parents <- subexprs_parents[[1]]
+  fst_expr_place <- fpd[
+    fpd$id == fst_expr_parents[which(fst_expr_parents == common_parent) - 1], ]
+
+  # get vars involved in the subexprs
+  vars_inv <- get_children(fpd, ids[[1]])
+  vars_inv <- vars_inv[vars_inv$token == "SYMBOL", "text"]
 
   # get vars involved assignations
   vars_inv_fpd <- fpd[fpd$id %in% get_assigns_ids(fpd, common_parent), ]
   vars_inv_fpd <- vars_inv_fpd[vars_inv_fpd$text %in% vars_inv, ]
-  browser()
-
   # get functions used in this env
   funs_fpd <- fpd[fpd$id %in% get_fun_call_ids(fpd, common_parent), ]
+  # set them as trouble points
+  tr_points <- rbind(vars_inv_fpd, funs_fpd)
+  if (nrow(tr_points) > 0) {
+    tr_points <- tr_points[
+      tr_points$pos_id >= fst_expr_place$pos_id &
+        tr_points$pos_id <= fpd$pos_id[fpd$id == tail(ids, 1)],
+      ]
+  }
 
+  if (nrow(tr_points) > 0) {
+    # split subexpr ids
+    browser()
+  }
+
+  # create temp var
+  new_var_name <- create_new_var(fpd)
+  new_var_expr <- deparse_flat_data(get_children(fpd, ids[[1]]))
+  new_var_expr <- sub("^\n*", "", new_var_expr)
+  new_var <- paste0(new_var_name, " <- ", new_var_expr)
+  new_var_fpd <- flatten_leaves(parse_flat_data(new_var))
+  new_var_fpd$id <- paste0(new_var_name, "_", new_var_fpd$id)
+  new_var_fpd$parent <- paste0(new_var_name, "_", new_var_fpd$parent)
+  new_var_fpd[new_var_fpd$id == get_roots(new_var_fpd)$id, "parent"] <-
+    common_parent
+  new_var_fpd[nrow(new_var_fpd), "next_lines"] <- 1
+  fst_expr_fpd <- get_children(fpd, fst_expr_place$id)
+  new_var_fpd[new_var_fpd$terminal, "prev_spaces"][[1]] <-
+    fst_expr_fpd[fst_expr_fpd$terminal, "prev_spaces"][[1]]
+  new_var_fpd$pos_id <- create_new_pos_id(fpd, nrow(new_var_fpd),
+                                          to_id = fst_expr_place$id)
+  res_fpd <- rbind(res_fpd, new_var_fpd)
+
+  # replace temp var in common subexprs
+  repl_fpd <- flatten_leaves(parse_flat_data(new_var_name))
+  for (act_id in ids) {
+    act_fpd <- get_children(fpd, act_id)
+    res_fpd <- remove_nodes(res_fpd, act_id)
+    res_fpd <- rbind(res_fpd, replace_pd(act_fpd, repl_fpd))
+  }
+
+  res_fpd[order(res_fpd$pos_id), ]
 }
 
 # Returns the id of all the parents of a node
@@ -164,7 +203,7 @@ subexpr_elim <- function(fpd, ids) {
 #
 get_all_parents <- function(fpd, id) {
   res <- act_id <- id
-  while (act_id > 0) {
+  while (length(act_id) > 0 && act_id > 0) {
     act_id <- fpd[fpd$id == act_id, "parent"]
     res <- c(res, act_id)
   }
@@ -202,4 +241,36 @@ get_assigns_ids <- function(fpd, id) {
 get_fun_call_ids <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
   act_fpd[act_fpd$token == "SYMBOL_FUNCTION_CALL", "id"]
+}
+
+# Creates a new var name not used before in the fpd
+#
+# @param fpd A flat parsed data data.frame .
+#
+create_new_var <- function(fpd, prefix = "cs_") {
+  prefix <- make.names(prefix)
+  term_texts <- fpd[fpd$terminal, "text"]
+  ptrn <- paste0("^", prefix)
+  term_texts <- term_texts[grepl(ptrn, term_texts)] # startsWith()
+  var_numbs <- sub(ptrn, "", term_texts)
+  prev_num <- suppressWarnings(max(c(0, as.numeric(var_numbs)), na.rm = TRUE))
+  paste0(prefix, prev_num + 1)
+}
+
+# Given a fpd and from or to id, it creates n new pos_ids
+#
+# @param fpd A flat parsed data data.frame .
+# @param n Numeric indicating the number of pos_ids to create.
+# @param from_id Numeric indicating the node ID to find fun calls.
+# @param to_id Numeric indicating the node ID to find fun calls.
+#
+create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
+  fpd <- fpd[order(fpd$pos_id), ]
+  from_pos_id <- fpd[fpd$id == from_id, "pos_id"]
+  to_pos_id <- fpd[fpd$id == to_id, "pos_id"]
+  if (length(from_pos_id) == 0) {
+    from_pos_id <- c(fpd[which(fpd$id == to_id) - 1, "pos_id"],
+                     to_pos_id -1 )[[1]]
+  }
+  from_pos_id + (10e-5 * seq_len(n))
 }
