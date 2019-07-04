@@ -4,36 +4,42 @@
 #' Carefully examine the results after running this function!
 #'
 #' @param texts A list of character vectors with the code to optimize.
+#' @param n_values Numeric indicating the minimum number of values to consider
+#'   a subexpression.
 #'
 #' @examples
 #' code <- paste(
-#'   "a <- b * c + g"
+#'   "a <- b * c + g",
 #'   "d = b * c * e",
 #'   sep = "\n"
 #' )
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
 #' @export
 #'
-opt_common_subexpr <- function(texts) {
+opt_common_subexpr <- function(texts, n_values = 2) {
   # todo: add functions as common subexpression?
   # this can have an issue if function returns random values, i.e.,
   # a <-rnorm(1) * 8; b <-rnorm(1) * 18 , will wrongly optimize to
   # tmp <- rnorm(1); a <-tmp * 8; b <-tmp * 18
+  # todo: check which functions modify the parent env. In this way, function
+  # calls wont stop optimization
   res <- list()
-  res$codes <- lapply(texts, common_subexpr_one)
+  res$codes <- lapply(texts, cs_one_file, n_values = n_values)
   return(res)
 }
 
-# Executes common subexpression elimination on one text of code
+# Executes common subexpression elimination on one file of code
 #
 # @param text A character vector with code to optimize.
+# @param n_values Numeric indicating the minimum number of values to consider
+#   a subexpression.
 #
-common_subexpr_one <- function(text) {
+cs_one_file <- function(text, n_values) {
   fpd <- parse_flat_data(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
-  new_fpd <- one_common_subexpr(new_fpd)
+  new_fpd <- cs_one_fpd(new_fpd, n_values)
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
@@ -42,11 +48,13 @@ common_subexpr_one <- function(text) {
   deparse_flat_data(res_fpd)
 }
 
-# Executes common subexpression elimination of a tree
+# Executes common subexpression elimination of a fpd tree
 #
 # @param fpd A flat parsed data data.frame .
+# @param n_values Numeric indicating the minimum number of values to consider
+#   a subexpression.
 #
-one_common_subexpr <- function(fpd) {
+cs_one_fpd <- function(fpd, n_values) {
   res_fpd <- fpd
 
   # get different envs (parent env and function defs)
@@ -55,7 +63,7 @@ one_common_subexpr <- function(fpd) {
 
   # for each env do the common subexpr elimination
   for (env_parent_id in env_parent_ids) {
-    res_fpd <- common_subexpr_in_env(res_fpd, env_parent_id)
+    res_fpd <- common_subexpr_in_env(res_fpd, env_parent_id, n_values)
   }
 
   res_fpd
@@ -65,8 +73,10 @@ one_common_subexpr <- function(fpd) {
 #
 # @param fpd A flat parsed data data.frame .
 # @param id Numeric indicating the node ID of the env expression.
+# @param n_values Numeric indicating the minimum number of values to consider
+#   a subexpression.
 #
-common_subexpr_in_env <- function(fpd, id) {
+common_subexpr_in_env <- function(fpd, id, n_values) {
   res_fpd <- remove_nodes(fpd, id)
   act_fpd <- get_children(fpd, id)
   # get and remove function definitions (as they have own env)
@@ -75,14 +85,14 @@ common_subexpr_in_env <- function(fpd, id) {
   env_fpd <- remove_nodes(act_fpd, fun_def_prnt_ids)
 
   # get common subexpressions within an env
-  common_subexprs_ids <- get_common_subexprs(env_fpd, id)
+  common_subexprs_ids <- get_common_subexprs(env_fpd, id, n_values)
 
   for (i in seq_along(common_subexprs_ids)) {
     act_ids <- common_subexprs_ids[[i]]
     if (!all(act_ids %in% env_fpd$id)) {
       next
     }
-    env_fpd <- subexpr_elim(env_fpd, act_ids)
+    env_fpd <- subexpr_elim(env_fpd, act_ids, n_values)
   }
 
   res_fpd <- rbind(res_fpd, env_fpd, get_children(act_fpd, fun_def_prnt_ids))
@@ -93,8 +103,10 @@ common_subexpr_in_env <- function(fpd, id) {
 #
 # @param fpd A flat parsed data data.frame .
 # @param id Numeric indicating the node ID of the env expression.
+# @param n_values Numeric indicating the minimum number of values to consider
+#   a subexpression.
 #
-get_common_subexprs <- function(fpd, id) {
+get_common_subexprs <- function(fpd, id, n_values) {
   # get all subexprs (dont have assignment, while, if, etc)
   env_exprs_ids <- fpd[fpd$token == "expr", "id"]
   env_subexprs <-
@@ -102,7 +114,8 @@ get_common_subexprs <- function(fpd, id) {
       aux_fpd <- get_children(fpd, env_exprs_id)
       res <- NULL
       if (all(aux_fpd$token %in%
-              c(constants, ops, precedence_ops, "expr", "SYMBOL"))) {
+              c(constants, ops, precedence_ops, "expr", "SYMBOL")) &&
+          sum(aux_fpd$token %in% c(constants, "SYMBOL")) >= n_values) {
         res <- c(
           expr_id = env_exprs_id,
           text = paste(aux_fpd[aux_fpd$terminal, "text"], collapse = " ")
@@ -126,74 +139,141 @@ get_common_subexprs <- function(fpd, id) {
 #
 # @param fpd A flat parsed data data.frame .
 # @param ids Numeric vector indicating the node IDs of each common subexpr.
+# @param n_values Numeric indicating the minimum number of values to consider
+#   a subexpression.
 #
-subexpr_elim <- function(fpd, ids) {
-  res_fpd <- fpd
+subexpr_elim <- function(fpd, ids, n_values) {
+  if (sum(get_children(fpd, ids[[1]])$token %in% c(constants, "SYMBOL")) <
+      n_values) {
+    return(fpd)
+  }
+
   # get subexprs parents
   subexprs_parents <- lapply(ids, function(id) get_all_parents(fpd, id))
   # get the first parent in common
-  common_parent <- subexprs_parents[[1]]
-  for (i in seq_along(subexprs_parents)[-1]) {
-    common_parent <- intersect(common_parent, subexprs_parents[[i]])
-  }
-  common_parent <- common_parent[[1]]
+  common_parent <- Reduce(intersect, subexprs_parents)[[1]]
 
-  # get place where tmp var should go (we assume pos_ids are ordered, and it
+  # get place where temp var should go (we assume pos_ids are ordered; temp
   # will go before the following expr)
   fst_expr_parents <- subexprs_parents[[1]]
   fst_expr_place <- fpd[
     fpd$id == fst_expr_parents[which(fst_expr_parents == common_parent) - 1], ]
 
+  # get split points
+  splitted_ids <- split_ids(fpd, common_parent, fst_expr_place$pos_id, ids)
+
+  res <- fpd
+  if (length(splitted_ids) == 1 && length(splitted_ids[[1]]) == length(ids)) {
+    # do the subexpr replacement
+    res <- apply_subexpr_elim(fpd, common_parent, fst_expr_place$id, ids)
+  } else {
+    for (act_ids in splitted_ids) {
+      res <- subexpr_elim(res, act_ids, n_values)
+    }
+  }
+  res
+}
+
+# Splits the ids in which common subexprs might be split due to involved vars
+# assignation or function calls
+#
+# @param fpd A flat parsed data data.frame .
+# @param parent_id Numeric indicating the node ID of the subexprs common parent.
+# @param fst_expr_pos_id Numeric indicating the pos_id where temp var should go.
+# @param ids Numeric vector indicating common subexprs IDs.
+#
+split_ids <- function(fpd, parent_id, fst_expr_pos_id, ids) {
   # get vars involved in the subexprs
   vars_inv <- get_children(fpd, ids[[1]])
   vars_inv <- vars_inv[vars_inv$token == "SYMBOL", "text"]
 
   # get vars involved assignations
-  vars_inv_fpd <- fpd[fpd$id %in% get_assigns_ids(fpd, common_parent), ]
+  vars_inv_fpd <- fpd[fpd$id %in% get_assigns_ids(fpd, parent_id), ]
   vars_inv_fpd <- vars_inv_fpd[vars_inv_fpd$text %in% vars_inv, ]
+
   # get functions used in this env
-  funs_fpd <- fpd[fpd$id %in% get_fun_call_ids(fpd, common_parent), ]
+  funs_fpd <- fpd[fpd$id %in% get_fun_call_ids(fpd, parent_id), ]
+
   # set them as trouble points
-  tr_points <- rbind(vars_inv_fpd, funs_fpd)
-  if (nrow(tr_points) > 0) {
-    tr_points <- tr_points[
-      tr_points$pos_id >= fst_expr_place$pos_id &
-        tr_points$pos_id <= fpd$pos_id[fpd$id == tail(ids, 1)],
-      ]
-  }
+  split_points <- rbind(vars_inv_fpd, funs_fpd)
 
-  if (nrow(tr_points) > 0) {
-    # split subexpr ids
-    browser()
-  }
+  # move one pos those splits that are vars_inv <- cs_
+  split_points$pos_id <- sapply(seq_len(nrow(split_points)), function(i) {
+    act_split <- split_points[i, ]
+    res <- act_split$pos_id
+    aux_fpd <- get_children(fpd, act_split$parent)
+    subexprs <- ids[ids %in% aux_fpd$id]
+    if (length(subexprs) > 0) {
+      res <- max(aux_fpd$pos_id[aux_fpd$id %in% subexprs]) + 10e-5
+    }
+    res
+  })
 
-  # create temp var
-  new_var_name <- create_new_var(fpd)
-  new_var_expr <- deparse_flat_data(get_children(fpd, ids[[1]]))
-  new_var_expr <- sub("^\n*", "", new_var_expr)
-  new_var <- paste0(new_var_name, " <- ", new_var_expr)
-  new_var_fpd <- flatten_leaves(parse_flat_data(new_var))
-  new_var_fpd$id <- paste0(new_var_name, "_", new_var_fpd$id)
-  new_var_fpd$parent <- paste0(new_var_name, "_", new_var_fpd$parent)
-  new_var_fpd[new_var_fpd$id == get_roots(new_var_fpd)$id, "parent"] <-
-    common_parent
-  new_var_fpd[nrow(new_var_fpd), "next_lines"] <- 1
-  fst_expr_fpd <- get_children(fpd, fst_expr_place$id)
-  new_var_fpd[new_var_fpd$terminal, "prev_spaces"][[1]] <-
-    fst_expr_fpd[fst_expr_fpd$terminal, "prev_spaces"][[1]]
-  new_var_fpd$pos_id <- create_new_pos_id(fpd, nrow(new_var_fpd),
-                                          to_id = fst_expr_place$id)
-  res_fpd <- rbind(res_fpd, new_var_fpd)
+  # if split points are into loops then add a new split point at loop start
+  split_points <- do.call(
+    rbind, lapply(seq_len(nrow(split_points)), function(i) {
+      res <- split_points[i, ]
+      act_sblngs <- fpd[fpd$parent %in% get_all_parents(fpd, res$id), ]
+      res <- rbind(res, act_sblngs[act_sblngs$token %in% loops, ])
+      res
+    }))
+
+  # split subexpr ids
+  cs_pos <- fpd$pos_id[fpd$id %in% ids]
+  split_pos <- unique(split_points$pos_id)
+  id_splits <- split(ids, cut(cs_pos, c(-Inf, split_pos, Inf)))
+  id_splits[sapply(id_splits, length) > 1]
+}
+
+# Creates a new fpd where the common subexpr has been applied
+#
+# @param fpd A flat parsed data data.frame .
+# @param parent_id Numeric indicating the node ID of the subexprs common parent.
+# @param fst_expr_id Numeric indicating the id where temp var should go.
+# @param ids Numeric vector indicating common subexprs IDs.
+#
+apply_subexpr_elim <- function(fpd, parent_id, fst_expr_id, ids) {
+  # create temp var fpd
+  new_var <- create_temp_var(fpd, parent_id, fst_expr_id, ids)
+  res_fpd <- rbind(fpd, new_var$fpd)
 
   # replace temp var in common subexprs
-  repl_fpd <- flatten_leaves(parse_flat_data(new_var_name))
+  repl_fpd <- flatten_leaves(parse_flat_data(new_var$name))
   for (act_id in ids) {
-    act_fpd <- get_children(fpd, act_id)
-    res_fpd <- remove_nodes(res_fpd, act_id)
-    res_fpd <- rbind(res_fpd, replace_pd(act_fpd, repl_fpd))
+    res_fpd <- rbind(
+      remove_nodes(res_fpd, act_id),
+      replace_pd(get_children(res_fpd, act_id), repl_fpd)
+    )
   }
-
   res_fpd[order(res_fpd$pos_id), ]
+}
+
+# Create a fpd for the temp var that is assigned the subexpr
+#
+# @param fpd A flat parsed data data.frame .
+# @param parent_id Numeric indicating the node ID of the subexprs common parent.
+# @param fst_expr_id Numeric indicating the id where temp var should go.
+# @param ids Numeric vector indicating common subexprs IDs.
+#
+create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
+  # create temp var name, and assignation with the corresponding subexpr
+  var_name <- create_new_var(fpd)
+  var_expr <- deparse_flat_data(get_children(fpd, ids[[1]]))
+  var_expr <- sub("^\n*", "", var_expr)
+  var <- paste0(var_name, " <- ", var_expr)
+  # create the fpd
+  var_fpd <- flatten_leaves(parse_flat_data(var))
+  # fix ids and parents
+  var_fpd$id <- paste0(var_name, "_", var_fpd$id)
+  var_fpd$parent <- paste0(var_name, "_", var_fpd$parent)
+  var_fpd$parent[var_fpd$id == get_roots(var_fpd)$id] <- parent_id
+
+  var_fpd[nrow(var_fpd), "next_lines"] <- 1
+  fst_expr_fpd <- get_children(fpd, fst_expr_id)
+  var_fpd[var_fpd$terminal, "prev_spaces"][[1]] <-
+    fst_expr_fpd[fst_expr_fpd$terminal, "prev_spaces"][[1]]
+  var_fpd$pos_id <- create_new_pos_id(fpd, nrow(var_fpd), to_id = fst_expr_id)
+  list(fpd = var_fpd, name = var_name)
 }
 
 # Returns the id of all the parents of a node

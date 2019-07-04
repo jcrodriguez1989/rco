@@ -38,6 +38,28 @@ test_that("simple common subexpr elimination", {
   ))
 })
 
+test_that("dont common subexpr elimination for one op or symbol", {
+  code <- paste(
+    "a <- 1",
+    "b <- 1",
+    "c <- (2)",
+    "d <- (2)",
+    "e <- -3",
+    "f <- -3",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "a <- 1",
+    "b <- 1",
+    "c <- (2)",
+    "d <- (2)",
+    "e <- -3",
+    "f <- -3",
+    sep = "\n"
+  ))
+})
+
 test_that("common subexpr elimination with precedence", {
   code <- paste(
     "a <- 1 * 2 + 3",
@@ -51,6 +73,10 @@ test_that("common subexpr elimination with precedence", {
   expect_equal(opt_code, paste(
     "a <- 1 * 2 + 3",
     "b <- 4 * 2 + 3",
+    "cs_1 <- 2 + 3",
+    "c <- 1 * (cs_1)",
+    "d <- 4 * (cs_1)",
+    "e <- cs_1",
     sep = "\n"
   ))
 })
@@ -70,20 +96,139 @@ test_that("common subexpr elimination with spaces", {
   ))
 })
 
-test_that("common subexpr elimination with loop", {
+test_that("common subexpr elimination with loop 1", {
   code <- paste(
-    "a <- 1",
-    "b <- 2",
-    "res <- 0",
+    "a <- 0",
+    "b <- 1",
+    "c <- 2",
     "while (a < 5) {",
-    "  res <- a + b",
+    "  b <- b + (5 + 1)",
+    "  c <- c + (5 + 1)",
     "  a <- a + 1",
     "}",
     sep = "\n"
   )
   opt_code <- opt_common_subexpr(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "",
+    "a <- 0",
+    "b <- 1",
+    "c <- 2",
+    "while (a < 5) {",
+    "  cs_1 <- (5 + 1)",
+    "  b <- b + cs_1",
+    "  c <- c + cs_1",
+    "  a <- a + 1",
+    "}",
     sep = "\n"
   ))
 })
+
+test_that("common subexpr elimination with loop 2", {
+  code <- paste(
+    "a <- 0",
+    "b <- 1",
+    "c <- 2",
+    "while (a < 5) {",
+    "  b <- b + (a + 1)",
+    "  c <- c + (a + 1)",
+    "  a <- a + 1",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "a <- 0",
+    "b <- 1",
+    "c <- 2",
+    "while (a < 5) {",
+    "  cs_1 <- a + 1",
+    "  b <- b + (cs_1)",
+    "  c <- c + (cs_1)",
+    "  a <- cs_1",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("common subexpr elimination with in/out loop", {
+  code <- paste(
+    "a <- 0",
+    "b <- 1",
+    "c <- 2",
+    "d <- a + 1",
+    "while (a < 5) {",
+    "  b <- b + (a + 1)",
+    "  c <- c + (a + 1)",
+    "  a <- a + 1",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "a <- 0",
+    "b <- 1",
+    "c <- 2",
+    "d <- a + 1",
+    "while (a < 5) {",
+    "  cs_1 <- a + 1",
+    "  b <- b + (cs_1)",
+    "  c <- c + (cs_1)",
+    "  a <- cs_1",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("common subexpr elimination same line", {
+  code <- paste(
+    "a <- 1; b <- a + 2; a <- 3; c <- a + 2",
+    "a <- 1; b <- a + 2; c <- a + 2; a <- 3; d <- a + 2",
+    "a <- 1; b <- a + 2; c <- a + 2; a <- 3; d <- a + 2; e <- a + 2",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "a <- 1; b <- a + 2; a <- 3; c <- a + 2",
+    "a <- 1; cs_1 <- a + 2",
+    "b <- cs_1; c <- cs_1; a <- 3; d <- a + 2",
+    "a <- 1; cs_2 <- a + 2",
+    "b <- cs_2; c <- cs_2; a <- 3; cs_3 <- a + 2",
+    "d <- cs_3; e <- cs_3",
+    sep = "\n"
+  ))
+})
+
+test_that("CSE with function call", {
+  code <- paste(
+    "a <- 1 * 2",
+    "rm(list = ls())",
+    "b <- 1 * 2",
+    "c <- 1 * 2",
+    "foo <- function(x) {",
+    "  a <- 1 * 2",
+    "  rm(list = ls())",
+    "  b <- 1 * 2",
+    "  c <- 1 * 2",
+    "}",
+    "d <- 1 * 2",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "a <- 1 * 2",
+    "rm(list = ls())",
+    "cs_1 <- 1 * 2",
+    "b <- cs_1",
+    "c <- cs_1",
+    "foo <- function(x) {",
+    "  a <- 1 * 2",
+    "  rm(list = ls())",
+    "  cs_1 <- 1 * 2",
+    "  b <- cs_1",
+    "  c <- cs_1",
+    "}",
+    "d <- cs_1",
+    sep = "\n"
+  ))
+})
+

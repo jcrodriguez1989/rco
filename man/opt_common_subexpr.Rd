@@ -4,10 +4,13 @@
 \alias{opt_common_subexpr}
 \title{Optimizer: Common Subexpression Elimination}
 \usage{
-opt_common_subexpr(texts)
+opt_common_subexpr(texts, n_values = 2)
 }
 \arguments{
 \item{texts}{A list of character vectors with the code to optimize.}
+
+\item{n_values}{Numeric indicating the minimum number of values to consider
+a subexpression.}
 }
 \description{
 Performs one common subexpression elimination pass.
@@ -15,7 +18,7 @@ Carefully examine the results after running this function!
 }
 \examples{
 code <- paste(
-  "a <- b * c + g"
+  "a <- b * c + g",
   "d = b * c * e",
   sep = "\\n"
 )

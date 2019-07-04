@@ -10,6 +10,8 @@ navbar:
       href: reference/index.html
     - text: "Optimizers"
       menu:
+        - text: "Common Subexpression Elimination"
+          href: articles/opt-common-subexpr.html
         - text: "Constant Folding"
           href: articles/opt-constant-folding.html
         - text: "Constant Propagation"
