@@ -95,7 +95,8 @@ common_subexpr_in_env <- function(fpd, id, n_values) {
     env_fpd <- subexpr_elim(env_fpd, act_ids, n_values)
   }
 
-  res_fpd <- rbind(res_fpd, env_fpd, get_children(act_fpd, fun_def_prnt_ids))
+  res_fpd <- rbind(res_fpd, env_fpd,
+                   unique(get_children(act_fpd, fun_def_prnt_ids)))
   res_fpd[order(res_fpd$pos_id), ]
 }
 

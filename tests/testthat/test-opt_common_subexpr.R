@@ -232,3 +232,19 @@ test_that("CSE with function call", {
   ))
 })
 
+test_that("CSE function in function", {
+  code <- paste(
+    "foo <- function() {",
+    "  RowNA <- apply(data[, Var], 1, function(x){any(is.na(x))})",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  RowNA <- apply(data[, Var], 1, function(x){any(is.na(x))})",
+    "}",
+    sep = "\n"
+  ))
+})
+
