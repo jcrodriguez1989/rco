@@ -247,3 +247,17 @@ test_that("dont eliminate in `if return() else ...`", {
     sep = "\n"
   ))
 })
+
+test_that("dead code careful with if () next", {
+  code <- paste(
+    "if(colnames[i] == 'lambda') next()",
+    "if(colnames[i] == 'lambda') next()",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_code(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "if(colnames[i] == 'lambda') next",
+    "if(colnames[i] == 'lambda') next",
+    sep = "\n"
+  ))
+})

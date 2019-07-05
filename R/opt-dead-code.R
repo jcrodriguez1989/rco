@@ -86,6 +86,7 @@ remove_after_interruption <- function(fpd) {
       # so dont remove
       next
     }
+
     keep_ids <- intr_sibl[seq_len(which(intr_sibl$id == intr$id[[i]])), "id"]
     # for each opening precedence op, keep one closing
     prec_sibl <- intr_sibl[intr_sibl$token %in% precedence_ops, "id"]
@@ -93,9 +94,24 @@ remove_after_interruption <- function(fpd) {
       keep_ids,
       rev(rev(prec_sibl)[seq_len(sum(keep_ids %in% prec_sibl))])
     )
-    intr_sibl[intr_sibl$id %in% keep_ids, ]
     remove_ids <- setdiff(intr_sibl$id, keep_ids)
+
+    if (length(remove_ids) == 0) {
+      next
+    }
+
+    # to keep last terminal spaces and new lines
+    keep_last_id <- intr$id[[i]]
+    remove_fpd <- get_children(res_fpd, remove_ids)
+    remove_last_id <- utils::tail(remove_fpd$id[remove_fpd$terminal], 1)
+
     res_fpd <- remove_nodes(res_fpd, remove_ids)
+
+    # put last terminal spaces and new lines
+    res_fpd$next_spaces[res_fpd$id == keep_last_id] <-
+      remove_fpd$next_spaces[remove_fpd$id == remove_last_id]
+    res_fpd$next_lines[res_fpd$id == keep_last_id] <-
+      remove_fpd$next_lines[remove_fpd$id == remove_last_id]
   }
   return(res_fpd)
 }
