@@ -284,7 +284,6 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
 #   parents.
 #
 get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
-  browser()
   just_exprs_prnts <- which(sapply(common_parents, function(comn_prnt)
     all(fpd$token[fpd$parent %in% comn_prnt] %in%
           c("'{'", "expr", "'}'", "';'", "equal_assign"))

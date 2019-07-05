@@ -1,0 +1,43 @@
+---
+output: rmarkdown::html_vignette
+title: Common Subexpression Elimination
+vignette: >
+  %\VignetteIndexEntry{Common Subexpression Elimination}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
+}
+```
+
+# Common Subexpression Elimination
+
+## Background
+
+
+## Example
+
+
+## Implementation
+
+
+## To-Do
+
