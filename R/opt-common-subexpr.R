@@ -286,7 +286,8 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
 get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
   just_exprs_prnts <- which(sapply(common_parents, function(comn_prnt)
     all(fpd$token[fpd$parent %in% comn_prnt] %in%
-          c("'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT"))
+          c("'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT", "SYMBOL",
+            constants))
   ))
   fst_parent <- common_parents[[just_exprs_prnts[[1]]]]
   fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
@@ -368,5 +369,10 @@ create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
     from_pos_id <- c(fpd[which(fpd$id == to_id) - 1, "pos_id"],
                      to_pos_id -1 )[[1]]
   }
+
+  if (from_pos_id + 1 != to_pos_id && from_id == "") {
+    from_pos_id <- to_pos_id - 1
+  }
+
   from_pos_id + (10e-5 * seq_len(n))
 }
