@@ -76,9 +76,18 @@ one_propagate <- function(fpd, values) {
     } else if (is_function_call(fpd, act_node$id)) {
       # if function call, then empty the values :'(
       # ( e.g. rm(list=ls()) )
+      fun_defs <- act_fpd$parent[act_fpd$token == "FUNCTION"]
+      if (length(fun_defs) > 1) {
+        # remove if a fun def is child of another
+        fun_defs <- fun_defs[sapply(fun_defs, function(x)
+          sum(get_all_parents(act_fpd, x) %in% fun_defs) == 1)]
+      }
       res_fpd <- rbind(
         res_fpd,
-        replace_constant_vars(act_fpd, act_node$id, values)
+        replace_constant_vars(
+          remove_nodes(act_fpd, fun_defs), act_node$id,values),
+        # should I pass values to function defs propagation?
+        one_propagate(get_children(act_fpd, fun_defs), list())$fpd
       )
       values <- list()
     } else if (is_loop(fpd, act_node$id)) {

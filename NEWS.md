@@ -1,3 +1,7 @@
+# rco 0.1.005
+
+  - Adding Common Subexpression Elimination optimizer.
+
 # rco 0.1.004
 
   - Adding Dead Store Elimination optimizer.

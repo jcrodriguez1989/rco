@@ -555,3 +555,39 @@ test_that("dont propagate if/else variables", {
     sep = "\n"
   ))
 })
+
+test_that("dont propagate to <<-", {
+  code <- paste(
+    "x <- 1",
+    "lapply(1:5, function() { x <<- x + 1 })",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "x <- 1",
+    "lapply(1:5, function() { x <<- x + 1 })",
+    sep = "\n"
+  ))
+})
+
+test_that("constant propagate function call", {
+  code <- paste(
+    "x <- 1",
+    "sum(x)",
+    "lapply(1:5, function() {",
+    "  y <- 1",
+    "  z <- x + y",
+    "})",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "x <- 1",
+    "sum(1)",
+    "lapply(1:5, function() {",
+    "  y <- 1",
+    "  z <- x + 1",
+    "})",
+    sep = "\n"
+  ))
+})

@@ -28,8 +28,16 @@ optimize_files <- function(files, optimizers = all_optimizers,
     act_codes <- optim_codes
     # apply one by one each optimization strategy.
     # note that they are applied one after the other (in order)
-    for (act_optim in optimizers) {
-      optim_res <- act_optim(optim_codes)
+    for (i in seq_along(optimizers)) {
+      act_optim <- optimizers[[i]]
+      act_optim_name <- names(optimizers)[[i]]
+      optim_res <- try({
+        act_optim(optim_codes)
+      }, silent = TRUE)
+      if (inherits(optim_res, "try-error")) {
+        warning(paste("Optimizer", act_optim_name, "had errors:\n", optim_res))
+        optim_res <- list(codes = optim_codes)
+      }
       optim_codes <- optim_res$codes
     }
     n_iter <- n_iter + 1

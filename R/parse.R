@@ -6,6 +6,11 @@ parse_flat_data <- function(text) {
   parsed_text <- base::parse(text = text, keep.source = TRUE)
   pd <- utils::getParseData(parsed_text, includeText = TRUE)
 
+  # bug related to styler bug #216
+  if (any(grepl("^\\[[[:digit:]]+ chars quoted with '.']$", pd$text))) {
+    stop("Bug #22 : Your code has a really long string.", call. = FALSE)
+  }
+
   if (nrow(pd) == 0) {
     return(pd)
   }

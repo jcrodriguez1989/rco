@@ -37,6 +37,7 @@ Constant Folding opt_constant_folding
 Constant Propagation opt_constant_propagation
 Dead Code Elimination opt_dead_code
 Dead Store Elimination opt_dead_store
+Common Subexpression Elimination opt_common_subexpr
 " />
 <meta name="twitter:card" content="summary" />
 
@@ -68,7 +69,7 @@ Dead Store Elimination opt_dead_store
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.5</span>
       </span>
     </div>
 
@@ -90,6 +91,9 @@ Dead Store Elimination opt_dead_store
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
+    </li>
     <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
@@ -155,6 +159,7 @@ Dead Store Elimination opt_dead_store
 <li><p>Constant Propagation <code><a href='opt_constant_propagation.html'>opt_constant_propagation</a></code></p></li>
 <li><p>Dead Code Elimination <code><a href='opt_dead_code.html'>opt_dead_code</a></code></p></li>
 <li><p>Dead Store Elimination <code><a href='opt_dead_store.html'>opt_dead_store</a></code></p></li>
+<li><p>Common Subexpression Elimination <code><a href='opt_common_subexpr.html'>opt_common_subexpr</a></code></p></li>
 </ul>
     
     </div>
@@ -163,7 +168,7 @@ Dead Store Elimination opt_dead_store
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>list</code> of length 4.</p>
+    <p>An object of class <code>list</code> of length 5.</p>
     
 
   </div>
