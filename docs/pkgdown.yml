@@ -4,6 +4,7 @@ pkgdown_sha: ~
 articles:
   contributing-an-optimizer: contributing-an-optimizer.html
   docker-readme: docker-readme.html
+  opt-common-subexpr: opt-common-subexpr.html
   opt-constant-folding: opt-constant-folding.html
   opt-constant-propagation: opt-constant-propagation.html
   opt-dead-code: opt-dead-code.html

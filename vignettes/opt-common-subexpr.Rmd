@@ -32,12 +32,85 @@ speed_up <- function(obj) {
 
 ## Background
 
+Common Subexpression Elimination is an optimization that searches for instances of identical expressions, and replaces them with a single variable holding the computed value.
+
+For instance, consider the following code:
+
+```{r eval=FALSE}
+a <- 1 / (8 + 8 + 1 + 9 * 1 ^ 8)
+b <- (8 + 8 + 1 + 9 * 1 ^ 8) * 2
+```
+
+This code computes twice `8 + 8 + 1 + 9 * 1 ^ 8`, this could be evaluated once, assigned to a new variable, and used twice. Like, for example:
+
+```{r eval=FALSE}
+cs_1 <- (8 + 8 + 1 + 9 * 1 ^ 8)
+a <-  1 / cs_1
+b <- cs_1 * 2
+```
 
 ## Example
 
+Consider the following (useless) example:
+
+```{r}
+code <- paste(
+  "a <- b <- c <- 1",
+  "for (i in 1:1000) {",
+  "  a <- a ^ i ^ c",
+  "  b <- b * i ^ c",
+  "  c <- c + i ^ c",
+  "}",
+  sep = "\n"
+)
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_common_subexpr(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and the speed-up:
+
+```{r message=FALSE}
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
 
 ## Implementation
 
+The `opt_common_subexpr` will first detect different "environments", i.e., separate between function definitions and parent environment. Then, for each environment it will detect all those subexpressions in common between at least two expressions. If between two occurrences of the same subexpression, a variable involved in the subexpression is reassigned or a function is called (it can change the environment), then for these two occurrences the optimization is not performed. For all those remaining common subexpressions, the first common parent expression will be detected, a new variable called `cs_#` will be created in the parent, and replaced in each call to the subexpression.
 
 ## To-Do
 
+* Consider functions as common subexpressions?
+  
+  This can have an issue if the common function call returns random values.
+  
+  For example:
+  
+  ```{r eval=FALSE}
+  a <-rnorm(1) * 8
+  b <-rnorm(1) * 18
+  ```
+  
+  Will be wrongly optimized to:
+  
+  ```{r eval=FALSE}
+  cs_1 <- rnorm(1)
+  a <-cs_1 * 8
+  b <-cs_1 * 18
+  ```
+
+* Use information about functions modify the parent env?
+  
+  If the optimizer knows which functions modify their parent env, then function
+  calls won't stop optimization

@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.5</span>
       </span>
     </div>
 
@@ -53,6 +53,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -210,7 +213,7 @@
 <p><img src="opt-dead-store_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
 <pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 23.03922 23.62017 23.91128 27.14801 22.59018 161.7632</code></pre>
+## Expr_2 20.25409 20.57445 21.09738 23.00857 19.49783 139.3286</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
