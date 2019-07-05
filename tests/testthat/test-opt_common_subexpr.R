@@ -279,3 +279,16 @@ test_that("CSE in function call with pkg::", {
     sep = "\n"
   ))
 })
+
+test_that("CSE in assigned fun", {
+  code <- paste(
+    "a <- b <- c(0 - 1 * 2, 0 + 1 * 2)",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "cs_1 <- 1 * 2",
+    "a <- b <- c(0 - cs_1, 0 + cs_1)",
+    sep = "\n"
+  ))
+})
