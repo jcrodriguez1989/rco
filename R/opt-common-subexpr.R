@@ -152,13 +152,12 @@ subexpr_elim <- function(fpd, ids, n_values) {
   # get subexprs parents
   subexprs_parents <- lapply(ids, function(id) get_all_parents(fpd, id))
   # get the first parent in common
-  common_parent <- Reduce(intersect, subexprs_parents)[[1]]
+  common_parents <- Reduce(intersect, subexprs_parents)
+  common_parent <- common_parents[[1]]
 
   # get place where temp var should go (we assume pos_ids are ordered; temp
   # will go before the following expr)
-  fst_expr_parents <- subexprs_parents[[1]]
-  fst_expr_place <- fpd[
-    fpd$id == fst_expr_parents[which(fst_expr_parents == common_parent) - 1], ]
+  fst_expr_place <- get_temp_var_pos(fpd, subexprs_parents[[1]], common_parents)
 
   # get split points
   splitted_ids <- split_ids(fpd, common_parent, fst_expr_place$pos_id, ids)
@@ -275,6 +274,24 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
     fst_expr_fpd[fst_expr_fpd$terminal, "prev_spaces"][[1]]
   var_fpd$pos_id <- create_new_pos_id(fpd, nrow(var_fpd), to_id = fst_expr_id)
   list(fpd = var_fpd, name = var_name)
+}
+
+# Returns the fpd row where new temp var should go before
+#
+# @param fpd A flat parsed data data.frame .
+# @param fst_expr_prnts Numeric vector with the parents ID of the first subexpr.
+# @param common_parents Numeric vector with the IDs of the subexprs common
+#   parents.
+#
+get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
+  # remove common parents that are function call
+  fun_call_prnts <- which(sapply(common_parents, function(comn_prnt)
+    "SYMBOL_FUNCTION_CALL" %in% fpd$token[fpd$parent %in% comn_prnt]))
+  fst_parent <- common_parents[[1]]
+  if (length(fun_call_prnts) > 0) {
+    fst_parent <- common_parents[max(fun_call_prnts) + 1]
+  }
+  fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
 }
 
 # Returns the id of all the parents of a node
