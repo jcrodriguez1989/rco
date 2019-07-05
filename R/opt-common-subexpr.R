@@ -286,7 +286,7 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
 get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
   just_exprs_prnts <- which(sapply(common_parents, function(comn_prnt)
     all(fpd$token[fpd$parent %in% comn_prnt] %in%
-          c("'{'", "expr", "'}'", "';'", "equal_assign"))
+          c("'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT"))
   ))
   fst_parent <- common_parents[[just_exprs_prnts[[1]]]]
   fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
