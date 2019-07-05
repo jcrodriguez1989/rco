@@ -285,8 +285,14 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
 #
 get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
   # remove common parents that are function call
-  fun_call_prnts <- which(sapply(common_parents, function(comn_prnt)
-    "SYMBOL_FUNCTION_CALL" %in% fpd$token[fpd$parent %in% comn_prnt]))
+  fun_call_prnts <- which(sapply(common_parents, function(comn_prnt) {
+    comn_prnt_fpd <- fpd[fpd$parent %in% comn_prnt, ]
+    "SYMBOL_FUNCTION_CALL" %in% comn_prnt_fpd$token ||
+      # case when we have pkg::fun(...)
+      (all(comn_prnt_fpd$token[1:2] == c("expr", "'('")) &&
+         "SYMBOL_FUNCTION_CALL" %in% fpd$token[
+           fpd$parent == comn_prnt_fpd$id[[1]]])
+  }))
   fst_parent <- common_parents[[1]]
   if (length(fun_call_prnts) > 0) {
     fst_parent <- common_parents[max(fun_call_prnts) + 1]

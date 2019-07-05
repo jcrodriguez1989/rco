@@ -263,3 +263,19 @@ test_that("CSE in function call", {
     sep = "\n"
   ))
 })
+
+test_that("CSE in function call with pkg::", {
+  code <- paste(
+    "foo::foo(1, x = 1 + 0, y = 1 + 0 + 2)",
+    "foo::bar(foo(1, x = 1 + 0, y = 1 + 0 + 2))",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "cs_1 <- 1 + 0",
+    "foo::foo(1, x = cs_1, y = cs_1 + 2)",
+    "cs_2 <- 1 + 0",
+    "foo::bar(foo(1, x = cs_2, y = cs_2 + 2))",
+    sep = "\n"
+  ))
+})
