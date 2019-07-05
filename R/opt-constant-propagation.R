@@ -77,6 +77,11 @@ one_propagate <- function(fpd, values) {
       # if function call, then empty the values :'(
       # ( e.g. rm(list=ls()) )
       fun_defs <- act_fpd$parent[act_fpd$token == "FUNCTION"]
+      if (length(fun_defs) > 1) {
+        # remove if a fun def is child of another
+        fun_defs <- fun_defs[sapply(fun_defs, function(x)
+          sum(get_all_parents(act_fpd, x) %in% fun_defs) == 1)]
+      }
       res_fpd <- rbind(
         res_fpd,
         replace_constant_vars(
