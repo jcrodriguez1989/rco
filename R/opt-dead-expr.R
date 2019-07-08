@@ -1,0 +1,158 @@
+#' Optimizer: Dead Expression Elimination
+#'
+#' Performs one dead expression elimination pass.
+#' Carefully examine the results after running this function!
+#'
+#' @param texts A list of character vectors with the code to optimize.
+#'
+#' @examples
+#' code <- paste(
+#'   "foo <- function(x) {",
+#'   "  x ^ 3",
+#'   "  return(x ^ 3)",
+#'   "}",
+#'   sep = "\n"
+#' )
+#' cat(opt_dead_expr(list(code))$codes[[1]])
+#' @export
+#'
+opt_dead_expr <- function(texts) {
+  res <- list()
+  res$codes <- lapply(texts, de_one_file)
+  return(res)
+}
+
+# Executes dead expression elimination on one file of code
+#
+# @param text A character vector with code to optimize.
+#
+de_one_file <- function(text) {
+  fpd <- parse_flat_data(text)
+  # fpd <- flatten_leaves(fpd)
+  res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
+  new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
+  new_fpd <- de_one_fpd(new_fpd)
+  res_fpd <- rbind(res_fpd, new_fpd)
+  if (nrow(res_fpd) > 0) {
+    res_fpd <- res_fpd[order(res_fpd$pos_id), ]
+  }
+
+  deparse_flat_data(res_fpd)
+}
+
+# Executes dead expression elimination of a fpd tree
+#
+# @param fpd A flat parsed data data.frame .
+#
+de_one_fpd <- function(fpd) {
+  res_fpd <- fpd
+
+  # exprs in functions dont have any effect. However, on the global env they
+  # print on console, so just analyze function definitions
+  fun_def_ids <- fpd[fpd$token == "FUNCTION", "parent"]
+
+  # get unassigned expressions
+  dead_exprs_ids <- unlist(lapply(fun_def_ids, function(act_id)
+    get_unassigned_exprs(fpd, act_id)))
+
+  # remove the ones that are last expression of functions
+  lapply(fun_def_ids, function(act_id) get_fun_last_exprs(fpd, act_id))
+  # dead_exprs_ids <- dead_exprs_ids[!is_last_from_fun(fpd, dead_exprs_ids)]
+  browser()
+
+  remove_nodes(res_fpd, dead_exprs_ids)
+}
+
+# Returns the ids of expressions that are not being assigned to a var.
+#
+# @param fpd A flat parsed data data.frame .
+# @param id Numeric indicating the node ID of the function to search for
+#   unassigned expressions.
+#
+get_unassigned_exprs <- function(fpd, id) {
+  funs_body_ids <- sapply(id, function(act_id)
+    tail(fpd$id[fpd$parent == act_id & fpd$token == "expr"], 1)
+  )
+  act_fpd <- get_children(fpd, funs_body_ids)
+
+  # start visiting root nodes
+  visit_nodes <- get_roots(act_fpd)$id
+  exprs_ids <- c()
+  while (length(visit_nodes) > 0) {
+    new_visit <- c()
+    for (act_parent in visit_nodes) {
+      act_prnt_fpd <- get_children(act_fpd, act_parent)
+      act_sblngs <- act_prnt_fpd[act_prnt_fpd$parent == act_parent, ]
+      if (all(act_prnt_fpd$token %in%
+              c(constants, ops, precedence_ops, "expr", "SYMBOL"))) {
+        # it is an expression
+        exprs_ids <- c(exprs_ids, act_parent)
+      } else if (nrow(act_sblngs) == 4 &&
+                 all(c("expr", "'('", "expr", "')'") == act_sblngs$token)) {
+        # it is a function call
+        next
+      } else if ("FUNCTION" %in% act_sblngs$token) {
+        # it is a function def (is going to be analyzed separately)
+        next
+      } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
+        # remove conditional expr
+        new_visit <- c(new_visit, tail(act_sblngs$id[!act_sblngs$terminal], 1))
+      } else if (any(c("LEFT_ASSIGN","EQ_ASSIGN") %in% act_sblngs$token)) {
+        new_visit <- c(new_visit, act_sblngs$id[[3]])
+      } else if ("RIGHT_ASSIGN" %in% act_sblngs$token) {
+        new_visit <- c(new_visit, act_sblngs$id[[1]])
+      } else {
+        new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
+      }
+    }
+    visit_nodes <- new_visit
+  }
+
+  # remove assigned exprs and others
+  exprs_ids <- exprs_ids[!sapply(exprs_ids, function (act_id) {
+    act_sblngs <- act_fpd[act_fpd$parent ==
+                            act_fpd$parent[act_fpd$id == act_id], ]
+    any(assigns %in% act_sblngs$token) # the expr is being assigned
+  })]
+
+  exprs_ids
+}
+
+# Returns the IDs of the exprs that can return in a function.
+#
+# @param fpd A flat parsed data data.frame .
+# @param id Numeric indicating the fun node ID to check.
+#
+get_fun_last_exprs <- function(fpd, id) {
+  fun_body <- fpd$id[fpd$parent == id & fpd$token == "expr"]
+  act_fpd <- get_children(fpd, fun_body)
+
+  returns_ids <- act_fpd$parent[act_fpd$id %in% act_fpd$parent[
+    act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text == "return"]]
+
+  # start visiting root nodes
+  visit_nodes <- get_roots(act_fpd)$id
+  last_exprs_ids <- c()
+  while (length(visit_nodes) > 0) {
+    new_visit <- c()
+    for (act_parent in visit_nodes) {
+      act_prnt_fpd <- get_children(act_fpd, act_parent)
+      act_sblngs <- act_prnt_fpd[act_prnt_fpd$parent == act_parent, ]
+      browser()
+      if (any(loops %in% act_sblngs$token)) {
+        next
+      } else if ("IF" %in% act_sblngs$token) {
+        # visit if body and else body
+      } else if (all(act_prnt_fpd$token %in%
+                     c(constants, ops, precedence_ops, "expr", "SYMBOL"))) {
+      } else {
+        # has multiple exprs
+        new_visit <- c(new_visit,
+                       tail(act_sblngs$id[act_sblngs$token == "expr"], 1))
+      }
+    }
+    visit_nodes <- new_visit
+  }
+
+  return(rep(F, length(id)))
+}

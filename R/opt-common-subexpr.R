@@ -150,7 +150,7 @@ subexpr_elim <- function(fpd, ids, n_values) {
   }
 
   # get subexprs parents
-  subexprs_parents <- lapply(ids, function(id) get_all_parents(fpd, id))
+  subexprs_parents <- lapply(ids, function(id) get_ancestors(fpd, id))
   # get the first parent in common
   common_parents <- Reduce(intersect, subexprs_parents)
   common_parent <- common_parents[[1]]
@@ -213,7 +213,7 @@ split_ids <- function(fpd, parent_id, fst_expr_pos_id, ids) {
   split_points <- do.call(
     rbind, lapply(seq_len(nrow(split_points)), function(i) {
       res <- split_points[i, ]
-      act_sblngs <- fpd[fpd$parent %in% get_all_parents(fpd, res$id), ]
+      act_sblngs <- fpd[fpd$parent %in% get_ancestors(fpd, res$id), ]
       res <- rbind(res, act_sblngs[act_sblngs$token %in% loops, ])
       res
     }))
@@ -291,20 +291,6 @@ get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
   ))
   fst_parent <- common_parents[[just_exprs_prnts[[1]]]]
   fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
-}
-
-# Returns the id of all the parents of a node
-#
-# @param fpd A flat parsed data data.frame .
-# @param id Numeric indicating the node ID to get parents.
-#
-get_all_parents <- function(fpd, id) {
-  res <- act_id <- id
-  while (length(act_id) > 0 && act_id > 0) {
-    act_id <- fpd[fpd$id == act_id, "parent"]
-    res <- c(res, act_id)
-  }
-  res
 }
 
 # Returns the ids of the fpd SYMBOLs that are being assigned

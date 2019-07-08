@@ -80,7 +80,7 @@ one_propagate <- function(fpd, values) {
       if (length(fun_defs) > 1) {
         # remove if a fun def is child of another
         fun_defs <- fun_defs[sapply(fun_defs, function(x)
-          sum(get_all_parents(act_fpd, x) %in% fun_defs) == 1)]
+          sum(get_ancestors(act_fpd, x) %in% fun_defs) == 1)]
       }
       res_fpd <- rbind(
         res_fpd,

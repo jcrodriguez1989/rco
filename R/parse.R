@@ -89,6 +89,20 @@ get_children <- function(fpd, ids, include_father = TRUE) {
   return(act_fpd)
 }
 
+# Returns the id of ancestors of a node (parents and their parents)
+#
+# @param fpd A flat parsed data data.frame .
+# @param id Numeric indicating the node ID to get parents.
+#
+get_ancestors <- function(fpd, id) {
+  res <- act_id <- id
+  while (length(act_id) > 0 && act_id > 0) {
+    act_id <- fpd[fpd$id == act_id, "parent"]
+    res <- c(res, act_id)
+  }
+  res
+}
+
 # Replaces exprs with just one child, by its child
 #
 # @param fpd a flat parsed data data.frame .
