@@ -204,7 +204,7 @@ split_ids <- function(fpd, parent_id, fst_expr_pos_id, ids) {
     aux_fpd <- get_children(fpd, act_split$parent)
     subexprs <- ids[ids %in% aux_fpd$id]
     if (length(subexprs) > 0) {
-      res <- max(aux_fpd$pos_id[aux_fpd$id %in% subexprs]) + 10e-5
+      res <- max(aux_fpd$pos_id[aux_fpd$id %in% subexprs]) + 10e-4
     }
     res
   })
@@ -367,12 +367,12 @@ create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
   to_pos_id <- fpd[fpd$id == to_id, "pos_id"]
   if (length(from_pos_id) == 0) {
     from_pos_id <- c(fpd[which(fpd$id == to_id) - 1, "pos_id"],
-                     to_pos_id -1 )[[1]]
+                     to_pos_id - 1)[[1]]
   }
 
-  if (from_pos_id + 1 != to_pos_id && from_id == "") {
+  if (to_pos_id - from_pos_id > 1 && from_id == "") {
     from_pos_id <- to_pos_id - 1
   }
 
-  from_pos_id + (10e-5 * seq_len(n))
+  from_pos_id + (10e-4 * seq_len(n))
 }
