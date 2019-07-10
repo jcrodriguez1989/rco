@@ -17,6 +17,9 @@
 #' @export
 #'
 opt_dead_expr <- function(texts) {
+  # todo: check if dead expressions have never assigned vars.
+  # foo() { x; return(8818) } is not equivalent to foo() { return(8818) }
+  # as the first one might have an error.
   res <- list()
   res$codes <- lapply(texts, de_one_file)
   return(res)
@@ -87,25 +90,14 @@ get_unassigned_exprs <- function(fpd, id) {
         c(constants, ops, precedence_ops, "expr", "SYMBOL"))) {
         # it is an expression
         exprs_ids <- c(exprs_ids, act_parent)
-      } else if (nrow(act_sblngs) == 4 &&
-        all(c("expr", "'('", "expr", "')'") == act_sblngs$token)) {
-        # it is a function call
-        next
-      } else if ("FUNCTION" %in% act_sblngs$token) {
-        # it is a function def (is going to be analyzed separately)
-        next
       } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
         # remove conditional expr
         body_ids <- act_sblngs$id[!act_sblngs$terminal]
         body_ids <- body_ids[seq(
           any(c("')'", "forcond") %in% act_sblngs$token) + 1, length(body_ids))]
         new_visit <- c(new_visit, body_ids)
-      } else if (any(c("LEFT_ASSIGN", "EQ_ASSIGN") %in% act_sblngs$token)) {
-        new_visit <- c(new_visit, act_sblngs$id[[3]])
-      } else if ("RIGHT_ASSIGN" %in% act_sblngs$token) {
-        new_visit <- c(new_visit, act_sblngs$id[[1]])
       } else {
-        new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
+        next
       }
     }
     visit_nodes <- new_visit

@@ -66,6 +66,18 @@ test_that("eliminate DE in fun", {
   ))
 })
 
+test_that("eliminate DE in fun with ';", {
+  code <- paste(
+    "bar <- function(x) { 8818; 8818; 8818; 8818 }",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_expr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "bar <- function(x) { ; ; ; 8818 }",
+    sep = "\n"
+  ))
+})
+
 test_that("eliminate DE in loop", {
   code <- paste(
     "bar <- function(x) {",
@@ -189,6 +201,26 @@ test_that("dont eliminate assigns", {
     "    x <- 3",
     "  }",
     "  x <- 3",
+    "  x + 8818",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("dont eliminate part of exprs", {
+  code <- paste(
+    "bar <- function(x) {",
+    "  tp <- ip[startsWith(ip, token)]",
+    "  completions <- lapply(tp, function(package) NULL)",
+    "  x + 8818",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_expr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "bar <- function(x) {",
+    "  tp <- ip[startsWith(ip, token)]",
+    "  completions <- lapply(tp, function(package) NULL)",
     "  x + 8818",
     "}",
     sep = "\n"
