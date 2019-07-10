@@ -58,7 +58,7 @@ one_fold <- function(pd, fold_floats) {
     for (act_parent in visit_nodes) {
       act_pd <- get_children(pd, act_parent)
       if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr")) &&
-          !is_minus_constant(act_pd, act_parent)) {
+        !is_minus_constant(act_pd, act_parent)) {
         # all the children are terminals or ops. try to evaluate it
         # And it is not just -constant
         act_code_pd <- pd[pd$id == act_parent, ]
@@ -141,7 +141,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
 
   # it is a constant or -constant
   if (!fold_floats && "NUM_CONST" %in% res$token && !is.na(eval_val) &&
-      floor(eval_val) != eval_val) {
+    floor(eval_val) != eval_val) {
     return(NULL)
   }
   return(res)
@@ -157,12 +157,12 @@ na_to_correct_str <- function(na) {
     return(na)
   }
   switch(class(na),
-         "character" = "NA_character_",
-         "complex" = "NA_complex_",
-         "integer" = "NA_integer_",
-         "numeric" = "NA_real_",
-         "logical" = "NA"
-         )
+    "character" = "NA_character_",
+    "complex" = "NA_complex_",
+    "integer" = "NA_integer_",
+    "numeric" = "NA_real_",
+    "logical" = "NA"
+  )
 }
 
 # Returns a logical indicating if a node is -constant

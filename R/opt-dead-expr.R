@@ -96,8 +96,10 @@ get_unassigned_exprs <- function(fpd, id) {
         next
       } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
         # remove conditional expr
-        new_visit <- c(new_visit,
-                       utils::tail(act_sblngs$id[!act_sblngs$terminal], 1))
+        new_visit <- c(
+          new_visit,
+          utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
+        )
       } else if (any(c("LEFT_ASSIGN", "EQ_ASSIGN") %in% act_sblngs$token)) {
         new_visit <- c(new_visit, act_sblngs$id[[3]])
       } else if ("RIGHT_ASSIGN" %in% act_sblngs$token) {

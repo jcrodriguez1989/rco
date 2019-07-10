@@ -85,7 +85,8 @@ one_propagate <- function(fpd, values) {
       res_fpd <- rbind(
         res_fpd,
         replace_constant_vars(
-          remove_nodes(act_fpd, fun_defs), act_node$id,values),
+          remove_nodes(act_fpd, fun_defs), act_node$id, values
+        ),
         # should I pass values to function defs propagation?
         one_propagate(get_children(act_fpd, fun_defs), list())$fpd
       )

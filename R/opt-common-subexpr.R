@@ -59,7 +59,8 @@ cs_one_fpd <- function(fpd, n_values) {
 
   # get different envs (parent env and function defs)
   env_parent_ids <- unique(
-    fpd[fpd$token == "FUNCTION" | fpd$parent <= 0, "parent"])
+    fpd[fpd$token == "FUNCTION" | fpd$parent <= 0, "parent"]
+  )
 
   # for each env do the common subexpr elimination
   for (env_parent_id in env_parent_ids) {
@@ -95,8 +96,10 @@ common_subexpr_in_env <- function(fpd, id, n_values) {
     env_fpd <- subexpr_elim(env_fpd, act_ids, n_values)
   }
 
-  res_fpd <- rbind(res_fpd, env_fpd,
-                   unique(get_children(act_fpd, fun_def_prnt_ids)))
+  res_fpd <- rbind(
+    res_fpd, env_fpd,
+    unique(get_children(act_fpd, fun_def_prnt_ids))
+  )
   res_fpd[order(res_fpd$pos_id), ]
 }
 
@@ -115,8 +118,8 @@ get_common_subexprs <- function(fpd, id, n_values) {
       aux_fpd <- get_children(fpd, env_exprs_id)
       res <- NULL
       if (all(aux_fpd$token %in%
-              c(constants, ops, precedence_ops, "expr", "SYMBOL")) &&
-          sum(aux_fpd$token %in% c(constants, "SYMBOL")) >= n_values) {
+        c(constants, ops, precedence_ops, "expr", "SYMBOL")) &&
+        sum(aux_fpd$token %in% c(constants, "SYMBOL")) >= n_values) {
         res <- c(
           expr_id = env_exprs_id,
           text = paste(aux_fpd[aux_fpd$terminal, "text"], collapse = " ")
@@ -127,7 +130,8 @@ get_common_subexprs <- function(fpd, id, n_values) {
 
   # get common subexpressions, and return a list with their ids
   common_subexprs <- env_subexprs[duplicated(env_subexprs[, "text"]), ,
-                                  drop = FALSE]
+    drop = FALSE
+  ]
   res <- lapply(unique(common_subexprs[, "text"]), function(act_common) {
     env_subexprs[env_subexprs[, "text"] == act_common, "expr_id"]
   })
@@ -145,7 +149,7 @@ get_common_subexprs <- function(fpd, id, n_values) {
 #
 subexpr_elim <- function(fpd, ids, n_values) {
   if (sum(get_children(fpd, ids[[1]])$token %in% c(constants, "SYMBOL")) <
-      n_values) {
+    n_values) {
     return(fpd)
   }
 
@@ -216,7 +220,8 @@ split_ids <- function(fpd, parent_id, fst_expr_pos_id, ids) {
       act_sblngs <- fpd[fpd$parent %in% get_ancestors(fpd, res$id), ]
       res <- rbind(res, act_sblngs[act_sblngs$token %in% loops, ])
       res
-    }))
+    })
+  )
 
   # split subexpr ids
   cs_pos <- fpd$pos_id[fpd$id %in% ids]
@@ -286,9 +291,10 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
 get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
   just_exprs_prnts <- which(sapply(common_parents, function(comn_prnt)
     all(fpd$token[fpd$parent %in% comn_prnt] %in%
-          c("'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT", "SYMBOL",
-            constants))
-  ))
+      c(
+        "'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT", "SYMBOL",
+        constants
+      ))))
   fst_parent <- common_parents[[just_exprs_prnts[[1]]]]
   fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
 }
@@ -299,11 +305,12 @@ get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
 # @param id Numeric indicating the node ID to find assigns.
 #
 get_assigns_ids <- function(fpd, id) {
-  act_fpd <-get_children(fpd, id)
+  act_fpd <- get_children(fpd, id)
   # get parents of <- <<- -> ->> and =
   assign_exprs_prnts <- act_fpd[
     act_fpd$token %in% assigns & act_fpd$text != ":=",
-    "parent"]
+    "parent"
+  ]
   # get the assigned SYMBOL fpd id
   sapply(assign_exprs_prnts, function(assign_exprs_prnt) {
     aux <- act_fpd[act_fpd$parent == assign_exprs_prnt, ]
@@ -352,8 +359,10 @@ create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
   from_pos_id <- fpd[fpd$id == from_id, "pos_id"]
   to_pos_id <- fpd[fpd$id == to_id, "pos_id"]
   if (length(from_pos_id) == 0) {
-    from_pos_id <- c(fpd[which(fpd$id == to_id) - 1, "pos_id"],
-                     to_pos_id - 1)[[1]]
+    from_pos_id <- c(
+      fpd[which(fpd$id == to_id) - 1, "pos_id"],
+      to_pos_id - 1
+    )[[1]]
   }
 
   if (to_pos_id - from_pos_id > 1 && from_id == "") {
