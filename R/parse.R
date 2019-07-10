@@ -85,7 +85,11 @@ get_children <- function(fpd, ids, include_father = TRUE) {
     act_fpd <- rbind(act_fpd, fpd[fpd$id %in% act_childs, ])
     act_childs <- fpd[fpd$parent %in% fpd[fpd$id %in% act_childs, "id"], "id"]
   }
-  act_fpd <- act_fpd[order(act_fpd$pos_id), ]
+
+  if (nrow(act_fpd) > 0) {
+    act_fpd <- act_fpd[order(act_fpd$pos_id), ]
+  }
+
   return(act_fpd)
 }
 
@@ -230,6 +234,43 @@ replace_pd <- function(fpd_from, fpd_replace) {
 remove_nodes <- function(fpd, ids) {
   to_remove_fpd <- get_children(fpd, ids)
   new_fpd <- fpd[!fpd$id %in% to_remove_fpd$id, ]
+  return(new_fpd)
+}
+
+# Returns the fpd, where branches starting from ids were removed, but kees new
+# lines and spaces
+#
+# @param fpd a flat parsed data data.frame .
+# @param ids an ids vector of branches id to remove.
+#
+pretty_remove_nodes <- function(fpd, ids) {
+  to_remove_fpd <- get_children(fpd, ids)
+  new_fpd <- fpd[!fpd$id %in% to_remove_fpd$id, ]
+
+  for (act_id in ids) {
+    act_rm_fpd <- get_children(to_remove_fpd, act_id)
+
+    # check if parent is loop or if, and doesnt have '{ }'
+    rm_sblngs <- new_fpd[new_fpd$parent ==
+      act_rm_fpd$parent[act_rm_fpd$id == act_id], ]
+    if (any(c("IF", "ELSE", loops) %in% rm_sblngs$token) &&
+      !"'{'" %in% rm_sblngs$token) {
+      # add an {} after loop or if
+      new_fpd <- rbind(new_fpd, replace_pd(act_rm_fpd, parse_flat_data("{}")))
+      next
+    }
+
+    rm_last_term_id <- utils::tail(act_rm_fpd$id[act_rm_fpd$terminal], 1)
+    rm_last_term <- act_rm_fpd[act_rm_fpd$id == rm_last_term_id, ]
+    kp_last_term_id <- utils::tail(new_fpd$id[new_fpd$terminal &
+      new_fpd$pos_id < rm_last_term$pos_id], 1)
+    kp_last_term <- new_fpd[new_fpd$id == kp_last_term_id, ]
+    new_fpd$next_lines[new_fpd$id == kp_last_term_id] <-
+      max(rm_last_term$next_lines, kp_last_term$next_lines)
+    new_fpd$next_spaces[new_fpd$id == kp_last_term_id] <-
+      max(rm_last_term$next_spaces, kp_last_term$next_spaces)
+  }
+
   return(new_fpd)
 }
 
