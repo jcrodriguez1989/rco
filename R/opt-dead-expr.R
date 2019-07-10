@@ -96,10 +96,10 @@ get_unassigned_exprs <- function(fpd, id) {
         next
       } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
         # remove conditional expr
-        new_visit <- c(
-          new_visit,
-          utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
-        )
+        body_ids <- act_sblngs$id[!act_sblngs$terminal]
+        body_ids <- body_ids[seq(
+          any(c("')'", "forcond") %in% act_sblngs$token) + 1, length(body_ids))]
+        new_visit <- c(new_visit, body_ids)
       } else if (any(c("LEFT_ASSIGN", "EQ_ASSIGN") %in% act_sblngs$token)) {
         new_visit <- c(new_visit, act_sblngs$id[[3]])
       } else if ("RIGHT_ASSIGN" %in% act_sblngs$token) {
@@ -148,7 +148,8 @@ get_fun_last_exprs <- function(fpd, id) {
         next
       } else if ("IF" %in% act_sblngs$token) {
         # visit if body and else body
-        browser()
+        if_else_body_ids <- act_sblngs$id[act_sblngs$token == "expr"][-1]
+        new_visit <- c(new_visit, if_else_body_ids)
       } else {
         last_exprs_ids <- c(last_exprs_ids, act_parent)
       }
