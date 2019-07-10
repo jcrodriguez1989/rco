@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
       </span>
     </div>
 
@@ -63,6 +63,9 @@
     </li>
     <li>
       <a href="../articles/opt-dead-code.html">Dead Code Elimination</a>
+    </li>
+    <li>
+      <a href="../articles/opt-dead-expr.html">Dead Expression Elimination</a>
     </li>
     <li>
       <a href="../articles/opt-dead-store.html">Dead Store Elimination</a>
@@ -202,7 +205,7 @@
 <p><img src="opt-dead-code_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
 <pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 81.75707 74.03718 46.68389 60.17265 46.11829 268.0083</code></pre>
+## Expr_2 79.42494 71.12549 52.27889 63.48395 50.38289 212.7684</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">

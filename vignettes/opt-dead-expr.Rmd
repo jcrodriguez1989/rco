@@ -1,0 +1,129 @@
+---
+output: rmarkdown::html_vignette
+title: Dead Expression Elimination
+vignette: >
+  %\VignetteIndexEntry{Dead Expression Elimination}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
+}
+```
+
+# Dead Expression Elimination
+
+## Background
+
+Dead Expression Elimination is an optimization that intends to remove those expressions that do not modify the environment.
+
+In R, when evaluating an expression which is not assigned to any variable, its result will be seen in the console. However, when the expression is within a function definition, the value will not be printed, the environment will not be modified, and anyway the computational cost will be incurred.
+
+For example, in the code:
+
+```{r eval=FALSE}
+foo <- function() {
+  val <- rnorm(1)
+  e <- exp(1)
+  e ^ val
+  res <- e ^ val
+}
+```
+
+The unassigned `e ^ val` expression is a dead expression, and could be removed.
+
+This optimization strategy is closely related to [dead store elimination](opt-dead-store.html), since when a dead store is deleted, it is possible that a dead expression is generated.
+
+## Example
+
+Consider the following example:
+
+```{r}
+code <- paste(
+  "foo <- function(n) {",
+  "  i <- 0",
+  "  res <- 0",
+  "  while (i < n) {",
+  "    res <- res + i",
+  "    i <- i + 1",
+  "    res",
+  "  }",
+  "  res",
+  "}",
+  "foo(10000)",
+  sep = "\n"
+)
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_dead_expr(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and the speed-up:
+
+```{r message=FALSE}
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
+
+## Implementation
+
+The `opt_dead_expr` detects which code chunks are function definitions. Then for each function, the optimizer gets it body, detects dead expressions, i.e., not assigned expressions, and eliminates them if they are not returned by the function.
+
+An expression will be considered a dead expression if:
+
+  * Its result is not assigned to a variable.
+  * It contains subexpressions only in: `r c(rco:::constants, rco:::ops, rco:::precedence_ops, "expr", "SYMBOL")`.
+
+## To-Do
+
+* Check if dead expressions have never-assigned vars?
+  
+  The optimizer is currently eliminating any dead expression, however, the code:
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    x
+    return(8818)
+  }
+  ```
+  
+  is not equivalent to
+  
+  ```{r eval=FALSE}
+  foo <- function() {
+    return(8818)
+  }
+  ```
+  Both functions will return the same value, however, the first one will give an error similar to:
+  
+  ```{r eval=FALSE}
+  foo()
+  ## Error in foo() : object 'x' not found
+  ```

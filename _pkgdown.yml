@@ -18,6 +18,8 @@ navbar:
           href: articles/opt-constant-propagation.html
         - text: "Dead Code Elimination"
           href: articles/opt-dead-code.html
+        - text: "Dead Expression Elimination"
+          href: articles/opt-dead-expr.html
         - text: "Dead Store Elimination"
           href: articles/opt-dead-store.html
     - text: "Articles"

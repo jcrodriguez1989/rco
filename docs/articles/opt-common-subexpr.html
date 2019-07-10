@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
       </span>
     </div>
 
@@ -63,6 +63,9 @@
     </li>
     <li>
       <a href="../articles/opt-dead-code.html">Dead Code Elimination</a>
+    </li>
+    <li>
+      <a href="../articles/opt-dead-expr.html">Dead Expression Elimination</a>
     </li>
     <li>
       <a href="../articles/opt-dead-store.html">Dead Store Elimination</a>
@@ -171,8 +174,8 @@
 <a class="sourceLine" id="cb7-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-common-subexpr_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 74.28978 70.86998 56.34363 64.49944 56.13298 125.0589</code></pre>
+<pre><code>##            Min. 1st Qu.   Median    Mean  3rd Qu.     Max.
+## Expr_2 74.44156 64.7463 65.37001 66.3593 56.59315 103.0531</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">

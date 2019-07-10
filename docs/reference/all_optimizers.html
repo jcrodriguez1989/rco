@@ -37,6 +37,7 @@ Constant Folding opt_constant_folding
 Constant Propagation opt_constant_propagation
 Dead Code Elimination opt_dead_code
 Dead Store Elimination opt_dead_store
+Dead Expression Elimination opt_dead_expr
 Common Subexpression Elimination opt_common_subexpr
 " />
 <meta name="twitter:card" content="summary" />
@@ -69,7 +70,7 @@ Common Subexpression Elimination opt_common_subexpr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
       </span>
     </div>
 
@@ -102,6 +103,9 @@ Common Subexpression Elimination opt_common_subexpr
     </li>
     <li>
       <a href="../articles/opt-dead-code.html">Dead Code Elimination</a>
+    </li>
+    <li>
+      <a href="../articles/opt-dead-expr.html">Dead Expression Elimination</a>
     </li>
     <li>
       <a href="../articles/opt-dead-store.html">Dead Store Elimination</a>
@@ -159,6 +163,7 @@ Common Subexpression Elimination opt_common_subexpr
 <li><p>Constant Propagation <code><a href='opt_constant_propagation.html'>opt_constant_propagation</a></code></p></li>
 <li><p>Dead Code Elimination <code><a href='opt_dead_code.html'>opt_dead_code</a></code></p></li>
 <li><p>Dead Store Elimination <code><a href='opt_dead_store.html'>opt_dead_store</a></code></p></li>
+<li><p>Dead Expression Elimination <code><a href='opt_dead_expr.html'>opt_dead_expr</a></code></p></li>
 <li><p>Common Subexpression Elimination <code><a href='opt_common_subexpr.html'>opt_common_subexpr</a></code></p></li>
 </ul>
     
@@ -168,7 +173,7 @@ Common Subexpression Elimination opt_common_subexpr
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>list</code> of length 5.</p>
+    <p>An object of class <code>list</code> of length 6.</p>
     
 
   </div>
