@@ -81,7 +81,7 @@ one_dead_store <- function(fpd) {
 dead_store_in_fun <- function(fpd, id) {
   # get the expression of the function
   expr_id <- rev(fpd$id[fpd$parent == id &
-                          fpd$token %in% c("expr", "SYMBOL", constants)])[[1]]
+    fpd$token %in% c("expr", "SYMBOL", constants)])[[1]]
 
   # we are going to remove the variables that are assigned, but not used
   ass_vars <- ods_get_assigned_vars(fpd, expr_id)
@@ -172,7 +172,8 @@ remove_assigns <- function(fpd, vars) {
     act_prnt_ids <- fpd$parent[
       fpd$parent %in% act_prnt_ids &
         fpd$token %in% assigns &
-        fpd$text %in% c("<-", "=", "->")]
+        fpd$text %in% c("<-", "=", "->")
+    ]
 
     for (act_prnt_id in act_prnt_ids) {
       # eliminate each assignation of the dead store
@@ -193,7 +194,7 @@ remove_assigns <- function(fpd, vars) {
 
       # remove assignment parent expr and siblings
       new_ass_fpd <- new_ass_fpd[!new_ass_fpd$id %in%
-                                   c(act_prnt_id, act_sblngs$id), ]
+        c(act_prnt_id, act_sblngs$id), ]
       new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
 
       # the expr to keep will skip the assignment expr in the tree
@@ -203,7 +204,8 @@ remove_assigns <- function(fpd, vars) {
       new_ass_fpd <- new_ass_fpd[order(new_ass_fpd$pos_id), ]
       new_ass_fpd[, c("next_spaces", "next_lines", "prev_spaces")] <-
         replace_pd(ass_fpd, new_ass_fpd)[
-          , c("next_spaces", "next_lines", "prev_spaces")]
+          , c("next_spaces", "next_lines", "prev_spaces")
+        ]
       fpd <- rbind(
         remove_nodes(fpd, act_prnt_id),
         new_ass_fpd

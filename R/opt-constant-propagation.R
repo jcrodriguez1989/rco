@@ -80,12 +80,13 @@ one_propagate <- function(fpd, values) {
       if (length(fun_defs) > 1) {
         # remove if a fun def is child of another
         fun_defs <- fun_defs[sapply(fun_defs, function(x)
-          sum(get_all_parents(act_fpd, x) %in% fun_defs) == 1)]
+          sum(get_ancestors(act_fpd, x) %in% fun_defs) == 1)]
       }
       res_fpd <- rbind(
         res_fpd,
         replace_constant_vars(
-          remove_nodes(act_fpd, fun_defs), act_node$id,values),
+          remove_nodes(act_fpd, fun_defs), act_node$id, values
+        ),
         # should I pass values to function defs propagation?
         one_propagate(get_children(act_fpd, fun_defs), list())$fpd
       )
