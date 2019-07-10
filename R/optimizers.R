@@ -6,6 +6,7 @@
 #'   \item Constant Propagation \code{\link{opt_constant_propagation}}
 #'   \item Dead Code Elimination \code{\link{opt_dead_code}}
 #'   \item Dead Store Elimination \code{\link{opt_dead_store}}
+#'   \item Dead Expression Elimination \code{\link{opt_dead_expr}}
 #'   \item Common Subexpression Elimination \code{\link{opt_common_subexpr}}
 #' }
 #'
@@ -16,5 +17,6 @@ all_optimizers <- list(
   "Constant Propagation" = opt_constant_propagation,
   "Dead Code Elimination" = opt_dead_code,
   "Dead Store Elimination" = opt_dead_store,
+  "Dead Expression Elimination" = opt_dead_expr,
   "Common Subexpression Elimination" = opt_common_subexpr
 )
