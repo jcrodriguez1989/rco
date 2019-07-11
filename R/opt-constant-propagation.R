@@ -277,7 +277,9 @@ only_uses_ops <- function(fpd, id) {
 #
 replace_constant_vars <- function(fpd, id, constant_vars) {
   # only edit SYMBOLS that are in the constant vars
-  to_edit <- fpd$token == "SYMBOL" & fpd$text %in% names(constant_vars)
+  to_edit <- fpd$token == "SYMBOL" & fpd$text %in% names(constant_vars) &
+    !sapply(fpd$parent, function(act_prnt) # dont replace SYMBOL$SYMBOL
+      "'$'" %in% fpd$token[fpd$parent == act_prnt])
   new_fpd <- fpd[!to_edit, ]
   to_edit_fpd <- fpd[to_edit, ]
   for (i in seq_len(nrow(to_edit_fpd))) {

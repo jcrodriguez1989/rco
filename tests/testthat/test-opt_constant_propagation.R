@@ -591,3 +591,21 @@ test_that("constant propagate function call", {
     sep = "\n"
   ))
 })
+
+test_that("dont propagate right to $ or @", {
+  code <- paste(
+    "name <- NULL",
+    "c(foo$name, foo@name)",
+    "foo$name",
+    "foo@name",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "name <- NULL",
+    "c(foo$name, foo@name)",
+    "foo$name",
+    "foo@name",
+    sep = "\n"
+  ))
+})
