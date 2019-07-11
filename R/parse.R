@@ -159,7 +159,7 @@ eq_assign_to_expr <- function(fpd) {
     act_fpd <- new_fpd[act_idx + -1:1, ]
     new_fpd <- new_fpd[-(act_idx + -1:1), ]
     expr_fpd <- act_fpd[1, ]
-    act_fpd[1, "pos_id"] <- act_fpd[1, "pos_id"] + 10e-5
+    act_fpd$pos_id[[1]] <- act_fpd$pos_id[[1]] + 10e-4
     expr_fpd$token <- "expr"
     expr_fpd$terminal <- FALSE
     expr_fpd$text <- paste(act_fpd$text, collapse = " ")
@@ -203,7 +203,7 @@ replace_pd <- function(fpd_from, fpd_replace) {
     )
 
   # fix pos_ids
-  new_fpd$pos_id <- from_root$pos_id + seq(0, nrow(new_fpd) - 1) * 10e-5
+  new_fpd$pos_id <- create_new_pos_id(fpd_from, nrow(new_fpd), from_root$id)
 
   # copy first prev_spaces, and last next_spaces and lines
   from_terms <- fpd_from[fpd_from$terminal, ]
@@ -224,6 +224,31 @@ replace_pd <- function(fpd_from, fpd_replace) {
   }
 
   return(new_fpd)
+}
+
+# Given a fpd and from or to id, it creates n new pos_ids
+#
+# @param fpd A flat parsed data data.frame .
+# @param n Numeric indicating the number of pos_ids to create.
+# @param from_id Numeric indicating the node ID to find fun calls.
+# @param to_id Numeric indicating the node ID to find fun calls.
+#
+create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
+  fpd <- fpd[order(fpd$pos_id), ]
+  from_pos_id <- fpd[fpd$id == from_id, "pos_id"]
+  to_pos_id <- fpd[fpd$id == to_id, "pos_id"]
+  if (length(from_pos_id) == 0) {
+    from_pos_id <- c(
+      fpd[which(fpd$id == to_id) - 1, "pos_id"],
+      to_pos_id - 1
+    )[[1]]
+  }
+
+  if (to_pos_id - from_pos_id > 1 && from_id == "") {
+    from_pos_id <- to_pos_id - 1
+  }
+
+  from_pos_id + (10e-4 * seq_len(n))
 }
 
 # Returns the fpd, where branches starting from ids were removed

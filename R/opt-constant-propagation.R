@@ -291,9 +291,8 @@ replace_constant_vars <- function(fpd, id, constant_vars) {
     new_act_fpd$parent[new_act_fpd$parent != 0] <-
       paste0(act_fpd$id, "_", new_act_fpd$parent[new_act_fpd$parent != 0])
     new_act_fpd$parent[new_act_fpd$parent == 0] <- act_fpd$parent
-    # .Machine$double.eps not working instead of 10e-5
-    new_act_fpd$pos_id <- act_fpd$pos_id +
-      (10e-5 * (seq_len(nrow(new_act_fpd)) - 1))
+    new_act_fpd$pos_id <-
+      create_new_pos_id(act_fpd, nrow(new_act_fpd), act_fpd$id)
     new_act_fpd$next_spaces[nrow(new_act_fpd)] <- act_fpd$next_spaces
     new_act_fpd$next_lines[nrow(new_act_fpd)] <- act_fpd$next_lines
     new_act_fpd$prev_spaces[which(new_act_fpd$terminal)[[1]]] <-

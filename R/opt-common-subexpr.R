@@ -238,6 +238,9 @@ split_ids <- function(fpd, parent_id, fst_expr_pos_id, ids) {
 # @param ids Numeric vector indicating common subexprs IDs.
 #
 apply_subexpr_elim <- function(fpd, parent_id, fst_expr_id, ids) {
+  # add braces if it was a function def, and it did not have
+  fpd <- add_braces(fpd, fst_expr_id)
+
   # create temp var fpd
   new_var <- create_temp_var(fpd, parent_id, fst_expr_id, ids)
   res_fpd <- rbind(fpd, new_var$fpd)
@@ -257,7 +260,7 @@ apply_subexpr_elim <- function(fpd, parent_id, fst_expr_id, ids) {
 #
 # @param fpd A flat parsed data data.frame .
 # @param parent_id Numeric indicating the node ID of the subexprs common parent.
-# @param fst_expr_id Numeric indicating the id where temp var should go.
+# @param fst_expr_id Numeric indicating the id where temp var should go before.
 # @param ids Numeric vector indicating common subexprs IDs.
 #
 create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
@@ -281,6 +284,56 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
   list(fpd = var_fpd, name = var_name)
 }
 
+# Returns and fpd where its node body has been embraced if it was not
+#
+# @param fpd A flat parsed data data.frame .
+# @param id Numeric indicating the node ID of the body.
+#
+add_braces <- function(fpd, id) {
+  node_sblngs <- fpd[fpd$parent == fpd$parent[fpd$id == id], ]
+  # if fpd new var goes in a function def with no '{', '}', then add them
+  if (!any(c(loops, "IF", "ELSE", "FUNCTION") %in% node_sblngs$token)) {
+    return(fpd)
+  }
+
+  id <- utils::tail(node_sblngs$id[node_sblngs$token == "expr"], 1)
+  if ("'{'" %in% fpd$token[fpd$parent == id]) {
+    # it has '{', '}'
+    return(fpd)
+  }
+
+  # get old code, add braces and parse the fpd again
+  old_fpd <- get_children(fpd, id)
+  new_code <- deparse_flat_data(old_fpd)
+  new_code <- paste0("{\n  ", sub("^\n*", "", new_code), "\n}")
+  new_fpd <- flatten_leaves(parse_flat_data(new_code))
+  # fix pos ids
+  new_fpd <- replace_pd(old_fpd, new_fpd)
+  # add spaces to braces
+  new_fpd$prev_spaces[new_fpd$parent == id & new_fpd$token == "'}'"] <-
+    new_fpd$prev_spaces[new_fpd$parent == id & new_fpd$token == "'{'"]
+  # fix ids to keep the old ones
+  old_fpd_rows <- which(new_fpd$id == id |
+    (new_fpd$parent == id & new_fpd$token != "expr"))
+  new_fpd$id[old_fpd_rows] <- paste0("emb_", id, "_", c("expr", "{", "}"))
+  new_fpd$id[-old_fpd_rows] <- old_fpd$id
+  new_fpd$parent[-old_fpd_rows] <- old_fpd$parent
+  new_fpd$parent[new_fpd$id == id] <- paste0("emb_", id, "_", "expr")
+  new_fpd$parent[new_fpd$id %in% paste0("emb_", id, "_", c("{", "}"))] <-
+    paste0("emb_", id, "_", "expr")
+
+  # fix pos ids
+  new_fpd$pos_id[-old_fpd_rows] <- old_fpd$pos_id
+  new_fpd$pos_id[1:3] <- create_new_pos_id(old_fpd, 3, to_id = old_fpd$id[[2]])
+  new_fpd$pos_id[nrow(new_fpd)] <-
+    create_new_pos_id(old_fpd, 1, from_id = utils::tail(old_fpd$id, 1))
+
+  rbind(
+    remove_nodes(fpd, id),
+    new_fpd
+  )
+}
+
 # Returns the fpd row where new temp var should go before
 #
 # @param fpd A flat parsed data data.frame .
@@ -294,7 +347,9 @@ get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
       c(
         "'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT", "SYMBOL",
         constants
-      ))))
+      )) ||
+      "FUNCTION" %in% fpd$token[fpd$parent %in% comn_prnt]
+  ))
   fst_parent <- common_parents[[just_exprs_prnts[[1]]]]
   fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
 }
@@ -345,29 +400,4 @@ create_new_var <- function(fpd, prefix = "cs_") {
   var_numbs <- sub(ptrn, "", term_texts)
   prev_num <- suppressWarnings(max(c(0, as.numeric(var_numbs)), na.rm = TRUE))
   paste0(prefix, prev_num + 1)
-}
-
-# Given a fpd and from or to id, it creates n new pos_ids
-#
-# @param fpd A flat parsed data data.frame .
-# @param n Numeric indicating the number of pos_ids to create.
-# @param from_id Numeric indicating the node ID to find fun calls.
-# @param to_id Numeric indicating the node ID to find fun calls.
-#
-create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
-  fpd <- fpd[order(fpd$pos_id), ]
-  from_pos_id <- fpd[fpd$id == from_id, "pos_id"]
-  to_pos_id <- fpd[fpd$id == to_id, "pos_id"]
-  if (length(from_pos_id) == 0) {
-    from_pos_id <- c(
-      fpd[which(fpd$id == to_id) - 1, "pos_id"],
-      to_pos_id - 1
-    )[[1]]
-  }
-
-  if (to_pos_id - from_pos_id > 1 && from_id == "") {
-    from_pos_id <- to_pos_id - 1
-  }
-
-  from_pos_id + (10e-4 * seq_len(n))
 }
