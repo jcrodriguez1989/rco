@@ -292,3 +292,34 @@ test_that("CSE in assigned fun", {
     sep = "\n"
   ))
 })
+
+test_that("CSE in right place", {
+  code <- paste(
+    "sapply(indls, function(x) mean(c(dmat[ind == x, ind == x])))",
+    "while(x) mean(c(dmat[ind == x, ind == x]))",
+    "for (x in 1:10) mean(c(dmat[ind == x, ind == x]))",
+    "repeat mean(c(dmat[ind == x, ind == x]))",
+    "if(x) mean(c(dmat[ind == x, ind == x]))",
+    "if(x) mean(c(dmat[ind == x, ind == x])) else mean(c(dmat[ind == x, ind == x]))",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "sapply(indls, function(x) { ",
+    "  cs_1 <- ind == x",
+    "  mean(c(dmat[cs_1, cs_1]))",
+    "})",
+    "cs_1 <- ind == x",
+    "while(x) mean(c(dmat[cs_1, cs_1]))",
+    "cs_2 <- ind == x",
+    "for (x in 1:10) mean(c(dmat[cs_2, cs_2]))",
+    "cs_3 <- ind == x",
+    "repeat mean(c(dmat[cs_3, cs_3]))",
+    "cs_4 <- ind == x",
+    "if(x) mean(c(dmat[cs_4, cs_4]))",
+    "cs_5 <- ind == x",
+    "cs_6 <- ind == x",
+    "if(x) mean(c(dmat[cs_5, cs_5])) else mean(c(dmat[cs_6, cs_6]))",
+    sep = "\n"
+  ))
+})
