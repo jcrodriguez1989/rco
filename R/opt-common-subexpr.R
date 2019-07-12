@@ -365,16 +365,16 @@ get_assigns_ids <- function(fpd, id) {
   assign_exprs_prnts <- act_fpd[
     act_fpd$token %in% assigns & act_fpd$text != ":=",
     "parent"
-  ]
+    ]
   # get the assigned SYMBOL fpd id
   sapply(assign_exprs_prnts, function(assign_exprs_prnt) {
     aux <- act_fpd[act_fpd$parent == assign_exprs_prnt, ]
     if (aux$token[[2]] == "RIGHT_ASSIGN") {
-      res <- aux[3, ]
+      res <- get_children(act_fpd, aux$id[3])
     } else {
-      res <- aux[1, ]
+      res <- get_children(act_fpd, aux$id[1])
     }
-    res[res$token == "SYMBOL", "id"]
+    res$id[res$token == "SYMBOL"][[1]] # in case it is a[i] <- ...
   })
 }
 

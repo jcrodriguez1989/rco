@@ -136,7 +136,8 @@ get_used_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
 
   # get assignation exprs ids
-  ass_prnt_ids <- act_fpd[act_fpd$token %in% assigns, "parent"]
+  ass_prnt_ids <- act_fpd$parent[act_fpd$token %in% assigns &
+                                   act_fpd$text != ":="]
 
   # remove SYMBOLs that are being assigned
   assigned_ids <- unlist(sapply(ass_prnt_ids, function(act_prnt) {
