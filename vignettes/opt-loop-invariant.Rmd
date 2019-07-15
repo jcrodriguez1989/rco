@@ -127,7 +127,7 @@ The `opt_loop_invariant` optimizer does:
   }
   ```
 
-*  Invariant subexpressions motion?
+* Invariant subexpressions motion?
   
   Actually, the `opt_loop_invariant` considers only full expressions, it is not working on subexpressions, for instance, the code:
   

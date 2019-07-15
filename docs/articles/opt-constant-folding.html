@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
       </span>
     </div>
 
@@ -69,6 +69,9 @@
     </li>
     <li>
       <a href="../articles/opt-dead-store.html">Dead Store Elimination</a>
+    </li>
+    <li>
+      <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
   </ul>
 </li>
@@ -169,8 +172,8 @@
 <a class="sourceLine" id="cb5-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-constant-folding_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 30.13026 29.44878 28.95523 30.73184 27.23587 84.71823</code></pre>
+<pre><code>##            Min.  1st Qu.   Median     Mean 3rd Qu.     Max.
+## Expr_2 32.15938 29.27939 29.51521 31.09019 28.0096 85.00484</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">

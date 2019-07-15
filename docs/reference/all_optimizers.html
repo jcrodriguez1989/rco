@@ -39,6 +39,7 @@ Dead Code Elimination opt_dead_code
 Dead Store Elimination opt_dead_store
 Dead Expression Elimination opt_dead_expr
 Common Subexpression Elimination opt_common_subexpr
+Loop-invariant Code Motion opt_loop_invariant
 " />
 <meta name="twitter:card" content="summary" />
 
@@ -70,7 +71,7 @@ Common Subexpression Elimination opt_common_subexpr
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
       </span>
     </div>
 
@@ -109,6 +110,9 @@ Common Subexpression Elimination opt_common_subexpr
     </li>
     <li>
       <a href="../articles/opt-dead-store.html">Dead Store Elimination</a>
+    </li>
+    <li>
+      <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
   </ul>
 </li>
@@ -165,6 +169,7 @@ Common Subexpression Elimination opt_common_subexpr
 <li><p>Dead Store Elimination <code><a href='opt_dead_store.html'>opt_dead_store</a></code></p></li>
 <li><p>Dead Expression Elimination <code><a href='opt_dead_expr.html'>opt_dead_expr</a></code></p></li>
 <li><p>Common Subexpression Elimination <code><a href='opt_common_subexpr.html'>opt_common_subexpr</a></code></p></li>
+<li><p>Loop-invariant Code Motion <code><a href='opt_loop_invariant.html'>opt_loop_invariant</a></code></p></li>
 </ul>
     
     </div>
@@ -173,7 +178,7 @@ Common Subexpression Elimination opt_common_subexpr
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>list</code> of length 6.</p>
+    <p>An object of class <code>list</code> of length 7.</p>
     
 
   </div>
