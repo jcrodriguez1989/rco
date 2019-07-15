@@ -15,7 +15,7 @@ Carefully examine the results after running this function!
 }
 \examples{
 code <- paste(
-  "while(TRUE) {",
+  "while (TRUE) {",
   "  break",
   "  dead_code()",
   "}",
