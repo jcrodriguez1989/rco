@@ -609,3 +609,21 @@ test_that("dont propagate right to $ or @", {
     sep = "\n"
   ))
 })
+
+test_that("dont propagate right to $ or @", {
+  code <- paste(
+    "scale <- NA_real_",
+    "switch(mid, 'mean'={",
+    "  scale <- sd(x)",
+    "}, NULL)",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "scale <- NA_real_",
+    "switch(mid, 'mean'={",
+    "  scale <- sd(x)",
+    "}, NULL)",
+    sep = "\n"
+  ))
+})
