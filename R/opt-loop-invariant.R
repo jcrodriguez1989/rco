@@ -89,7 +89,7 @@ li_in_loop <- function(fpd, id) {
       act_sblngs <- act_pd[act_pd$parent == act_parent, ]
       if (act_sblngs$token[[1]] == "'{'" || "';'" %in% act_sblngs$token) {
         new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
-      } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
+      } else if (any(loops %in% act_sblngs$token)) {
         new_visit <- c(
           new_visit,
           utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)

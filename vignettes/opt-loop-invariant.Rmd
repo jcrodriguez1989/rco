@@ -1,0 +1,175 @@
+---
+output: rmarkdown::html_vignette
+title: Loop-invariant Code Motion
+vignette: >
+  %\VignetteIndexEntry{Loop-invariant Code Motion}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
+}
+```
+
+# Loop-invariant Code Motion
+
+## Background
+
+Loop-invariant code consists of statements or expressions which can be moved outside the body of a loop without affecting the semantics of the program. Loop-invariant code motion is a compiler optimization which performs this movement automatically. 
+
+For example, consider the following code:
+
+```{r eval=FALSE}
+i <- 0
+n <- 1000
+y <- rnorm(1)
+z <- rnorm(1)
+a <- c()
+while (i < n) {
+  x <- y + z
+  a[i] <- 6 * i + x * x
+  i <- i + 1
+}
+```
+
+Here, `x` is assigned a value `y + z` that is constant in each loop execution. In this example, the assignment would be executed `n` times. The same result, but much faster, would be obtained by doing the assign outside the loop.
+
+## Example
+
+Consider the same example to be automatically optimized.
+
+```{r}
+code <- paste(
+  "i <- 0",
+  "n <- 1000",
+  "y <- rnorm(1)",
+  "z <- rnorm(1)",
+  "a <- c()",
+  "while (i < n) {",
+  "  x <- y + z",
+  "  a[i] <- 6 * i + x * x",
+  "  i <- i + 1",
+  "}",
+  sep = "\n"
+)
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_loop_invariant(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and the speed-up:
+
+```{r message=FALSE}
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
+
+## Implementation
+
+The `opt_loop_invariant` optimizer does:
+
+* Finds all loops in the code, i.e., `r rco:::loops`.
+
+* Removes loops that have function calls inside, as function calls can edit the environment.
+
+* Gets which variables are variant inside the loop.
+
+* Detects which expressions do not use any variant variable, and moves them outside the loop.
+
+## To-Do
+
+* `if/else` code motion?
+  
+  Actually, the `opt_loop_invariant` does not consider `if/else` expressions to move. In this sense, the code:
+  
+  ```{r eval=FALSE}
+  while (i < n) {
+    if (n > 3) {
+      something_without_i
+    }
+  }
+  ```
+  
+  Will not be optimized to its equivalent code:
+  
+  ```{r eval=FALSE}
+  if (n > 3) {
+    something_without_i
+  }
+  while (i < n) {
+  }
+  ```
+
+*  Invariant subexpressions motion?
+  
+  Actually, the `opt_loop_invariant` considers only full expressions, it is not working on subexpressions, for instance, the code:
+  
+  ```{r eval=FALSE}
+  while (i < n) {
+    i <- (x * y) + 1
+  }
+  ```
+  
+  as `x` and `y` are invariant, could be optimized to:
+  
+  ```{r eval=FALSE}
+  is_1 <- (x * y)
+  while (i < n) {
+    i <- is_1 + 1
+  }
+  ```
+
+* Check that assigned vars that are moved, were present in parent environment, if not, add an `if`.
+  
+  Invariant expressions are moved outside of the loop independently if the loop conditions was `TRUE` or `FALSE`, this could lead to not equivalent codes, as for example in:
+  
+  ```{r eval=FALSE}
+  while (FALSE) {
+    x <- 3
+  }
+  ```
+  
+  that would be optimized to:
+  
+  ```{r eval=FALSE}
+  x <- 3
+  while (FALSE) {
+  }
+  ```
+  
+  The optimizer should check if `x` was previously assigned in code, and if not, optimize to:
+  
+  ```{r eval=FALSE}
+  if (FALSE) {
+    x <- 3
+  }
+  while (FALSE) {
+  }
+  ```
