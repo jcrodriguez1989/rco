@@ -96,7 +96,7 @@ li_in_loop <- function(fpd, id) {
         act_pd$token %in%
           c(ops, precedence_ops, constants, assigns, "expr", "SYMBOL")
       )) {
-        get_used_vars(act_pd, act_parent)
+        get_read_vars(act_pd, act_parent)
         browser()
         if (!any(lv_vars %in% act_pd$text[act_pd$token == "SYMBOL"])) {
           res_fpd <- unloop_expr(res_fpd, act_parent, id)
@@ -108,6 +108,8 @@ li_in_loop <- function(fpd, id) {
   }
   res_fpd
 }
+
+
 
 unloop_expr <- function(fpd, expr_id, loop_id) {
   aux <- fpd[fpd$id %in% c(expr_id, loop_id), ]
@@ -141,4 +143,37 @@ get_loop_variant_vars <- function(fpd, id) {
   )
 
   unique(act_fpd$text[act_fpd$id %in% lv_vars])
+}
+
+# Returns the names of the vars that are being used in an expr.
+# Not counting assignations.
+#
+# @param fpd a flat parsed data data.frame .
+# @param id Numeric indicating the node ID.
+#
+get_read_vars <- function(fpd, id) {
+  act_fpd <- get_children(fpd, id)
+
+  # get assignation exprs ids
+  ass_prnt_ids <- act_fpd$parent[act_fpd$token %in% assigns &
+                                   act_fpd$text != ":="]
+
+  # remove SYMBOLs that are being assigned
+  assigned_ids <- unlist(lapply(ass_prnt_ids, function(act_prnt) {
+    ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
+    ass_idx <- -1
+    if ("RIGHT_ASSIGN" %in% ass_sblngs$token) {
+      ass_idx <- 1
+    }
+    sapply(which(ass_sblngs$token %in% assigns), function(expr_idx) {
+      act_chld <- get_children(act_fpd, ass_sblngs$id[expr_idx + ass_idx])
+      act_chld$id[act_chld$token == "SYMBOL"][[1]]
+    })
+  }))
+
+  res <- act_fpd[
+    act_fpd$token %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL") &
+      !act_fpd$id %in% assigned_ids, "text"
+    ]
+  unique(res)
 }

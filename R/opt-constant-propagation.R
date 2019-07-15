@@ -386,7 +386,7 @@ get_assign_indexes <- function(tokens) {
   return(idxs)
 }
 
-# Returns the name of the var that is beign assigned
+# Returns the name of the var that is being assigned
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
@@ -403,7 +403,7 @@ get_assigned_var <- function(fpd, id) {
   return(res)
 }
 
-# Returns the names of the vars that are beign assigned in an expr
+# Returns the names of the vars that are being assigned in an expr
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
@@ -419,7 +419,7 @@ ocp_get_assigned_vars <- function(fpd, id) {
   unique(res)
 }
 
-# Returns the name of the var that is beign assigned by IN
+# Returns the name of the var that is being assigned by IN
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
