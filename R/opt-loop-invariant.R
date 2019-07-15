@@ -20,8 +20,11 @@
 #'
 opt_loop_invariant <- function(texts) {
   # todo: invariant subexpressions motion?
-  # while(i < n) { i <- (x * y) + 1 } is equivalent to
-  # is_1 <- (x * y); while(i < n) { i <- is_1 + 1 }
+  # while (i < n) { i <- (x * y) + 1 } is equivalent to
+  # is_1 <- (x * y); while (i < n) { i <- is_1 + 1 }
+  # todo: check that assigned vars that are moved, were present in parent env.
+  # if not, add an `if`.
+  # while (FALSE) { x <- 3 } is not equivalent to x <- 3; while (FALSE) {  }
   res <- list()
   res$codes <- lapply(texts, li_one_file)
   return(res)
@@ -74,8 +77,8 @@ li_one_fpd <- function(fpd) {
 # @param id Numeric indicating the node ID of the loop.
 #
 li_in_loop <- function(fpd, id) {
-  lv_vars <- get_loop_variant_vars(fpd, id)
   res_fpd <- fpd
+  lv_vars <- get_loop_variant_vars(fpd, id)
 
   # start visiting the loop body
   visit_nodes <- utils::tail(res_fpd$id[res_fpd$parent == id], 1)
@@ -84,8 +87,7 @@ li_in_loop <- function(fpd, id) {
     for (act_parent in visit_nodes) {
       act_pd <- get_children(res_fpd, act_parent)
       act_sblngs <- act_pd[act_pd$parent == act_parent, ]
-      browser()
-      if (act_sblngs$token[[1]] == "'{'") {
+      if (act_sblngs$token[[1]] == "'{'" || "';'" %in% act_sblngs$token) {
         new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
       } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
         new_visit <- c(
@@ -96,11 +98,8 @@ li_in_loop <- function(fpd, id) {
         act_pd$token %in%
           c(ops, precedence_ops, constants, assigns, "expr", "SYMBOL")
       )) {
-        get_read_vars(act_pd, act_parent)
-        browser()
-        if (!any(lv_vars %in% act_pd$text[act_pd$token == "SYMBOL"])) {
+        if (!any(lv_vars %in% get_read_vars(act_pd, act_parent))) {
           res_fpd <- unloop_expr(res_fpd, act_parent, id)
-
         }
       }
     }
@@ -109,12 +108,22 @@ li_in_loop <- function(fpd, id) {
   res_fpd
 }
 
-
-
+# Moves an expression that is inside a loop to outside of it
+#
+# @param fpd A flat parsed data data.frame .
+# @param expr_id Numeric indicating the node ID of the expression.
+# @param loop_id Numeric indicating the node ID of the parent loop.
+#
 unloop_expr <- function(fpd, expr_id, loop_id) {
-  aux <- fpd[fpd$id %in% c(expr_id, loop_id), ]
-  print(aux)
-  fpd
+  expr_fpd <- get_children(fpd, expr_id)
+  res_fpd <- remove_nodes(fpd, expr_id)
+  expr_fpd$prev_spaces[expr_fpd$terminal][[1]] <-
+    res_fpd$prev_spaces[res_fpd$terminal][[1]]
+  expr_fpd$line1[expr_fpd$terminal][[1]] <- res_fpd$line1[res_fpd$terminal][[1]]
+  rbind(
+    res_fpd,
+    replace_pd(get_children(res_fpd, loop_id), expr_fpd)
+  )
 }
 
 # Returns which variables vary within a loop
@@ -145,8 +154,7 @@ get_loop_variant_vars <- function(fpd, id) {
   unique(act_fpd$text[act_fpd$id %in% lv_vars])
 }
 
-# Returns the names of the vars that are being used in an expr.
-# Not counting assignations.
+# Returns the names of the vars which value is read in an expr.
 #
 # @param fpd a flat parsed data data.frame .
 # @param id Numeric indicating the node ID.
@@ -155,8 +163,7 @@ get_read_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
 
   # get assignation exprs ids
-  ass_prnt_ids <- act_fpd$parent[act_fpd$token %in% assigns &
-                                   act_fpd$text != ":="]
+  ass_prnt_ids <- act_fpd$parent[act_fpd$token %in% assigns]
 
   # remove SYMBOLs that are being assigned
   assigned_ids <- unlist(lapply(ass_prnt_ids, function(act_prnt) {
@@ -174,6 +181,6 @@ get_read_vars <- function(fpd, id) {
   res <- act_fpd[
     act_fpd$token %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL") &
       !act_fpd$id %in% assigned_ids, "text"
-    ]
+  ]
   unique(res)
 }

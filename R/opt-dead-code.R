@@ -7,7 +7,7 @@
 #'
 #' @examples
 #' code <- paste(
-#'   "while(TRUE) {",
+#'   "while (TRUE) {",
 #'   "  break",
 #'   "  dead_code()",
 #'   "}",
@@ -117,18 +117,18 @@ remove_after_interruption <- function(fpd) {
 }
 
 # Returns a new fpd where constant conditionals were replaced
-# ( if(TRUE), while(FALSE), etc )
+# ( if(TRUE), while (FALSE), etc )
 #
 # @param fpd A flat parsed data data.frame .
 #
 remove_constant_conds <- function(fpd) {
-  new_fpd <- remove_false_while(fpd)
+  new_fpd <- remove_false_while (fpd)
   new_fpd <- remove_false_if(new_fpd)
   new_fpd <- remove_true_if(new_fpd)
   return(new_fpd)
 }
 
-# Returns a new fpd where `while(FALSE) { EXPR }` were removed
+# Returns a new fpd where `while (FALSE) { EXPR }` were removed
 #
 # @param fpd A flat parsed data data.frame .
 #
