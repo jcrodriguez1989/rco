@@ -75,29 +75,44 @@ li_one_fpd <- function(fpd) {
 #
 li_in_loop <- function(fpd, id) {
   lv_vars <- get_loop_variant_vars(fpd, id)
+  res_fpd <- fpd
 
   # start visiting the loop body
-  visit_nodes <- utils::tail(fpd$id[fpd$parent == id], 1)
+  visit_nodes <- utils::tail(res_fpd$id[res_fpd$parent == id], 1)
   while (length(visit_nodes) > 0) {
     new_visit <- c()
     for (act_parent in visit_nodes) {
-      act_pd <- get_children(fpd, act_parent)
+      act_pd <- get_children(res_fpd, act_parent)
       act_sblngs <- act_pd[act_pd$parent == act_parent, ]
       browser()
       if (act_sblngs$token[[1]] == "'{'") {
         new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
       } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
-        browser()
+        new_visit <- c(
+          new_visit,
+          utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
+        )
       } else if (all(
         act_pd$token %in%
-        c(ops, precedence_ops, constants, assigns, "expr", "SYMBOL"))) {
+          c(ops, precedence_ops, constants, assigns, "expr", "SYMBOL")
+      )) {
+        get_used_vars(act_pd, act_parent)
         browser()
+        if (!any(lv_vars %in% act_pd$text[act_pd$token == "SYMBOL"])) {
+          res_fpd <- unloop_expr(res_fpd, act_parent, id)
+
+        }
       }
     }
     visit_nodes <- new_visit
   }
+  res_fpd
+}
 
-
+unloop_expr <- function(fpd, expr_id, loop_id) {
+  aux <- fpd[fpd$id %in% c(expr_id, loop_id), ]
+  print(aux)
+  fpd
 }
 
 # Returns which variables vary within a loop
@@ -113,7 +128,8 @@ get_loop_variant_vars <- function(fpd, id) {
   # remove function definitions
   act_fpd <- remove_nodes(
     act_fpd,
-    act_fpd$id[act_fpd$parent == act_fpd$parent[act_fpd$token == "FUNCTION"]])
+    act_fpd$id[act_fpd$parent == act_fpd$parent[act_fpd$token == "FUNCTION"]]
+  )
 
   # get for condition's IN vars
   # FOR '(' forcond ')' ; where forcond ~> SYMBOL IN expr
