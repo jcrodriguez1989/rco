@@ -22,6 +22,8 @@ navbar:
           href: articles/opt-dead-expr.html
         - text: "Dead Store Elimination"
           href: articles/opt-dead-store.html
+        - text: "Loop-invariant Code Motion"
+          href: articles/opt-loop-invariant.html
     - text: "Articles"
       menu:
         - text: "Contributing an Optimizer"

@@ -10,4 +10,5 @@ articles:
   opt-dead-code: opt-dead-code.html
   opt-dead-expr: opt-dead-expr.html
   opt-dead-store: opt-dead-store.html
+  opt-loop-invariant: opt-loop-invariant.html
 

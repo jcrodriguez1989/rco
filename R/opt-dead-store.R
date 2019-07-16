@@ -94,7 +94,7 @@ dead_store_in_fun <- function(fpd, id) {
   return(res_fpd)
 }
 
-# Returns the names of the vars that are beign assigned in an expr
+# Returns the names of the vars that are being assigned in an expr
 # `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=``
 #
 # @param fpd a flat parsed data data.frame .
@@ -126,7 +126,7 @@ ods_get_assigned_vars <- function(fpd, id) {
   unique(res)
 }
 
-# Returns the names of the vars that are beign used in an expr.
+# Returns the names of the vars that are being used in an expr.
 # Not counting assignations.
 #
 # @param fpd a flat parsed data data.frame .
@@ -136,7 +136,8 @@ get_used_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
 
   # get assignation exprs ids
-  ass_prnt_ids <- act_fpd[act_fpd$token %in% assigns, "parent"]
+  ass_prnt_ids <- act_fpd$parent[act_fpd$token %in% assigns &
+                                   act_fpd$text != ":="]
 
   # remove SYMBOLs that are being assigned
   assigned_ids <- unlist(sapply(ass_prnt_ids, function(act_prnt) {
