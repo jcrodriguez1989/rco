@@ -323,3 +323,15 @@ test_that("CSE in right place", {
     sep = "\n"
   ))
 })
+
+test_that("dont CSE in function def", {
+  code <- paste(
+    "foo <- function(x = c(1/3, 1/3, 1/3), y = 1/3) 1/3",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function(x = c(1/3, 1/3, 1/3), y = 1/3) 1/3",
+    sep = "\n"
+  ))
+})

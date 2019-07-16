@@ -85,6 +85,11 @@ common_subexpr_in_env <- function(fpd, id, n_values) {
   fun_def_prnt_ids <- setdiff(fun_def_prnt_ids, id)
   env_fpd <- remove_nodes(act_fpd, fun_def_prnt_ids)
 
+  # if it is a function def, then dont CSE in parameters
+  if ("FUNCTION" %in% act_fpd$token[act_fpd$parent == id]) {
+    id <- utils::tail(env_fpd$id[env_fpd$parent == id], 1)
+  }
+
   # get common subexpressions within an env
   common_subexprs_ids <- get_common_subexprs(env_fpd, id, n_values)
 
@@ -112,10 +117,11 @@ common_subexpr_in_env <- function(fpd, id, n_values) {
 #
 get_common_subexprs <- function(fpd, id, n_values) {
   # get all subexprs (dont have assignment, while, if, etc)
-  env_exprs_ids <- fpd[fpd$token == "expr", "id"]
+  act_fpd <- get_children(fpd, id)
+  env_exprs_ids <- act_fpd[act_fpd$token == "expr", "id"]
   env_subexprs <-
     do.call(rbind, lapply(env_exprs_ids, function(env_exprs_id) {
-      aux_fpd <- get_children(fpd, env_exprs_id)
+      aux_fpd <- get_children(act_fpd, env_exprs_id)
       res <- NULL
       if (all(aux_fpd$token %in%
         c(constants, ops, precedence_ops, "expr", "SYMBOL")) &&
