@@ -64,9 +64,22 @@ one_dead_code <- function(fpd) {
 remove_after_interruption <- function(fpd) {
   res_fpd <- fpd
   # get nodes that are interruption commands
-  return_calls <- fpd[
-    fpd$token == "SYMBOL_FUNCTION_CALL" & fpd$text == "return",
-  ]
+  # get function def bodies
+  fun_def_ids <- fpd$parent[fpd$token == "FUNCTION"]
+  fun_body_ids <- sapply(fun_def_ids, function(act_id)
+    utils::tail(fpd$id[fpd$parent == act_id], 1))
+  # get returns inside fun defs
+  ret_ids <- sapply(fun_body_ids, function(act_id) {
+    act_fpd <- get_children(fpd, act_id)
+    # remove function calls that are not returns
+    act_fpd <- remove_nodes(act_fpd, act_fpd$parent[
+      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text != "return"])
+    # get only returns not in fun calls
+    act_fpd$id[
+      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text == "return"]
+  })
+  return_calls <- fpd[fpd$id %in% ret_ids, ]
+
   # `return` parent is an expression
   intr <- fpd[fpd$id %in% return_calls$parent, ]
   intr <- rbind(intr, fpd[fpd$token %in% c("BREAK", "NEXT"), ])
