@@ -3,7 +3,7 @@
 library("devtools")
 library("rvest", quietly = TRUE)
 
-options(repos = list(CRAN = "http://mirror.las.iastate.edu/CRAN/"))
+options(repos = list(CRAN = "https://cloud.r-project.org"))
 
 # install latest rco
 git_ref <- Sys.getenv("RCO_GIT_REF", unset = "master")
