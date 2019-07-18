@@ -111,6 +111,9 @@ get_folded_fpd <- function(fpd, fold_floats) {
   if (is.null(eval_val)) {
     # there was a bug when eval_val was NULL
     eval_val_str <- "NULL"
+  } else if (length(eval_val) == 0) {
+    # there was a bug when eval_val was logical(0)
+    eval_val_str <- deparse(eval_val)
   } else if (is.na(eval_val)) {
     # there was a bug when eval_val was NA
     eval_val_str <- na_to_correct_str(eval_val)
@@ -135,13 +138,15 @@ get_folded_fpd <- function(fpd, fold_floats) {
     res[res$terminal, ][1, "prev_spaces"] <- 1
     res[res$terminal, ][n_terms, "next_spaces"] <- 1
   }
-  if (!all(res$token %in% c("expr", "'-'", "'('", "')'", constants))) {
+  if (!all(res$token %in%
+           c("expr", "'-'", "'('", "')'", constants, "SYMBOL_FUNCTION_CALL"))) {
+    # SYMBOL_FUNCTION_CALL for logical(0)
     return(NULL)
   }
 
   # it is a constant or -constant
-  if (!fold_floats && "NUM_CONST" %in% res$token && !is.na(eval_val) &&
-    floor(eval_val) != eval_val) {
+  if (!fold_floats && "NUM_CONST" %in% res$token && length(eval_val) != 0 &&
+      !is.na(eval_val) && floor(eval_val) != eval_val) {
     return(NULL)
   }
   return(res)
