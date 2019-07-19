@@ -17,7 +17,7 @@
 #'
 emojizer <- function(texts) {
   res <- list(codes = texts)
-  if (require("emo")) {
+  if (requireNamespace("emo")) {
     res$codes <- lapply(texts, emojize_text)
   }
   return(res)
