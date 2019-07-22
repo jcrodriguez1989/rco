@@ -26,4 +26,5 @@ Suggests:
     knitr,
     testthat,
     ggplot2,
-    microbenchmark
+    microbenchmark,
+    shiny
