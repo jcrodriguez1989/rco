@@ -20,7 +20,8 @@ rco_gui <- function(option) {
   app_dir <- system.file("shiny", option, package = "rco")
 
   if (app_dir == "") {
-    stop(paste("Selected GUI not found. Select one of:", guis, sep = "\n"),
+    stop(paste("Selected GUI not found. Select one of:",
+               paste(guis, collapse = "\n"), sep = "\n"),
       call. = FALSE
     )
   }
