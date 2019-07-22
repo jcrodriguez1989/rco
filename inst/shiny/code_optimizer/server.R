@@ -15,8 +15,9 @@ shinyServer(function(input, output, session) {
       title = "Optimization in progress ...",
       size = "m",
       footer = NULL,
-      easyClose = FALSE))
-    opt_code <- try ({
+      easyClose = FALSE
+    ))
+    opt_code <- try({
       optimize_text(input$input_code, optimizers = current_opt)
     })
     removeModal()

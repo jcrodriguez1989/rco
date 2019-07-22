@@ -14,7 +14,8 @@
     res <- paste0(
       '<img src="',
       content(search_raw)$data$images$fixed_height$url,
-      '">')
+      '">'
+    )
   }
-  return(res)
+  res
 }

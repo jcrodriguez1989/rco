@@ -5,6 +5,7 @@
 #' @param option Character indicating which GUI to open. One from:
 #' \itemize{
 #'   \item "code_optimizer" for single code optimizing.
+#'   \item "pkg_optimizer" for package optimizing.
 #' }
 #'
 #' @examples
@@ -15,7 +16,7 @@
 #' @export
 #'
 rco_gui <- function(option) {
-  guis <- c('"code_optimizer"')
+  guis <- c('"code_optimizer"', '"pkg_optimizer"')
   app_dir <- system.file("shiny", option, package = "rco")
 
   if (app_dir == "") {
@@ -43,10 +44,11 @@ can_load <- function(required_pkgs) {
   res <- length(non_loaded_pkgs) == 0
   if (!res) {
     stop(paste("Selected GUI requires additional packages to be installed.",
-               "Please install packages:",
-               paste(non_loaded_pkgs, collapse = "\n"),
-               sep = "\n"),
-         call. = FALSE
+      "Please install packages:",
+      paste(non_loaded_pkgs, collapse = "\n"),
+      sep = "\n"
+    ),
+    call. = FALSE
     )
   }
   res
