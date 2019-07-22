@@ -1,5 +1,6 @@
 # GUI package dependencies
 .depends <- c(
-  "shinythemes",
-  "rvest"
+  "diffr",
+  "rvest",
+  "shinythemes"
 )

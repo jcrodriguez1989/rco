@@ -1,14 +1,16 @@
 library("shiny")
 
 source("global.R", local = TRUE)
-source("package_selector/ui.R", local = TRUE)
+source("package_selector/ps_ui.R", local = TRUE)
+source("code_panel/cp_ui.R", local = TRUE)
 
 shinyUI(fluidPage(
   theme = shinythemes::shinytheme("simplex"),
   fluidPage(
     titlePanel("rco - The R Code Optimizer"),
-    tabsetPanel(
-      tabPanel("Package", package_selector())
+    tabsetPanel(id = "main_tabset",
+      tabPanel("Package", package_selector()),
+      tabPanel("Code", code_panel())
     )
   )
 ))

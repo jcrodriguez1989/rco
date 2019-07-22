@@ -10,6 +10,7 @@ rco_gui(option)
 \item{option}{Character indicating which GUI to open. One from:
 \itemize{
   \item "code_optimizer" for single code optimizing.
+  \item "pkg_optimizer" for package optimizing.
 }}
 }
 \description{
