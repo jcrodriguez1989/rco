@@ -24,8 +24,10 @@ opt_constant_folding <- function(texts, fold_floats = FALSE,
   # todo: reorder vars in associativity?
   # todo: try constant fold known-functions with constants?
   res <- list()
-  res$codes <- lapply(texts, constant_fold_one, fold_floats = fold_floats,
-                      in_fun_call = in_fun_call)
+  res$codes <- lapply(texts, constant_fold_one,
+    fold_floats = fold_floats,
+    in_fun_call = in_fun_call
+  )
   return(res)
 }
 

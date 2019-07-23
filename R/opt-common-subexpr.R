@@ -26,8 +26,10 @@ opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
   # todo: check which functions modify the parent env. In this way, function
   # calls wont stop optimization
   res <- list()
-  res$codes <- lapply(texts, cs_one_file, n_values = n_values,
-                      in_fun_call = in_fun_call)
+  res$codes <- lapply(texts, cs_one_file,
+    n_values = n_values,
+    in_fun_call = in_fun_call
+  )
   return(res)
 }
 
@@ -71,8 +73,10 @@ cs_one_fpd <- function(fpd, n_values, in_fun_call) {
 
   # for each env do the common subexpr elimination
   for (env_parent_id in env_parent_ids) {
-    res_fpd <- common_subexpr_in_env(res_fpd, env_parent_id, n_values,
-                                     in_fun_call)
+    res_fpd <- common_subexpr_in_env(
+      res_fpd, env_parent_id, n_values,
+      in_fun_call
+    )
   }
 
   res_fpd
@@ -132,7 +136,8 @@ get_common_subexprs <- function(fpd, id, n_values, in_fun_call) {
   act_fpd <- get_children(fpd, id)
   if (!in_fun_call) {
     act_fpd <- remove_nodes(act_fpd, act_fpd$parent[
-      act_fpd$token == "SYMBOL_FUNCTION_CALL"])
+      act_fpd$token == "SYMBOL_FUNCTION_CALL"
+    ])
   }
 
   env_exprs_ids <- act_fpd$id[act_fpd$token == "expr"]

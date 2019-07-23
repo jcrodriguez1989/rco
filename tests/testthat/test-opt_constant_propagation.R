@@ -406,7 +406,9 @@ test_that("constant propagate in function", {
     sep = "\n"
   )
   opt_code <- opt_constant_propagation(
-    list(code), in_fun_call = TRUE)$codes[[1]]
+    list(code),
+    in_fun_call = TRUE
+  )$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 1",
     "j <- 2",
@@ -582,7 +584,9 @@ test_that("constant propagate function call", {
     sep = "\n"
   )
   opt_code <- opt_constant_propagation(
-    list(code), in_fun_call = TRUE)$codes[[1]]
+    list(code),
+    in_fun_call = TRUE
+  )$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 1",
     "sum(1)",

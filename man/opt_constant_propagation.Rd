@@ -4,10 +4,13 @@
 \alias{opt_constant_propagation}
 \title{Optimizer: Constant Propagation}
 \usage{
-opt_constant_propagation(texts)
+opt_constant_propagation(texts, in_fun_call = FALSE)
 }
 \arguments{
 \item{texts}{A list of character vectors with the code to optimize.}
+
+\item{in_fun_call}{Logical indicating whether it should propagate in function
+calls. Note: this could change the semantics of the program.}
 }
 \description{
 Performs one constant propagation pass.
