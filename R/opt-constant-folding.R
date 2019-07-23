@@ -61,11 +61,11 @@ one_fold <- function(pd, fold_floats, in_fun_call) {
   new_pd <- pd[pd$parent < 0, ]
   pd <- pd[pd$parent >= 0, ]
 
+  in_fun_call_ids <- c()
   if (!in_fun_call) {
-    # remove function calls
-    fun_calls_ids <- pd$parent[pd$token == "SYMBOL_FUNCTION_CALL"]
-    new_pd <- rbind(new_pd, unique(get_children(pd, fun_calls_ids)))
-    pd <- remove_nodes(pd, fun_calls_ids)
+    # get ids of exprs in fun calls
+    in_fun_call_ids <- get_children(
+      pd, pd$parent[pd$token == "SYMBOL_FUNCTION_CALL"])$id
   }
 
   # start visiting root nodes
@@ -75,7 +75,8 @@ one_fold <- function(pd, fold_floats, in_fun_call) {
     for (act_parent in visit_nodes) {
       act_pd <- get_children(pd, act_parent)
       if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr")) &&
-        !is_minus_constant(act_pd, act_parent)) {
+        !is_minus_constant(act_pd, act_parent) &&
+        !act_parent %in% in_fun_call_ids) {
         # all the children are terminals or ops. try to evaluate it
         # And it is not just -constant
         act_code_pd <- pd[pd$id == act_parent, ]
