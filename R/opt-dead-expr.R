@@ -94,7 +94,8 @@ get_unassigned_exprs <- function(fpd, id) {
         # remove conditional expr
         body_ids <- act_sblngs$id[!act_sblngs$terminal]
         body_ids <- body_ids[seq(
-          any(c("')'", "forcond") %in% act_sblngs$token) + 1, length(body_ids))]
+          any(c("')'", "forcond") %in% act_sblngs$token) + 1, length(body_ids)
+        )]
         new_visit <- c(new_visit, body_ids)
       } else {
         next
