@@ -4,6 +4,8 @@
 #' Carefully examine the results after running this function!
 #'
 #' @param texts A list of character vectors with the code to optimize.
+#' @param in_fun_call Logical indicating whether it should propagate in function
+#'   calls. Note: this could change the semantics of the program.
 #'
 #' @examples
 #' code <- paste(
@@ -16,17 +18,19 @@
 #' cat(opt_constant_propagation(list(code))$codes[[1]])
 #' @export
 #'
-opt_constant_propagation <- function(texts) {
+opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
   res <- list()
-  res$codes <- lapply(texts, constant_prop_one)
+  res$codes <- lapply(texts, constant_prop_one, in_fun_call = in_fun_call)
   return(res)
 }
 
 # Executes constant propagation on one text of code
 #
 # @param text A character vector with code to optimize.
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-constant_prop_one <- function(text) {
+constant_prop_one <- function(text, in_fun_call) {
   pd <- parse_flat_data(text)
   pd <- flatten_leaves(pd)
   pd <- eq_assign_to_expr(pd)
@@ -40,7 +44,7 @@ constant_prop_one <- function(text) {
   old_pd <- NULL
   while (!isTRUE(all.equal(old_pd, new_pd))) {
     old_pd <- new_pd
-    new_pd <- one_propagate(new_pd, list())$fpd
+    new_pd <- one_propagate(new_pd, list(), in_fun_call)$fpd
   }
   res_pd <- rbind(res_pd, new_pd)
   res_pd <- res_pd[order(res_pd$pos_id), ]
@@ -51,8 +55,10 @@ constant_prop_one <- function(text) {
 #
 # @param fpd a flat parsed data data.frame .
 # @param values A named list of variables and their value.
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-one_propagate <- function(fpd, values) {
+one_propagate <- function(fpd, values, in_fun_call) {
   act_nodes <- get_roots(fpd)
   res_fpd <- act_nodes[act_nodes$terminal, ] # they are {, }, (, )
   act_nodes <- act_nodes[!act_nodes$terminal, ]
@@ -82,13 +88,16 @@ one_propagate <- function(fpd, values) {
         fun_defs <- fun_defs[sapply(fun_defs, function(x)
           sum(get_ancestors(act_fpd, x) %in% fun_defs) == 1)]
       }
+
+      fun_call_fpd <- remove_nodes(act_fpd, fun_defs)
+      if (in_fun_call) {
+        fun_call_fpd <- replace_constant_vars(fun_call_fpd, act_node$id, values)
+      }
+
       res_fpd <- rbind(
-        res_fpd,
-        replace_constant_vars(
-          remove_nodes(act_fpd, fun_defs), act_node$id, values
-        ),
+        res_fpd, fun_call_fpd,
         # should I pass values to function defs propagation?
-        one_propagate(get_children(act_fpd, fun_defs), list())$fpd
+        one_propagate(get_children(act_fpd, fun_defs), list(), in_fun_call)$fpd
       )
       values <- list()
     } else if (is_loop(fpd, act_node$id)) {
@@ -102,7 +111,10 @@ one_propagate <- function(fpd, values) {
       exprs_fpd <- childs[!childs$terminal, ]
       loop_values <- values
       for (j in seq_len(nrow(exprs_fpd))) {
-        res <- one_propagate(get_children(fpd, exprs_fpd[j, "id"]), loop_values)
+        res <- one_propagate(
+          get_children(fpd, exprs_fpd[j, "id"]),
+          loop_values, in_fun_call
+        )
         res_fpd <- rbind(res_fpd, res$fpd)
         # cant keep these values, because maybe the loop is never executed
         loop_values <- res$values
@@ -121,7 +133,10 @@ one_propagate <- function(fpd, values) {
       # work on if/else exprs
       exprs_fpd <- childs[!childs$terminal, ]
       for (j in seq_len(nrow(exprs_fpd))) {
-        res <- one_propagate(get_children(fpd, exprs_fpd[j, "id"]), values)
+        res <- one_propagate(
+          get_children(fpd, exprs_fpd[j, "id"]), values,
+          in_fun_call
+        )
         res_fpd <- rbind(res_fpd, res$fpd)
         # cant keep res$values, because maybe the if condition is FALSE
       }
@@ -141,7 +156,7 @@ one_propagate <- function(fpd, values) {
       child_pd <- get_children(fpd, childs$id)
       if (nrow(childs) == 1 && childs$token == "expr") {
         # it is an expr
-        res <- one_propagate(child_pd, values)
+        res <- one_propagate(child_pd, values, in_fun_call)
         res_fpd <- rbind(res_fpd, res$fpd)
         values <- res$values
       } else {
@@ -169,7 +184,8 @@ one_propagate <- function(fpd, values) {
       }
       # propagate on the function body ( with new env c() )
       res <- one_propagate(
-        get_children(act_fpd, exprs_fpd[nrow(exprs_fpd), "id"]), list()
+        get_children(act_fpd, exprs_fpd[nrow(exprs_fpd), "id"]),
+        list(), in_fun_call
       )
       res_fpd <- rbind(res_fpd, res$fpd)
     } else {
@@ -180,7 +196,8 @@ one_propagate <- function(fpd, values) {
       res_fpd <- rbind(res_fpd, childs[childs$terminal, ])
       res <- one_propagate(
         get_children(fpd, childs[!childs$terminal, "id"]),
-        values
+        values,
+        in_fun_call
       )
       values <- res$values
       res_fpd <- rbind(res_fpd, res$fpd)

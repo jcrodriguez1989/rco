@@ -65,6 +65,10 @@ li_one_fpd <- function(fpd) {
   loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt)
     "SYMBOL_FUNCTION_CALL" %in% get_children(fpd, act_prnt)$token)]
 
+  # remove loops that have next or break calls inside
+  loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt)
+    any(c("BREAK", "NEXT") %in% get_children(fpd, act_prnt)$token))]
+
   # for each loop do the invariant code motion
   for (loop_parent_id in loop_parent_ids) {
     res_fpd <- li_in_loop(res_fpd, loop_parent_id)
@@ -91,11 +95,11 @@ li_in_loop <- function(fpd, id) {
       act_sblngs <- act_pd[act_pd$parent == act_parent, ]
       if (act_sblngs$token[[1]] == "'{'" || "';'" %in% act_sblngs$token) {
         new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
-      # } else if (any(loops %in% act_sblngs$token)) {
-      #   new_visit <- c(
-      #     new_visit,
-      #     utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
-      #   )
+        # } else if (any(loops %in% act_sblngs$token)) {
+        #   new_visit <- c(
+        #     new_visit,
+        #     utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
+        #   )
       } else if (all(
         act_pd$token %in%
           c(ops, precedence_ops, constants, assigns, "expr", "SYMBOL")
@@ -131,14 +135,18 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
   loop_token <- fpd$token[fpd$parent == loop_id][[1]]
   if (loop_token == "WHILE") {
     loop_cond_id <- fpd$id[fpd$parent == loop_id & fpd$token == "expr"][[1]]
-    loop_cond <- sub("^\n*", "",
-                     deparse_flat_data(get_children(fpd, loop_cond_id)))
+    loop_cond <- sub(
+      "^\n*", "",
+      deparse_flat_data(get_children(fpd, loop_cond_id))
+    )
     new_expr <- paste0("if (", loop_cond, ") {\n", exprs, "}")
   } else if (loop_token == "FOR") {
     loop_cond_id <- fpd$id[fpd$parent == loop_id & fpd$token == "forcond"][[1]]
     loop_cond_id <- fpd$id[fpd$parent == loop_cond_id & fpd$token == "expr"]
-    loop_cond <- sub("^\n*", "",
-                     deparse_flat_data(get_children(fpd, loop_cond_id)))
+    loop_cond <- sub(
+      "^\n*", "",
+      deparse_flat_data(get_children(fpd, loop_cond_id))
+    )
 
     new_expr <- paste0("if (length(", loop_cond, ") > 0) {\n", exprs, "}")
   }

@@ -4,13 +4,16 @@
 \alias{opt_constant_folding}
 \title{Optimizer: Constant Folding}
 \usage{
-opt_constant_folding(texts, fold_floats = FALSE)
+opt_constant_folding(texts, fold_floats = FALSE, in_fun_call = FALSE)
 }
 \arguments{
 \item{texts}{A list of character vectors with the code to optimize.}
 
 \item{fold_floats}{Logical indicating if floating-point results should be
 folded (will reduce precision).}
+
+\item{in_fun_call}{Logical indicating whether it should propagate in function
+calls. Note: this could change the semantics of the program.}
 }
 \description{
 Performs one constant folding pass.

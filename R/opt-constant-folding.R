@@ -6,6 +6,8 @@
 #' @param texts A list of character vectors with the code to optimize.
 #' @param fold_floats Logical indicating if floating-point results should be
 #'   folded (will reduce precision).
+#' @param in_fun_call Logical indicating whether it should propagate in function
+#'   calls. Note: this could change the semantics of the program.
 #'
 #' @examples
 #' code <- paste(
@@ -16,12 +18,16 @@
 #' cat(opt_constant_folding(list(code))$codes[[1]])
 #' @export
 #'
-opt_constant_folding <- function(texts, fold_floats = FALSE) {
+opt_constant_folding <- function(texts, fold_floats = FALSE,
+                                 in_fun_call = FALSE) {
   # todo: implement intelligent constant folding? for example: fold 0 * x to 0
   # todo: reorder vars in associativity?
-  # todo: try constant fold knoww-functions with constants?
+  # todo: try constant fold known-functions with constants?
   res <- list()
-  res$codes <- lapply(texts, constant_fold_one, fold_floats = fold_floats)
+  res$codes <- lapply(texts, constant_fold_one,
+    fold_floats = fold_floats,
+    in_fun_call = in_fun_call
+  )
   return(res)
 }
 
@@ -30,12 +36,14 @@ opt_constant_folding <- function(texts, fold_floats = FALSE) {
 # @param text A character vector with code to optimize.
 # @param fold_floats Logical indicating if floating-point results should be
 #   folded (will reduce precision).
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-constant_fold_one <- function(text, fold_floats) {
+constant_fold_one <- function(text, fold_floats, in_fun_call) {
   pd <- parse_flat_data(text)
   pd <- flatten_leaves(pd)
   if (nrow(pd) > 0) {
-    pd <- one_fold(pd, fold_floats)
+    pd <- one_fold(pd, fold_floats, in_fun_call)
   }
   deparse_flat_data(pd)
 }
@@ -45,11 +53,20 @@ constant_fold_one <- function(text, fold_floats) {
 # @param pd A parse data data.frame with code to optimize.
 # @param fold_floats Logical indicating if floating-point results should be
 #   folded (will reduce precision).
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-one_fold <- function(pd, fold_floats) {
+one_fold <- function(pd, fold_floats, in_fun_call) {
   # keep but dont fold comments ( < 0 )
   new_pd <- pd[pd$parent < 0, ]
   pd <- pd[pd$parent >= 0, ]
+
+  if (!in_fun_call) {
+    # remove function calls
+    fun_calls_ids <- pd$parent[pd$token == "SYMBOL_FUNCTION_CALL"]
+    new_pd <- rbind(new_pd, unique(get_children(pd, fun_calls_ids)))
+    pd <- remove_nodes(pd, fun_calls_ids)
+  }
 
   # start visiting root nodes
   visit_nodes <- get_roots(pd)$id

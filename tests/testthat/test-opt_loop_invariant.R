@@ -157,3 +157,27 @@ test_that("dont propagate", {
     sep = "\n"
   ))
 })
+
+test_that("abort loop invariant if next/break/return", {
+  code <- paste(
+    "while (i < 10) {",
+    "  break",
+    "  x <- 8818",
+    "}",
+    "while (i < 10) {",
+    "  next",
+    "  x <- 8818",
+    "}",
+    "for (i in 1:10) {",
+    "  break",
+    "  x <- 8818",
+    "}",
+    "for (i in 1:10) {",
+    "  next",
+    "  x <- 8818",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_loop_invariant(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
+})
