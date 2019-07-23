@@ -139,14 +139,14 @@ get_folded_fpd <- function(fpd, fold_floats) {
     res[res$terminal, ][n_terms, "next_spaces"] <- 1
   }
   if (!all(res$token %in%
-           c("expr", "'-'", "'('", "')'", constants, "SYMBOL_FUNCTION_CALL"))) {
+    c("expr", "'-'", "'('", "')'", constants, "SYMBOL_FUNCTION_CALL"))) {
     # SYMBOL_FUNCTION_CALL for logical(0)
     return(NULL)
   }
 
   # it is a constant or -constant
   if (!fold_floats && "NUM_CONST" %in% res$token && length(eval_val) != 0 &&
-      !is.na(eval_val) && floor(eval_val) != eval_val) {
+    !is.na(eval_val) && floor(eval_val) != eval_val) {
     return(NULL)
   }
   return(res)

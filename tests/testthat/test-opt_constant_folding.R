@@ -338,7 +338,7 @@ test_that("fold length 0", {
   )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    'if (logical(0)) NULL',
+    "if (logical(0)) NULL",
     sep = "\n"
   ))
 })

@@ -280,7 +280,7 @@ replace_constant_vars <- function(fpd, id, constant_vars) {
   to_edit <- fpd$token == "SYMBOL" & fpd$text %in% names(constant_vars) &
     !sapply(fpd$parent, function(act_prnt) { # dont replace:
       "'$'" %in% fpd$token[fpd$parent == act_prnt] || # SYMBOL$SYMBOL
-      any(assigns %in% fpd$token[fpd$parent == act_prnt]) # SYMBOL <- something
+        any(assigns %in% fpd$token[fpd$parent == act_prnt]) # SYMBOL <- something
     })
   new_fpd <- fpd[!to_edit, ]
   to_edit_fpd <- fpd[to_edit, ]
