@@ -248,20 +248,14 @@ test_that("CSE function in function", {
   ))
 })
 
-test_that("CSE in function call", {
+test_that("dont CSE in function call", {
   code <- paste(
     "foo(1, x = 1 + 0, y = 1 + 0 + 2)",
     "bar(foo(1, x = 1 + 0, y = 1 + 0 + 2))",
     sep = "\n"
   )
   opt_code <- opt_common_subexpr(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    "cs_1 <- 1 + 0",
-    "foo(1, x = cs_1, y = cs_1 + 2)",
-    "cs_2 <- 1 + 0",
-    "bar(foo(1, x = cs_2, y = cs_2 + 2))",
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })
 
 test_that("CSE in function call with pkg::", {
@@ -270,7 +264,7 @@ test_that("CSE in function call with pkg::", {
     "foo::bar(foo(1, x = 1 + 0, y = 1 + 0 + 2))",
     sep = "\n"
   )
-  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
     "cs_1 <- 1 + 0",
     "foo::foo(1, x = cs_1, y = cs_1 + 2)",
@@ -285,7 +279,7 @@ test_that("CSE in assigned fun", {
     "a <- b <- c(0 - 1 * 2, 0 + 1 * 2)",
     sep = "\n"
   )
-  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
     "cs_1 <- 1 * 2",
     "a <- b <- c(0 - cs_1, 0 + cs_1)",
@@ -303,7 +297,7 @@ test_that("CSE in right place", {
     "if(x) mean(c(dmat[ind == x, ind == x])) else mean(c(dmat[ind == x, ind == x]))",
     sep = "\n"
   )
-  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
     "sapply(indls, function(x) { ",
     "  cs_1 <- ind == x",
@@ -334,4 +328,13 @@ test_that("dont CSE in function def", {
     "foo <- function(x = c(1/3, 1/3, 1/3), y = 1/3) 1/3",
     sep = "\n"
   ))
+})
+
+test_that("dont CSE in function call", {
+  code <- paste(
+    "deparse(substitute(c(8 * 8 * 8818, 8 * 8 * 8818)))",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
 })

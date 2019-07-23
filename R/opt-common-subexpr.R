@@ -6,6 +6,8 @@
 #' @param texts A list of character vectors with the code to optimize.
 #' @param n_values Numeric indicating the minimum number of values to consider
 #'   a subexpression.
+#' @param in_fun_call Logical indicating whether it should propagate in function
+#'   calls. Note: this could change the semantics of the program.
 #'
 #' @examples
 #' code <- paste(
@@ -16,7 +18,7 @@
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
 #' @export
 #'
-opt_common_subexpr <- function(texts, n_values = 2) {
+opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
   # todo: add functions as common subexpression?
   # this can have an issue if function returns random values, i.e.,
   # a <-rnorm(1) * 8; b <-rnorm(1) * 18 , will wrongly optimize to
@@ -24,7 +26,8 @@ opt_common_subexpr <- function(texts, n_values = 2) {
   # todo: check which functions modify the parent env. In this way, function
   # calls wont stop optimization
   res <- list()
-  res$codes <- lapply(texts, cs_one_file, n_values = n_values)
+  res$codes <- lapply(texts, cs_one_file, n_values = n_values,
+                      in_fun_call = in_fun_call)
   return(res)
 }
 
@@ -33,13 +36,15 @@ opt_common_subexpr <- function(texts, n_values = 2) {
 # @param text A character vector with code to optimize.
 # @param n_values Numeric indicating the minimum number of values to consider
 #   a subexpression.
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-cs_one_file <- function(text, n_values) {
+cs_one_file <- function(text, n_values, in_fun_call) {
   fpd <- parse_flat_data(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
-  new_fpd <- cs_one_fpd(new_fpd, n_values)
+  new_fpd <- cs_one_fpd(new_fpd, n_values, in_fun_call)
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
@@ -53,8 +58,10 @@ cs_one_file <- function(text, n_values) {
 # @param fpd A flat parsed data data.frame .
 # @param n_values Numeric indicating the minimum number of values to consider
 #   a subexpression.
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-cs_one_fpd <- function(fpd, n_values) {
+cs_one_fpd <- function(fpd, n_values, in_fun_call) {
   res_fpd <- fpd
 
   # get different envs (parent env and function defs)
@@ -64,7 +71,8 @@ cs_one_fpd <- function(fpd, n_values) {
 
   # for each env do the common subexpr elimination
   for (env_parent_id in env_parent_ids) {
-    res_fpd <- common_subexpr_in_env(res_fpd, env_parent_id, n_values)
+    res_fpd <- common_subexpr_in_env(res_fpd, env_parent_id, n_values,
+                                     in_fun_call)
   }
 
   res_fpd
@@ -76,8 +84,10 @@ cs_one_fpd <- function(fpd, n_values) {
 # @param id Numeric indicating the node ID of the env expression.
 # @param n_values Numeric indicating the minimum number of values to consider
 #   a subexpression.
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-common_subexpr_in_env <- function(fpd, id, n_values) {
+common_subexpr_in_env <- function(fpd, id, n_values, in_fun_call) {
   res_fpd <- remove_nodes(fpd, id)
   act_fpd <- get_children(fpd, id)
   # get and remove function definitions (as they have own env)
@@ -91,7 +101,7 @@ common_subexpr_in_env <- function(fpd, id, n_values) {
   }
 
   # get common subexpressions within an env
-  common_subexprs_ids <- get_common_subexprs(env_fpd, id, n_values)
+  common_subexprs_ids <- get_common_subexprs(env_fpd, id, n_values, in_fun_call)
 
   for (i in seq_along(common_subexprs_ids)) {
     act_ids <- common_subexprs_ids[[i]]
@@ -114,11 +124,18 @@ common_subexpr_in_env <- function(fpd, id, n_values) {
 # @param id Numeric indicating the node ID of the env expression.
 # @param n_values Numeric indicating the minimum number of values to consider
 #   a subexpression.
+# @param in_fun_call Logical indicating whether it should propagate in function
+#   calls. Note: this could change the semantics of the program.
 #
-get_common_subexprs <- function(fpd, id, n_values) {
+get_common_subexprs <- function(fpd, id, n_values, in_fun_call) {
   # get all subexprs (dont have assignment, while, if, etc)
   act_fpd <- get_children(fpd, id)
-  env_exprs_ids <- act_fpd[act_fpd$token == "expr", "id"]
+  if (!in_fun_call) {
+    act_fpd <- remove_nodes(act_fpd, act_fpd$parent[
+      act_fpd$token == "SYMBOL_FUNCTION_CALL"])
+  }
+
+  env_exprs_ids <- act_fpd$id[act_fpd$token == "expr"]
   env_subexprs <-
     do.call(rbind, lapply(env_exprs_ids, function(env_exprs_id) {
       aux_fpd <- get_children(act_fpd, env_exprs_id)
@@ -383,14 +400,14 @@ get_assigns_ids <- function(fpd, id) {
   })
 }
 
-# Returns the ids of the parents of function calls
+# Returns the ids of function calls
 #
 # @param fpd A flat parsed data data.frame .
 # @param id Numeric indicating the node ID to find fun calls.
 #
 get_fun_call_ids <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
-  act_fpd[act_fpd$token == "SYMBOL_FUNCTION_CALL", "id"]
+  act_fpd$id[act_fpd$token == "SYMBOL_FUNCTION_CALL"]
 }
 
 # Creates a new var name not used before in the fpd
