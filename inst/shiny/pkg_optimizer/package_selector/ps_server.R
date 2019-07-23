@@ -40,7 +40,7 @@ download_gh_pkg <- function(pkg_name, down_dir) {
 }
 
 download_cran_pkg <- function(pkg_name, down_dir) {
-  pkg_url <- paste0("https://CRAN.R-project.org/package=", pkg_name)
+  pkg_url <- paste0("https://cran.r-project.org/package=", pkg_name)
   err <- try({
     url <- pkg_url %>%
       read_html() %>%
