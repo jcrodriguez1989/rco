@@ -43,7 +43,7 @@ remotes::install_github("jcrodriguez1989/rco")
         `all_optimizers`.
     
     2.  `Optimize selection`: Optimizes the code currently highlited in
-        the RStudio Source Pane. Aplicará los optimizadores presentes en
+        the RStudio Source Pane. It will apply the optimizers present in
         `all_optimizers`.
 
   - Using the R functions
