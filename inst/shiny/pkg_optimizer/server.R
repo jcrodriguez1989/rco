@@ -23,20 +23,23 @@ shinyServer(function(input, output, session) {
     opt_files <- dir(paste0(opt_pkg_dir, "/R"), full.names = TRUE)
 
     sel_optimizers <- rco::all_optimizers[input$opt_list]
-    opt_res <- rco::optimize_files(opt_files, overwrite = TRUE,
-                                   optimizers = sel_optimizers)
+    opt_res <- rco::optimize_files(opt_files,
+      overwrite = TRUE,
+      optimizers = sel_optimizers
+    )
 
     updateTabsetPanel(session, "main_tabset", "Code")
     opt_files <- opt_files[opt_res]
     opt_files <- gsub(".*/", "", opt_files)
 
-    pkg(list(pkg_dir = pkg_dir, opt_pkg_dir = opt_pkg_dir,
-             opt_files = opt_files))
+    pkg(list(
+      pkg_dir = pkg_dir, opt_pkg_dir = opt_pkg_dir,
+      opt_files = opt_files
+    ))
   })
 
   ############ Optimized code panel
 
   observeEvent(pkg(), fill_code_panel(input, output, session, pkg()))
   observeEvent(input$file_sel, fill_sel_file(input, output, session, pkg()))
-
 })

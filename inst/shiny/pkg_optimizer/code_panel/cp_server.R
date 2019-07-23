@@ -1,9 +1,10 @@
 fill_code_panel <- function(input, output, session, opt_pkg_list) {
   new_choices <- list(
-    "Optimized" = opt_pkg_list$opt_files,
-    "Not optimized" = setdiff(
+    "Optimized:" = opt_pkg_list$opt_files,
+    "Not optimized:" = setdiff(
       dir(paste0(opt_pkg_list$pkg_dir, "/R")),
-      opt_pkg_list$opt_files)
+      opt_pkg_list$opt_files
+    )
   )
   updateSelectInput(session, "file_sel", choices = new_choices)
 }
