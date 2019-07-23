@@ -4,8 +4,6 @@ code_panel <- function() {
       column(2, selectInput("file_sel", "Optimized files:", list(), size = 15,
                              multiple = FALSE, selectize = FALSE)),
       column(10, diffr::diffrOutput("code_diff"))
-      # column(5, verbatimTextOutput("orig_code")),
-      # column(5, verbatimTextOutput("opt_code"))
     )
   )
 }

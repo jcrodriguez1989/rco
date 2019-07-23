@@ -2,5 +2,6 @@
 .depends <- c(
   "diffr",
   "rvest",
-  "shinythemes"
+  "shinythemes",
+  "xml2"
 )

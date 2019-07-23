@@ -43,9 +43,9 @@ download_cran_pkg <- function(pkg_name, down_dir) {
   pkg_url <- paste0("https://cran.r-project.org/package=", pkg_name)
   err <- try({
     url <- pkg_url %>%
-      read_html() %>%
-      html_nodes(xpath = "/html/body/table") %>%
-      html_table()
+      xml2::read_html() %>%
+      rvest::html_nodes(xpath = "/html/body/table") %>%
+      rvest::html_table()
     url <- url[[2]]
     dwn_file <- url[grep("source:", url[, 1]), 2]
     url <- paste0("https://cran.r-project.org/src/contrib/", dwn_file)

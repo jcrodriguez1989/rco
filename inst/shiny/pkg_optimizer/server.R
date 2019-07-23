@@ -25,12 +25,6 @@ shinyServer(function(input, output, session) {
     sel_optimizers <- rco::all_optimizers[input$opt_list]
     opt_res <- rco::optimize_files(opt_files, overwrite = TRUE,
                                    optimizers = sel_optimizers)
-    if (sum(opt_res) == 0) {
-      showNotification(
-        "Good work! No optimization could be applied to the package",
-        type = "message")
-      return(NULL)
-    }
 
     updateTabsetPanel(session, "main_tabset", "Code")
     opt_files <- opt_files[opt_res]
