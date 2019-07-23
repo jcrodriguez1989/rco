@@ -11,6 +11,7 @@ RUN R -e "\
   options(repos = \
     list(CRAN = 'http://mirror.las.iastate.edu/CRAN/')); \
   install.packages('devtools'); \
+  install.packages('dplyr'); \
   install.packages('testthat'); \
   install.packages('rvest'); \
   install.packages('withr');"
