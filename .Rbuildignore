@@ -9,3 +9,4 @@
 ^Docker$
 ^\.github$
 ^CODE_OF_CONDUCT\.md$
+^\.covrignore$

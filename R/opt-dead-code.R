@@ -73,10 +73,12 @@ remove_after_interruption <- function(fpd) {
     act_fpd <- get_children(fpd, act_id)
     # remove function calls that are not returns
     act_fpd <- remove_nodes(act_fpd, act_fpd$parent[
-      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text != "return"])
+      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text != "return"
+    ])
     # get only returns not in fun calls
     act_fpd$id[
-      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text == "return"]
+      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text == "return"
+    ]
   })
   return_calls <- fpd[fpd$id %in% ret_ids, ]
 
@@ -135,7 +137,7 @@ remove_after_interruption <- function(fpd) {
 # @param fpd A flat parsed data data.frame .
 #
 remove_constant_conds <- function(fpd) {
-  new_fpd <- remove_false_while (fpd)
+  new_fpd <- remove_false_while(fpd)
   new_fpd <- remove_false_if(new_fpd)
   new_fpd <- remove_true_if(new_fpd)
   return(new_fpd)

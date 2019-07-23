@@ -264,8 +264,8 @@ test_that("dead code careful with if () next", {
 
 test_that("dont dead code in function call", {
   code <- paste(
-    'foo <- function(method) {',
-    '  switch(method,',
+    "foo <- function(method) {",
+    "  switch(method,",
     '         return("precmat.RW1(n)"),',
     '         return("precmat.RW2(n)"),',
     '         return("precmat.RWn(n, order)"),',
@@ -273,13 +273,13 @@ test_that("dont dead code in function call", {
     '         return("precmat.IGMRFreglat(n,m,...)"),',
     '         return("precmat.IGMRFirreglat(A,...)"),',
     '         return("precmat.GMRFreglat(n,m,...)"))',
-    '}',
+    "}",
     sep = "\n"
   )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    'foo <- function(method) {',
-    '  switch(method,',
+    "foo <- function(method) {",
+    "  switch(method,",
     '         return("precmat.RW1(n)"),',
     '         return("precmat.RW2(n)"),',
     '         return("precmat.RWn(n, order)"),',
@@ -287,7 +287,7 @@ test_that("dont dead code in function call", {
     '         return("precmat.IGMRFreglat(n,m,...)"),',
     '         return("precmat.IGMRFirreglat(A,...)"),',
     '         return("precmat.GMRFreglat(n,m,...)"))',
-    '}',
+    "}",
     sep = "\n"
   ))
 })

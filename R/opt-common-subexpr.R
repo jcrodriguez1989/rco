@@ -354,8 +354,7 @@ get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
         "'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT", "SYMBOL",
         constants
       )) ||
-      "FUNCTION" %in% fpd$token[fpd$parent %in% comn_prnt]
-  ))
+      "FUNCTION" %in% fpd$token[fpd$parent %in% comn_prnt]))
   fst_parent <- common_parents[[just_exprs_prnts[[1]]]]
   fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
 }
@@ -371,7 +370,7 @@ get_assigns_ids <- function(fpd, id) {
   assign_exprs_prnts <- act_fpd[
     act_fpd$token %in% assigns & act_fpd$text != ":=",
     "parent"
-    ]
+  ]
   # get the assigned SYMBOL fpd id
   sapply(assign_exprs_prnts, function(assign_exprs_prnt) {
     aux <- act_fpd[act_fpd$parent == assign_exprs_prnt, ]
