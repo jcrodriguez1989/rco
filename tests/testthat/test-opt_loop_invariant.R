@@ -21,7 +21,29 @@ test_that("simple loop invariant", {
   )
   opt_code <- opt_loop_invariant(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "x <- 3",
+    "if (TRUE) {",
+    "  x <- 3",
+    "}",
+    "while (TRUE) {",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("simple loop invariant two exprs", {
+  code <- paste(
+    "while (TRUE) {",
+    "  x <- 3",
+    "  y <- 4",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_loop_invariant(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "if (TRUE) {",
+    "  x <- 3",
+    "  y <- 4",
+    "}",
     "while (TRUE) {",
     "}",
     sep = "\n"
@@ -39,8 +61,10 @@ test_that("double loop invariant", {
   )
   opt_code <- opt_loop_invariant(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "x <- 3",
     "while (TRUE) {",
+    "  if (length(1:10) > 0) {",
+    "    x <- 3",
+    "  }",
     "  for(i in 1:10) {",
     "  }",
     "}",
@@ -48,10 +72,10 @@ test_that("double loop invariant", {
   ))
 })
 
-test_that("double loop invariant", {
+test_that("double loop invariant dont skip one", {
   code <- paste(
     "while (TRUE) {",
-    "  for(i in 1:10) {",
+    "  while (FALSE) {",
     "    x <- 3",
     "  }",
     "}",
@@ -59,9 +83,11 @@ test_that("double loop invariant", {
   )
   opt_code <- opt_loop_invariant(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "x <- 3",
     "while (TRUE) {",
-    "  for(i in 1:10) {",
+    "  if (FALSE) {",
+    "    x <- 3",
+    "  }",
+    "  while (FALSE) {",
     "  }",
     "}",
     sep = "\n"
@@ -80,7 +106,9 @@ test_that("simple loop invariant", {
   opt_code <- opt_loop_invariant(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "for(j in 1:20) {",
-    "  x <- j + 1",
+    "  if (length(1:10) > 0) {",
+    "    x <- j + 1",
+    "  }",
     "  for(i in 1:10) {",
     "  }",
     "}",

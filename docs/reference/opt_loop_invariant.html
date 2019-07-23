@@ -183,7 +183,9 @@ Carefully examine the results after running this function!</p>
   <span class='kw'>sep</span> <span class='kw'>=</span> <span class='st'>"\n"</span>
 )
 <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/cat'>cat</a></span>(<span class='fu'>opt_loop_invariant</span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='no'>code</span>))$<span class='no'>codes</span><span class='kw'>[[</span><span class='fl'>1</span>]])</div><div class='output co'>#&gt; i &lt;- 0
-#&gt; x &lt;- y + z
+#&gt; if (i &lt; n) {
+#&gt;   x &lt;- y + z
+#&gt; }
 #&gt; while (i &lt; n) {
 #&gt;   a[i] &lt;- 6 * i + x * x
 #&gt;   i &lt;- i + 1
