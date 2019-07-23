@@ -45,8 +45,12 @@ optimize_files <- function(files, optimizers = all_optimizers,
   }
 
   # check which codes had been optimized
+  # do not consider whitespaces changes
   changed <- sapply(seq_along(codes), function(i) {
-    !isTRUE(all.equal(codes[[i]], optim_codes[[i]]))
+    !isTRUE(all.equal(
+      gsub("[[:space:]]", "", codes[[i]]),
+      gsub("[[:space:]]", "", optim_codes[[i]])
+    ))
   })
 
   # save optimized files
