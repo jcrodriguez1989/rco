@@ -57,11 +57,17 @@ li_one_fpd <- function(fpd) {
   res_fpd <- fpd
 
   # get loops
-  loop_parent_ids <- fpd$parent[fpd$token %in% loops]
+  # loop_parent_ids <- fpd$parent[fpd$token %in% loops]
+  # For the moment, remove `repeat` loop invariant
+  loop_parent_ids <- fpd$parent[fpd$token %in% c("FOR", "WHILE")]
 
   # remove loops that have function calls inside
   loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt)
     "SYMBOL_FUNCTION_CALL" %in% get_children(fpd, act_prnt)$token)]
+
+  # remove loops that have next or break calls inside
+  loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt)
+    any(c("BREAK", "NEXT") %in% get_children(fpd, act_prnt)$token))]
 
   # for each loop do the invariant code motion
   for (loop_parent_id in loop_parent_ids) {
@@ -77,52 +83,85 @@ li_one_fpd <- function(fpd) {
 # @param id Numeric indicating the node ID of the loop.
 #
 li_in_loop <- function(fpd, id) {
-  res_fpd <- fpd
   lv_vars <- get_loop_variant_vars(fpd, id)
 
   # start visiting the loop body
-  visit_nodes <- utils::tail(res_fpd$id[res_fpd$parent == id], 1)
+  visit_nodes <- utils::tail(fpd$id[fpd$parent == id], 1)
+  to_unloop_ids <- c()
   while (length(visit_nodes) > 0) {
     new_visit <- c()
     for (act_parent in visit_nodes) {
-      act_pd <- get_children(res_fpd, act_parent)
+      act_pd <- get_children(fpd, act_parent)
       act_sblngs <- act_pd[act_pd$parent == act_parent, ]
       if (act_sblngs$token[[1]] == "'{'" || "';'" %in% act_sblngs$token) {
         new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
-      } else if (any(loops %in% act_sblngs$token)) {
-        new_visit <- c(
-          new_visit,
-          utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
-        )
+        # } else if (any(loops %in% act_sblngs$token)) {
+        #   new_visit <- c(
+        #     new_visit,
+        #     utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
+        #   )
       } else if (all(
         act_pd$token %in%
           c(ops, precedence_ops, constants, assigns, "expr", "SYMBOL")
       )) {
         if (!any(lv_vars %in% get_read_vars(act_pd, act_parent))) {
-          res_fpd <- unloop_expr(res_fpd, act_parent, id)
+          to_unloop_ids <- c(to_unloop_ids, act_parent)
+          # res_fpd <- unloop_expr(res_fpd, act_parent, id)
         }
       }
     }
     visit_nodes <- new_visit
   }
-  res_fpd
+
+  unloop_expr(fpd, to_unloop_ids, id)
 }
 
-# Moves an expression that is inside a loop to outside of it
+# Moves expressions that are inside a loop to outside of it
 #
 # @param fpd A flat parsed data data.frame .
-# @param expr_id Numeric indicating the node ID of the expression.
+# @param exprs_ids Numeric indicating the node IDs of the expressions.
 # @param loop_id Numeric indicating the node ID of the parent loop.
 #
-unloop_expr <- function(fpd, expr_id, loop_id) {
-  expr_fpd <- get_children(fpd, expr_id)
-  res_fpd <- remove_nodes(fpd, expr_id)
-  expr_fpd$prev_spaces[expr_fpd$terminal][[1]] <-
-    res_fpd$prev_spaces[res_fpd$terminal][[1]]
-  expr_fpd$line1[expr_fpd$terminal][[1]] <- res_fpd$line1[res_fpd$terminal][[1]]
+unloop_expr <- function(fpd, exprs_ids, loop_id) {
+  if (length(exprs_ids) == 0) {
+    return(fpd)
+  }
+  res_fpd <- remove_nodes(fpd, exprs_ids)
+  loop_fpd <- get_children(fpd, loop_id)
+  exprs_fpd <- get_children(loop_fpd, exprs_ids)
+  exprs <- deparse_flat_data(exprs_fpd)
+  exprs <- sub("^\n*", "", exprs)
+
+  loop_token <- fpd$token[fpd$parent == loop_id][[1]]
+  if (loop_token == "WHILE") {
+    loop_cond_id <- fpd$id[fpd$parent == loop_id & fpd$token == "expr"][[1]]
+    loop_cond <- sub(
+      "^\n*", "",
+      deparse_flat_data(get_children(fpd, loop_cond_id))
+    )
+    new_expr <- paste0("if (", loop_cond, ") {\n", exprs, "}")
+  } else if (loop_token == "FOR") {
+    loop_cond_id <- fpd$id[fpd$parent == loop_id & fpd$token == "forcond"][[1]]
+    loop_cond_id <- fpd$id[fpd$parent == loop_cond_id & fpd$token == "expr"]
+    loop_cond <- sub(
+      "^\n*", "",
+      deparse_flat_data(get_children(fpd, loop_cond_id))
+    )
+
+    new_expr <- paste0("if (length(", loop_cond, ") > 0) {\n", exprs, "}")
+  }
+
+  new_expr_fpd <- flatten_leaves(parse_flat_data(new_expr))
+  new_expr_fpd$prev_spaces[new_expr_fpd$terminal][[1]] <-
+    loop_fpd$prev_spaces[loop_fpd$terminal][[1]]
+  new_expr_fpd$line1[new_expr_fpd$terminal][[1]] <-
+    loop_fpd$line1[loop_fpd$terminal][[1]]
+  new_expr_fpd$prev_spaces[nrow(new_expr_fpd)] <-
+    loop_fpd$prev_spaces[loop_fpd$terminal][[1]]
+  new_expr_fpd$next_lines[nrow(new_expr_fpd)] <- 1
   rbind(
     res_fpd,
-    replace_pd(get_children(res_fpd, loop_id), expr_fpd)
+    replace_pd(get_children(loop_fpd, loop_id), new_expr_fpd)
   )
 }
 

@@ -160,7 +160,7 @@ test_that("constant fold in function", {
     "res <- bar(TRUE)",
     sep = "\n"
   )
-  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  opt_code <- opt_constant_folding(list(code), in_fun_call = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
     "foo <- function() {",
     "  return(TRUE)",
@@ -190,7 +190,7 @@ test_that("constant fold in function call", {
     "sum(1*7, 8/2)",
     sep = "\n"
   )
-  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  opt_code <- opt_constant_folding(list(code), in_fun_call = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
     "sum(7, 4)",
     sep = "\n"
@@ -341,4 +341,13 @@ test_that("fold length 0", {
     "if (logical(0)) NULL",
     sep = "\n"
   ))
+})
+
+test_that("dont fold in function call", {
+  code <- paste(
+    "deparse(substitute(8 * 8 * 8818))",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
 })

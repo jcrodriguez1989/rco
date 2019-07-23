@@ -405,7 +405,10 @@ test_that("constant propagate in function", {
     "y <- x",
     sep = "\n"
   )
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  opt_code <- opt_constant_propagation(
+    list(code),
+    in_fun_call = TRUE
+  )$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 1",
     "j <- 2",
@@ -580,7 +583,10 @@ test_that("constant propagate function call", {
     "})",
     sep = "\n"
   )
-  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  opt_code <- opt_constant_propagation(
+    list(code),
+    in_fun_call = TRUE
+  )$codes[[1]]
   expect_equal(opt_code, paste(
     "x <- 1",
     "sum(1)",
@@ -626,4 +632,14 @@ test_that("dont propagate right to $ or @", {
     "}, NULL)",
     sep = "\n"
   ))
+})
+
+test_that("dont propagate in function call", {
+  code <- paste(
+    "x <- 3",
+    "deparse(substitute(x))",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
 })
