@@ -37,7 +37,7 @@ remotes::install_github("jcrodriguez1989/rco")
 
 `rco` can be used in two ways:
 
-* Using the RStudio addins
+* Using the RStudio Addins
 
   1. `Optimize active file`: Optimizes the file currently open in RStudio. It will apply the optimizers present in `all_optimizers`.
   
