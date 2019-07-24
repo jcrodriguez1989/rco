@@ -354,8 +354,10 @@ test_that("CSE in right place if/else", {
     "  mean(c(dmat[cs_6, cs_6]))",
     "",
     "}",
-    "cs_7 <- ind == x",
-    "if (x == 3) mean(c(dmat[cs_7, cs_7])) else { cs_8 <- ind == x",
+    "if (x == 3) { ",
+    "  cs_7 <- ind == x",
+    "  mean(c(dmat[cs_7, cs_7]))",
+    "} else { cs_8 <- ind == x",
     "mean(c(dmat[cs_8, cs_8])) }",
     "if (x == 3) { cs_9 <- ind == x",
     "mean(c(dmat[cs_9, cs_9])) } else { cs_10 <- ind == x",
@@ -367,6 +369,27 @@ test_that("CSE in right place if/else", {
     "mean(c(dmat[cs_13, cs_13])) } else if (x != 3) { ",
     "  cs_14 <- ind == x",
     "  mean(c(dmat[cs_14, cs_14]))",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("CSE in right place if/else if", {
+  code <- paste(
+    "if (control == 0) {",
+    "  control <- 1 - 1e-8",
+    "} else if (control == 1) {",
+    "  control <- 1 - 1e-8",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
+  expect_equal(opt_code, paste(
+    "cs_1 <- 1 - 1e-8",
+    "if (control == 0) {",
+    "  control <- cs_1",
+    "} else if (control == 1) {",
+    "  control <- cs_1",
     "}",
     sep = "\n"
   ))
