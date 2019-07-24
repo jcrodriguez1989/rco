@@ -21,7 +21,7 @@ download_gh_pkg <- function(pkg_name, down_dir) {
 
   if (inherits(err, "try-error")) {
     warning("Could not download package.")
-    return("")
+    return(err)
   }
 
   # unzip file
@@ -33,7 +33,7 @@ download_gh_pkg <- function(pkg_name, down_dir) {
 
   if (inherits(err, "try-error") | length(dir(paste0(pkg_dir, "/R"))) == 0) {
     warning("Could not extract package.")
-    return("")
+    return(err)
   }
 
   pkg_dir
@@ -42,10 +42,10 @@ download_gh_pkg <- function(pkg_name, down_dir) {
 download_cran_pkg <- function(pkg_name, down_dir) {
   pkg_url <- paste0("https://cran.r-project.org/package=", pkg_name)
   err <- try({
-    url <- pkg_url %>%
-      xml2::read_html() %>%
-      rvest::html_nodes(xpath = "/html/body/table") %>%
-      rvest::html_table()
+    url <- rvest::html_table(rvest::html_nodes(
+      xml2::read_html(pkg_url),
+      xpath = "/html/body/table"
+    ))
     url <- url[[2]]
     dwn_file <- url[grep("source:", url[, 1]), 2]
     url <- paste0("https://cran.r-project.org/src/contrib/", dwn_file)
@@ -55,7 +55,7 @@ download_cran_pkg <- function(pkg_name, down_dir) {
 
   if (inherits(err, "try-error")) {
     warning("Could not download package.")
-    return("")
+    return(err)
   }
 
   # unzip file
@@ -67,7 +67,7 @@ download_cran_pkg <- function(pkg_name, down_dir) {
 
   if (inherits(err, "try-error") | length(dir(paste0(pkg_dir, "/R"))) == 0) {
     warning("Could not extract package.")
-    return("")
+    return(err)
   }
 
   pkg_dir

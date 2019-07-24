@@ -10,7 +10,7 @@ shinyServer(function(input, output, session) {
 
   observeEvent(input$optimize, {
     pkg_dir <- download_pkg(input$pkg)
-    if (pkg_dir == "") {
+    if (inherits(pkg_dir, "try-error")) {
       showNotification("Could not download package", type = "error")
       return(NULL)
     }
