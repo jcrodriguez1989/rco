@@ -403,8 +403,8 @@ get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
 
   fst_parent <- intersect(common_parents, exprlist_ids)[[1]]
   res <- fpd[fpd$id %in% fst_expr_prnts & fpd$parent == fst_parent, ]
-  if (res$parent != 0 &&
-      !any(c("exprlist", "'{'") %in% fpd$token[fpd$parent == res$parent])) {
+  if (res$parent != 0 && !any(c("exprlist", "'{'", "';'") %in%
+    fpd$token[fpd$parent == res$parent])) {
     res <- fpd[fpd$id %in% fst_expr_prnts & fpd$id == fst_parent, ]
   }
   res

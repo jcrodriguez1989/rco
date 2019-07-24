@@ -419,6 +419,27 @@ test_that("CSE in right place: `;` issue", {
   ))
 })
 
+test_that("CSE in right place: `;` issue 2", {
+  code <- paste(
+    "foo <- function(x) {",
+    "  n1 = length(x)",
+    "  n2 = length(y)",
+    "  n3 = (n1*n2+1)/(n1*n2);",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function(x) {",
+    "  n1 = length(x)",
+    "  n2 = length(y)",
+    "  cs_1 <- n1*n2",
+    "  n3 = (cs_1+1)/(cs_1);",
+    "}",
+    sep = "\n"
+  ))
+})
+
 test_that("dont CSE in function def", {
   code <- paste(
     "foo <- function(x = c(1/3, 1/3, 1/3), y = 1/3) 1/3",
