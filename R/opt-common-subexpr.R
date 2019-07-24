@@ -354,7 +354,7 @@ add_braces_to_expr <- function(fpd, id) {
     new_fpd$prev_spaces[new_fpd$parent == id & new_fpd$token == "'{'"]
   # fix ids to keep the old ones
   old_fpd_rows <- which(new_fpd$id == id |
-                          (new_fpd$parent == id & new_fpd$token != "expr"))
+    (new_fpd$parent == id & new_fpd$token != "expr"))
   new_fpd$id[old_fpd_rows] <- paste0("emb_", id, "_", c("expr", "{", "}"))
   new_fpd$id[-old_fpd_rows] <- old_fpd$id
   new_fpd$parent[-old_fpd_rows] <- old_fpd$parent
@@ -381,24 +381,33 @@ get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
   # get ids which childs can be sequence of exprs
   exprlist_ids <- unique(c(
     # parent env
-    fpd$parent[fpd$parent <= 0],
+    fpd$parent[fpd$parent == 0],
     # sub envs
     unlist(sapply(
-      fpd$parent[fpd$token %in% c("FUNCTION", "IF", "ELSE", loops, "'{'")],
+      fpd$parent[fpd$token %in% c("FUNCTION", loops)],
+      function(act_id) utils::tail(fpd$id[fpd$parent == act_id], 1)
+    )),
+    unlist(sapply(
+      fpd$parent[fpd$token == "IF"],
       function(act_id) {
-        body_id <- utils::tail(fpd$id[fpd$parent == act_id & !fpd$terminal], 1)
-        if ("'{'" %in% fpd$token[fpd$parent == body_id]) {
-          body_id
+        if ("ELSE" %in% fpd$token[fpd$parent == act_id]) {
+          utils::tail(fpd$id[fpd$parent == act_id & fpd$token != "ELSE"], 2)
         } else {
-          act_id
+          utils::tail(fpd$id[fpd$parent == act_id], 1)
         }
       }
     )),
+    fpd$parent[fpd$token == "'{'"],
     fpd$id[fpd$token == "exprlist"]
   ))
 
   fst_parent <- intersect(common_parents, exprlist_ids)[[1]]
-  fpd[fpd$id %in% fst_expr_prnts & fpd$parent == fst_parent, ]
+  res <- fpd[fpd$id %in% fst_expr_prnts & fpd$parent == fst_parent, ]
+  if (res$parent != 0 &&
+      !any(c("exprlist", "'{'") %in% fpd$token[fpd$parent == res$parent])) {
+    res <- fpd[fpd$id %in% fst_expr_prnts & fpd$id == fst_parent, ]
+  }
+  res
 }
 
 # Returns the ids of the fpd SYMBOLs that are being assigned
