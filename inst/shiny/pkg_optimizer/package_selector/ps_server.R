@@ -1,6 +1,7 @@
 download_pkg <- function(pkg_name) {
   down_dir <- tempdir()
   pkg_dir <- ""
+  pkg_name <- trimws(pkg_name)
 
   if (grepl("/", pkg_name)) {
     pkg_dir <- download_gh_pkg(pkg_name, down_dir)
