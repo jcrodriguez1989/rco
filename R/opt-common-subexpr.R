@@ -95,7 +95,7 @@ common_subexpr_in_env <- function(fpd, id, n_values, in_fun_call) {
   res_fpd <- remove_nodes(fpd, id)
   act_fpd <- get_children(fpd, id)
   # get and remove function definitions (as they have own env)
-  fun_def_prnt_ids <- act_fpd[act_fpd$token == "FUNCTION", "parent"]
+  fun_def_prnt_ids <- act_fpd$parent[act_fpd$token == "FUNCTION"]
   fun_def_prnt_ids <- setdiff(fun_def_prnt_ids, id)
   env_fpd <- remove_nodes(act_fpd, fun_def_prnt_ids)
 
@@ -281,6 +281,7 @@ apply_subexpr_elim <- function(fpd, parent_id, fst_expr_id, ids) {
       replace_pd(get_children(res_fpd, act_id), repl_fpd)
     )
   }
+
   res_fpd[order(res_fpd$pos_id), ]
 }
 
@@ -324,25 +325,36 @@ add_braces <- function(fpd, id) {
     return(fpd)
   }
 
-  id <- utils::tail(node_sblngs$id[node_sblngs$token == "expr"], 1)
   if ("'{'" %in% fpd$token[fpd$parent == id]) {
-    # it has '{', '}'
     return(fpd)
   }
 
+  res <- rbind(
+    remove_nodes(fpd, id),
+    add_braces_to_expr(fpd, id)
+  )
+  res[order(res$pos_id), ]
+}
+
+# Returns and fpd whichs expr has been embraced
+#
+# @param fpd A flat parsed data data.frame .
+# @param id Numeric indicating the node ID of the expr.
+#
+add_braces_to_expr <- function(fpd, id) {
   # get old code, add braces and parse the fpd again
   old_fpd <- get_children(fpd, id)
   new_code <- deparse_flat_data(old_fpd)
   new_code <- paste0("{\n  ", sub("^\n*", "", new_code), "\n}")
   new_fpd <- flatten_leaves(parse_flat_data(new_code))
-  # fix pos ids
+
   new_fpd <- replace_pd(old_fpd, new_fpd)
   # add spaces to braces
   new_fpd$prev_spaces[new_fpd$parent == id & new_fpd$token == "'}'"] <-
     new_fpd$prev_spaces[new_fpd$parent == id & new_fpd$token == "'{'"]
   # fix ids to keep the old ones
   old_fpd_rows <- which(new_fpd$id == id |
-    (new_fpd$parent == id & new_fpd$token != "expr"))
+                          (new_fpd$parent == id & new_fpd$token != "expr"))
   new_fpd$id[old_fpd_rows] <- paste0("emb_", id, "_", c("expr", "{", "}"))
   new_fpd$id[-old_fpd_rows] <- old_fpd$id
   new_fpd$parent[-old_fpd_rows] <- old_fpd$parent
@@ -355,11 +367,7 @@ add_braces <- function(fpd, id) {
   new_fpd$pos_id[1:3] <- create_new_pos_id(old_fpd, 3, to_id = old_fpd$id[[2]])
   new_fpd$pos_id[nrow(new_fpd)] <-
     create_new_pos_id(old_fpd, 1, from_id = utils::tail(old_fpd$id, 1))
-
-  rbind(
-    remove_nodes(fpd, id),
-    new_fpd
-  )
+  new_fpd
 }
 
 # Returns the fpd row where new temp var should go before
@@ -370,15 +378,27 @@ add_braces <- function(fpd, id) {
 #   parents.
 #
 get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
-  just_exprs_prnts <- which(sapply(common_parents, function(comn_prnt)
-    all(fpd$token[fpd$parent %in% comn_prnt] %in%
-      c(
-        "'{'", "expr", "'}'", "';'", "equal_assign", "COMMENT", "SYMBOL",
-        constants
-      )) ||
-      "FUNCTION" %in% fpd$token[fpd$parent %in% comn_prnt]))
-  fst_parent <- common_parents[[just_exprs_prnts[[1]]]]
-  fpd[fpd$id == fst_expr_prnts[which(fst_expr_prnts == fst_parent) - 1], ]
+  # get ids which childs can be sequence of exprs
+  exprlist_ids <- unique(c(
+    # parent env
+    fpd$parent[fpd$parent <= 0],
+    # sub envs
+    unlist(sapply(
+      fpd$parent[fpd$token %in% c("FUNCTION", "IF", "ELSE", loops, "'{'")],
+      function(act_id) {
+        body_id <- utils::tail(fpd$id[fpd$parent == act_id & !fpd$terminal], 1)
+        if ("'{'" %in% fpd$token[fpd$parent == body_id]) {
+          body_id
+        } else {
+          act_id
+        }
+      }
+    )),
+    fpd$id[fpd$token == "exprlist"]
+  ))
+
+  fst_parent <- intersect(common_parents, exprlist_ids)[[1]]
+  fpd[fpd$id %in% fst_expr_prnts & fpd$parent == fst_parent, ]
 }
 
 # Returns the ids of the fpd SYMBOLs that are being assigned
