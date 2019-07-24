@@ -287,14 +287,12 @@ test_that("CSE in assigned fun", {
   ))
 })
 
-test_that("CSE in right place", {
+test_that("CSE in right place loops", {
   code <- paste(
     "sapply(indls, function(x) mean(c(dmat[ind == x, ind == x])))",
-    "while (x) mean(c(dmat[ind == x, ind == x]))",
+    "while (x == 3) mean(c(dmat[ind == x, ind == x]))",
     "for (x in 1:10) mean(c(dmat[ind == x, ind == x]))",
     "repeat mean(c(dmat[ind == x, ind == x]))",
-    "if(x) mean(c(dmat[ind == x, ind == x]))",
-    "if(x) mean(c(dmat[ind == x, ind == x])) else mean(c(dmat[ind == x, ind == x]))",
     sep = "\n"
   )
   opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
@@ -303,17 +301,97 @@ test_that("CSE in right place", {
     "  cs_1 <- ind == x",
     "  mean(c(dmat[cs_1, cs_1]))",
     "})",
-    "cs_1 <- ind == x",
-    "while (x) mean(c(dmat[cs_1, cs_1]))",
-    "cs_2 <- ind == x",
-    "for (x in 1:10) mean(c(dmat[cs_2, cs_2]))",
-    "cs_3 <- ind == x",
-    "repeat mean(c(dmat[cs_3, cs_3]))",
-    "cs_4 <- ind == x",
-    "if(x) mean(c(dmat[cs_4, cs_4]))",
-    "cs_5 <- ind == x",
-    "cs_6 <- ind == x",
-    "if(x) mean(c(dmat[cs_5, cs_5])) else mean(c(dmat[cs_6, cs_6]))",
+    "while (x == 3) { ",
+    "  cs_1 <- ind == x",
+    "  mean(c(dmat[cs_1, cs_1]))",
+    "",
+    "}",
+    "for (x in 1:10) { ",
+    "  cs_2 <- ind == x",
+    "  mean(c(dmat[cs_2, cs_2]))",
+    "",
+    "}",
+    "repeat { ",
+    "  cs_3 <- ind == x",
+    "  mean(c(dmat[cs_3, cs_3]))",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("CSE in right place if/else", {
+  code <- paste(
+    "if (x == 3) mean(c(dmat[ind == x, ind == x]))",
+    "if (x == 3) { mean(c(dmat[ind == x, ind == x])) }",
+    "if (x == 3) mean(c(dmat[ind == x, ind == x])) else mean(c(dmat[ind == x, ind == x]))",
+    "if (x == 3) { mean(c(dmat[ind == x, ind == x])) } else mean(c(dmat[ind == x, ind == x]))",
+    "if (x == 3) mean(c(dmat[ind == x, ind == x])) else { mean(c(dmat[ind == x, ind == x])) }",
+    "if (x == 3) { mean(c(dmat[ind == x, ind == x])) } else { mean(c(dmat[ind == x, ind == x])) }",
+    "if (x == 3) { mean(c(dmat[ind == x, ind == x])) } else if (x != 3) { mean(c(dmat[ind == x, ind == x])) }",
+    "if (x == 3) { mean(c(dmat[ind == x, ind == x])) } else if (x != 3) mean(c(dmat[ind == x, ind == x]))",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
+  expect_equal(opt_code, paste(
+    "if (x == 3) { ",
+    "  cs_1 <- ind == x",
+    "  mean(c(dmat[cs_1, cs_1]))",
+    "",
+    "}",
+    "if (x == 3) { cs_2 <- ind == x",
+    "mean(c(dmat[cs_2, cs_2])) }",
+    "if (x == 3) { ",
+    "  cs_3 <- ind == x",
+    "  mean(c(dmat[cs_3, cs_3]))",
+    "} else { ",
+    "  cs_4 <- ind == x",
+    "  mean(c(dmat[cs_4, cs_4]))",
+    "",
+    "}",
+    "if (x == 3) { cs_5 <- ind == x",
+    "mean(c(dmat[cs_5, cs_5])) } else { ",
+    "  cs_6 <- ind == x",
+    "  mean(c(dmat[cs_6, cs_6]))",
+    "",
+    "}",
+    "cs_7 <- ind == x",
+    "if (x == 3) mean(c(dmat[cs_7, cs_7])) else { cs_8 <- ind == x",
+    "mean(c(dmat[cs_8, cs_8])) }",
+    "if (x == 3) { cs_9 <- ind == x",
+    "mean(c(dmat[cs_9, cs_9])) } else { cs_10 <- ind == x",
+    "mean(c(dmat[cs_10, cs_10])) }",
+    "if (x == 3) { cs_11 <- ind == x",
+    "mean(c(dmat[cs_11, cs_11])) } else if (x != 3) { cs_12 <- ind == x",
+    "mean(c(dmat[cs_12, cs_12])) }",
+    "if (x == 3) { cs_13 <- ind == x",
+    "mean(c(dmat[cs_13, cs_13])) } else if (x != 3) { ",
+    "  cs_14 <- ind == x",
+    "  mean(c(dmat[cs_14, cs_14]))",
+    "}",
+    sep = "\n"
+  ))
+})
+
+test_that("CSE in right place: `;` issue", {
+  code <- paste(
+    "x <- 3;",
+    "(x+1)*(x+1);",
+    "foo <- function(x) {",
+    "  x1 <- x;",
+    "  x1^2 + x1^2;",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code), in_fun_call = TRUE)$codes[[1]]
+  expect_equal(opt_code, paste(
+    "x <- 3;",
+    "cs_1 <- (x+1)",
+    "cs_1*cs_1;",
+    "foo <- function(x) {",
+    "  x1 <- x;",
+    "  cs_1 <-   x1^2",
+    "  cs_1 + cs_1;",
+    "}",
     sep = "\n"
   ))
 })
