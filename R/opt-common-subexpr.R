@@ -220,7 +220,7 @@ split_ids <- function(fpd, parent_id, fst_expr_pos_id, ids) {
   vars_inv <- vars_inv[vars_inv$token == "SYMBOL", "text"]
 
   # get vars involved assignations
-  vars_inv_fpd <- fpd[fpd$id %in% get_assigns_ids(fpd, parent_id), ]
+  vars_inv_fpd <- fpd[fpd$id %in% get_assigned_vars_ids(fpd, parent_id), ]
   vars_inv_fpd <- vars_inv_fpd[vars_inv_fpd$text %in% vars_inv, ]
 
   # get functions used in this env
@@ -415,7 +415,7 @@ get_temp_var_pos <- function(fpd, fst_expr_prnts, common_parents) {
 # @param fpd A flat parsed data data.frame .
 # @param id Numeric indicating the node ID to find assigns.
 #
-get_assigns_ids <- function(fpd, id) {
+get_assigned_vars_ids <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
   # get parents of <- <<- -> ->> and =
   assign_exprs_prnts <- act_fpd[
