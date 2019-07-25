@@ -94,6 +94,35 @@ test_that("double loop invariant dont skip one", {
   ))
 })
 
+test_that("double loop invariant in outer", {
+  code <- paste(
+    "for (i in 1:100) {",
+    "  c <- 1",
+    "  for (j in 1:100) {",
+    "    c <- c + 1",
+    "  }",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_loop_invariant(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
+})
+
+test_that("double loop invariant in outer 2", {
+  code <- paste(
+    "for (i in 1:100) {",
+    "  c <- 1",
+    "  for (j in 1:100) {",
+    "    c <- c + 1",
+    "    d <- c",
+    "  }",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_loop_invariant(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
+})
+
 test_that("simple loop invariant", {
   code <- paste(
     "for(j in 1:20) {",
