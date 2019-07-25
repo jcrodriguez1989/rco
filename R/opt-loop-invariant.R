@@ -36,7 +36,6 @@ opt_loop_invariant <- function(texts) {
 #
 li_one_file <- function(text) {
   fpd <- parse_flat_data(text)
-  # fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
   new_fpd <- li_one_fpd(new_fpd)
@@ -95,18 +94,12 @@ li_in_loop <- function(fpd, id) {
       act_sblngs <- act_pd[act_pd$parent == act_parent, ]
       if (act_sblngs$token[[1]] == "'{'" || "';'" %in% act_sblngs$token) {
         new_visit <- c(new_visit, act_sblngs$id[!act_sblngs$terminal])
-        # } else if (any(loops %in% act_sblngs$token)) {
-        #   new_visit <- c(
-        #     new_visit,
-        #     utils::tail(act_sblngs$id[!act_sblngs$terminal], 1)
-        #   )
       } else if (all(
         act_pd$token %in%
           c(ops, precedence_ops, constants, assigns, "expr", "SYMBOL")
       )) {
-        if (!any(lv_vars %in% get_read_vars(act_pd, act_parent))) {
+        if (!any(lv_vars %in% act_pd$text[act_pd$token == "SYMBOL"])) {
           to_unloop_ids <- c(to_unloop_ids, act_parent)
-          # res_fpd <- unloop_expr(res_fpd, act_parent, id)
         }
       }
     }
@@ -151,7 +144,7 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
     new_expr <- paste0("if (length(", loop_cond, ") > 0) {\n", exprs, "}")
   }
 
-  new_expr_fpd <- flatten_leaves(parse_flat_data(new_expr))
+  new_expr_fpd <- parse_flat_data(new_expr)
   new_expr_fpd$prev_spaces[new_expr_fpd$terminal][[1]] <-
     loop_fpd$prev_spaces[loop_fpd$terminal][[1]]
   new_expr_fpd$line1[new_expr_fpd$terminal][[1]] <-
@@ -165,7 +158,7 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
   )
 }
 
-# Returns which variables vary within a loop
+# Returns which variables vary depending on loop execution
 #
 # @param fpd A flat parsed data data.frame .
 # @param id Numeric indicating the node ID of the loop.
@@ -173,7 +166,7 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
 get_loop_variant_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
   act_sblngs <- act_fpd[act_fpd$parent == id, ]
-  lv_vars <- c()
+  assigns_ids <- fpd$parent[fpd$token %in% assigns]
 
   # remove function definitions
   act_fpd <- remove_nodes(
@@ -181,45 +174,67 @@ get_loop_variant_vars <- function(fpd, id) {
     act_fpd$id[act_fpd$parent == act_fpd$parent[act_fpd$token == "FUNCTION"]]
   )
 
+  lv_vars_ids <- c()
   # get for condition's IN vars
   # FOR '(' forcond ')' ; where forcond ~> SYMBOL IN expr
-  lv_vars <- c(lv_vars, act_fpd$id[which(act_fpd$token == "IN") - 1])
+  lv_vars_ids <- c(lv_vars_ids, act_fpd$id[which(act_fpd$token == "IN") - 1])
 
-  lv_vars <- c(
-    lv_vars,
-    unlist(get_assigns_ids(act_fpd, act_sblngs$id[!act_sblngs$terminal]))
-  )
+  # get updated vars, e.g., x <- x + 1
+  lv_vars_ids <- c(lv_vars_ids, get_updated_vars_ids(act_fpd))
 
-  unique(act_fpd$text[act_fpd$id %in% lv_vars])
+  old_lv_vars_ids <- c()
+  while (!isTRUE(all.equal(lv_vars_ids, old_lv_vars_ids))) {
+    old_lv_vars_ids <- lv_vars_ids
+    lv_vars <- fpd$text[fpd$id %in% lv_vars_ids]
+    for (act_id in assigns_ids) {
+      used_fpd <- get_children(act_fpd, get_assigned_exprs_ids(act_fpd, act_id))
+      if (any(used_fpd$text[used_fpd$token == "SYMBOL"] %in% lv_vars)) {
+        lv_vars_ids <- c(lv_vars_ids, get_assigned_vars_ids(act_fpd, act_id))
+      }
+    }
+    lv_vars_ids <- unique(lv_vars_ids)
+  }
+
+  unique(act_fpd$text[act_fpd$id %in% lv_vars_ids])
 }
 
-# Returns the names of the vars which value is read in an expr.
+# Returns the node ids of all vars that are being updated, e.g., x <- x + 1
 #
-# @param fpd a flat parsed data data.frame .
-# @param id Numeric indicating the node ID.
+# @param fpd A flat parsed data data.frame .
 #
-get_read_vars <- function(fpd, id) {
+get_updated_vars_ids <- function(fpd) {
+  assigned_ids <- get_assigned_vars_ids(fpd, get_roots(fpd)$id)
+  assigns_ids <- fpd$parent[fpd$token %in% assigns]
+
+  assigned_ids[sapply(assigned_ids, function(act_id) {
+    ancestors_ids <- get_ancestors(fpd, act_id)
+    ass_prnt_id <- intersect(assigns_ids, ancestors_ids)
+    ass_expr_fpd <- get_children(fpd, get_assigned_exprs_ids(fpd, ass_prnt_id))
+    fpd$text[fpd$id == act_id] %in%
+      ass_expr_fpd$text[ass_expr_fpd$token == "SYMBOL"]
+  })]
+}
+
+# Returns the ids of the fpd exprs that are being assigned
+#
+# @param fpd A flat parsed data data.frame .
+# @param id Numeric indicating the node ID to find assigns.
+#
+get_assigned_exprs_ids <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
-
-  # get assignation exprs ids
-  ass_prnt_ids <- act_fpd$parent[act_fpd$token %in% assigns]
-
-  # remove SYMBOLs that are being assigned
-  assigned_ids <- unlist(lapply(ass_prnt_ids, function(act_prnt) {
-    ass_sblngs <- act_fpd[act_fpd$parent == act_prnt, ]
-    ass_idx <- -1
-    if ("RIGHT_ASSIGN" %in% ass_sblngs$token) {
-      ass_idx <- 1
+  # get parents of <- <<- -> ->> and =
+  assign_exprs_prnts <- act_fpd$parent[
+    act_fpd$token %in% assigns & act_fpd$text != ":="]
+  # get the assigned expr fpd id
+  sapply(assign_exprs_prnts, function(assign_exprs_prnt) {
+    aux <- act_fpd[act_fpd$parent == assign_exprs_prnt, ]
+    while (any(assigns %in% aux$token)) {
+      if (aux$token[[2]] == "RIGHT_ASSIGN") {
+        aux <- act_fpd[act_fpd$parent == aux$id[[1]], ]
+      } else {
+        aux <- act_fpd[act_fpd$parent == aux$id[[3]], ]
+      }
     }
-    sapply(which(ass_sblngs$token %in% assigns), function(expr_idx) {
-      act_chld <- get_children(act_fpd, ass_sblngs$id[expr_idx + ass_idx])
-      act_chld$id[act_chld$token == "SYMBOL"][[1]]
-    })
-  }))
-
-  res <- act_fpd[
-    act_fpd$token %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL") &
-      !act_fpd$id %in% assigned_ids, "text"
-  ]
-  unique(res)
+    unique(aux$parent)
+  })
 }
