@@ -119,6 +119,7 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
   if (length(exprs_ids) == 0) {
     return(fpd)
   }
+
   res_fpd <- remove_nodes(fpd, exprs_ids)
   loop_fpd <- get_children(fpd, loop_id)
   exprs_fpd <- get_children(loop_fpd, exprs_ids)
@@ -140,7 +141,6 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
       "^\n*", "",
       deparse_flat_data(get_children(fpd, loop_cond_id))
     )
-
     new_expr <- paste0("if (length(", loop_cond, ") > 0) {\n", exprs, "}")
   }
 
@@ -152,6 +152,13 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
   new_expr_fpd$prev_spaces[nrow(new_expr_fpd)] <-
     loop_fpd$prev_spaces[loop_fpd$terminal][[1]]
   new_expr_fpd$next_lines[nrow(new_expr_fpd)] <- 1
+
+
+  if (any(exprs_ids %in% utils::tail(fpd$id[fpd$parent == loop_id]))) {
+    # if we are removing the entire loop body, then remove the loop
+    res_fpd <- remove_nodes(res_fpd, loop_id)
+  }
+
   rbind(
     res_fpd,
     replace_pd(get_children(loop_fpd, loop_id), new_expr_fpd)
@@ -183,7 +190,7 @@ get_loop_variant_vars <- function(fpd, id) {
   lv_vars_ids <- c(lv_vars_ids, get_updated_vars_ids(act_fpd))
 
   old_lv_vars_ids <- c()
-  while (!isTRUE(all.equal(lv_vars_ids, old_lv_vars_ids))) {
+  while (length(lv_vars_ids) != length(old_lv_vars_ids)) {
     old_lv_vars_ids <- lv_vars_ids
     lv_vars <- fpd$text[fpd$id %in% lv_vars_ids]
     for (act_id in assigns_ids) {
@@ -211,7 +218,8 @@ get_updated_vars_ids <- function(fpd) {
     ass_prnt_id <- intersect(assigns_ids, ancestors_ids)
     ass_expr_fpd <- get_children(fpd, get_assigned_exprs_ids(fpd, ass_prnt_id))
     fpd$text[fpd$id == act_id] %in%
-      ass_expr_fpd$text[ass_expr_fpd$token == "SYMBOL"]
+      ass_expr_fpd$text[ass_expr_fpd$token == "SYMBOL"] &&
+      sum(ass_expr_fpd$terminal) > 1
   })]
 }
 
@@ -224,7 +232,8 @@ get_assigned_exprs_ids <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
   # get parents of <- <<- -> ->> and =
   assign_exprs_prnts <- act_fpd$parent[
-    act_fpd$token %in% assigns & act_fpd$text != ":="]
+    act_fpd$token %in% assigns & act_fpd$text != ":="
+  ]
   # get the assigned expr fpd id
   sapply(assign_exprs_prnts, function(assign_exprs_prnt) {
     aux <- act_fpd[act_fpd$parent == assign_exprs_prnt, ]
