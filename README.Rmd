@@ -89,10 +89,18 @@ We can automatically optimize it by doing:
 opt_code <- optimize_text(code, iterations = 1)
 ```
 
+```{r echo = FALSE}
+cat(opt_code)
+```
+
 After one optimization pass we can see that it has only propagated the `years_old` variable. Another pass:
 
 ```{r}
 opt_code <- optimize_text(opt_code, iterations = 1)
+```
+
+```{r echo = FALSE}
+cat(opt_code)
 ```
 
 Now, it has folded the `days_old` variable, and then propagated it. Another pass:
@@ -101,16 +109,28 @@ Now, it has folded the `days_old` variable, and then propagated it. Another pass
 opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
+```{r echo = FALSE}
+cat(opt_code)
+```
+
 It has folded the `hours_old` variable, and then propagated it. Another pass:
 
 ```{r}
 opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
+```{r echo = FALSE}
+cat(opt_code)
+```
+
 It has folded the `seconds_old` variable, and then propagated it into the `if` condition. Another pass:
 
 ```{r}
 opt_code <- optimize_text(opt_code, iterations = 1)
+```
+
+```{r echo = FALSE}
+cat(opt_code)
 ```
 
 Now, it has folded the `if` condition, and as it was `TRUE` it just kept its body, as testing the condition or the `else` clause were dead code.

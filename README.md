@@ -97,6 +97,7 @@ opt_code <- optimize_text(code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 365 * 29 # leap years don't exist
@@ -117,6 +118,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -137,6 +139,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -157,6 +160,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -177,6 +181,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
