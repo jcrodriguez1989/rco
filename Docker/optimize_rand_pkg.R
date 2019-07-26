@@ -76,7 +76,7 @@ sessionInfo()
 cat("Starting optimization.\n")
 
 with_dir(pkg_dir_opt, {
-  act_files <- dir("R")
+  act_files <- dir("R", pattern = "\\.R$|\\.r$")
   opt_files <- optimize_files(paste0("R/", act_files), overwrite = TRUE)
   cat(paste0(
     "\nOptimized ", sum(opt_files), " of ", length(act_files),
@@ -114,36 +114,35 @@ if (!(file.exists(paste0(pkg_dir, "/tests/testthat.R")) &&
 }
 
 # install package from CRAN (to solve dependencies)
-install.packages(pkg_name, quiet = TRUE)
+install.packages(pkg_name, quiet = TRUE, dependencies = TRUE)
 
-# test and time both packages
-with_dir(pkg_dir, {
-  build(vignettes = FALSE, quiet = TRUE)
-  test_time <- system.time({
-    test_res <- test()
-  })
-})
+# test once to avoid writing temp files
+test(pkg_dir)
 
-with_dir(pkg_dir_opt, {
-  build(vignettes = FALSE, quiet = TRUE)
-  test_time_opt <- system.time({
-    test_res_opt <- test()
-  })
-})
+# microbenchmark testing original and optimized packages
+library("microbenchmark")
 
-test_res <- lapply(test_res, function(act_res)
-  sapply(act_res$results, function(act_res_res)
-    is(act_res_res, "expectation_success")))
-
-test_res_opt <- lapply(test_res_opt, function(act_res)
-  sapply(act_res$results, function(act_res_res)
-    is(act_res_res, "expectation_success")))
-
-if (!isTRUE(all.equal(test_res, test_res_opt))) {
-  cat("\nDiffering test results.\n")
+my_check <- function(values) {
+  test_res <- lapply(values[[1]], function(act_res)
+    sapply(act_res$results, function(act_res_res)
+      is(act_res_res, "expectation_success")))
+  test_res_opt <- lapply(values[[2]], function(act_res)
+    sapply(act_res$results, function(act_res_res)
+      is(act_res_res, "expectation_success")))
+  isTRUE(all.equal(test_res, test_res_opt))
 }
 
-test_speedup <- test_time / test_time_opt
+bchmark_res <- microbenchmark(
+  test(pkg_dir), test(pkg_dir_opt),
+  times = Sys.getenv("RCO_BENCH_TIMES", unset = 1),
+  check = my_check
+)
+save(bchmark_res, file = paste0("bchmark_res_", pkg_name, ".RData"))
+
+(bchmark_sumry <- summary(bchmark_res))
+bchmark_sumry <- bchmark_sumry[, c("min", "lq", "mean", "median", "uq", "max")]
+
+test_speedup <- bchmark_sumry[2, ] / bchmark_sumry[1, ]
 cat("\n\n*****************************\n")
 cat("rco obtained a speedup of:\n")
 print(test_speedup)
