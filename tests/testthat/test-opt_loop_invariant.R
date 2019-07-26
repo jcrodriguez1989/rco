@@ -210,3 +210,25 @@ test_that("abort loop invariant if next/break/return", {
   opt_code <- opt_loop_invariant(list(code))$codes[[1]]
   expect_equal(opt_code, code)
 })
+
+test_that("no error on empty loops", {
+  code <- paste(
+    "while (i < 8818) {}",
+    "while (i < 8818) NULL",
+    "for (i in 1:8818) {}",
+    "for (i in 1:8818) NULL",
+    sep = "\n"
+  )
+  opt_code <- opt_loop_invariant(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "while (i < 8818) {}",
+    "if (i < 8818) {",
+    "NULL",
+    "}",
+    "for (i in 1:8818) {}",
+    "if (length(1:8818) > 0) {",
+    "NULL}",
+    "",
+    sep = "\n"
+  ))
+})

@@ -423,7 +423,7 @@ get_assigned_vars_ids <- function(fpd, id) {
     "parent"
   ]
   # get the assigned SYMBOL fpd id
-  sapply(assign_exprs_prnts, function(assign_exprs_prnt) {
+  unlist(lapply(assign_exprs_prnts, function(assign_exprs_prnt) {
     aux <- act_fpd[act_fpd$parent == assign_exprs_prnt, ]
     if (aux$token[[2]] == "RIGHT_ASSIGN") {
       res <- get_children(act_fpd, aux$id[3])
@@ -431,7 +431,7 @@ get_assigned_vars_ids <- function(fpd, id) {
       res <- get_children(act_fpd, aux$id[1])
     }
     res$id[res$token == "SYMBOL"][[1]] # in case it is a[i] <- ...
-  })
+  }))
 }
 
 # Returns the ids of function calls
