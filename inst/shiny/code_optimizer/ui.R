@@ -1,7 +1,7 @@
 library("shiny")
 
 shinyUI(fluidPage(
-  theme = shinythemes::shinytheme("simplex"),
+  theme = shinythemes::shinytheme("journal"),
   fluidPage(
     titlePanel("rco - The R Code Optimizer"),
     wellPanel(
