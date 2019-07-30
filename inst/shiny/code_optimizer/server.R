@@ -42,20 +42,17 @@ shinyServer(function(input, output, session) {
     }
 
     # update with the optimized code
-    updateTextAreaInput(session, "opt_code", value = opt_code)
+    orig_code_file <- rco:::write_code_file(input$input_code, tempfile())
+    opt_code_file <- rco:::write_code_file(opt_code, tempfile())
+    output$opt_code <- diffr::renderDiffr(diffr::diffr(
+      before = "Original:", file1 = orig_code_file,
+      after = "Optimized:", file2 = opt_code_file
+    ))
+    updateTextAreaInput(session, "input_code", value = opt_code)
+
     # put last the used optimizer
     current_opt_names <- c(current_opt_names[-1], current_opt_names[1])
     updateSelectInput(session, "opt_list", selected = current_opt_names)
-  })
-
-  observeEvent(input$accept_changes_btn, {
-    opt_code <- input$opt_code
-    updateTextAreaInput(session, "input_code", value = opt_code)
-    updateTextAreaInput(session, "opt_code", value = "")
-  })
-
-  observeEvent(input$dismiss_changes_btn, {
-    updateTextAreaInput(session, "opt_code", value = "")
   })
 
   observeEvent(input$load_ex_code_btn, {

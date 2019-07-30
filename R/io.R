@@ -15,4 +15,5 @@ read_code_file <- function(file) {
 write_code_file <- function(code, con) {
   encoded_code <- base::enc2utf8(code)
   base::writeLines(encoded_code, con, useBytes = TRUE)
+  invisible(con)
 }

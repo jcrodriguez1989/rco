@@ -13,32 +13,22 @@ shinyUI(fluidPage(
         )
       ),
       fluidRow(
-        column(
-          6,
-          actionButton("opt_btn", label = "Optimize"),
-          actionButton("load_ex_code_btn", label = "Load Example")
-        ),
-        column(
-          6,
-          "Changes:",
-          actionButton("accept_changes_btn", label = "Accept"),
-          actionButton("dismiss_changes_btn", label = "Dismiss")
-        )
-      ),
-      fluidRow(
-        column(6, textAreaInput("input_code",
+        textAreaInput("input_code",
           label = "",
           placeholder = "Input Code",
           height = "100%",
-          rows = 20
-        )),
-        column(6, textAreaInput("opt_code",
-          label = "",
-          placeholder = "Optimized Code",
-          height = "100%",
-          rows = 20
-        ))
-      )
+          rows = 12
+        )
+      ),
+      fluidRow(
+        column(5, NULL),
+        column(
+          4,
+          actionButton("load_ex_code_btn", label = "Load Example"),
+          actionButton("opt_btn", label = "Optimize")
+        )
+      ),
+      fluidRow(diffr::diffrOutput("opt_code"))
     )
   )
 ))
