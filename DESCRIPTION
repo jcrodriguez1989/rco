@@ -23,9 +23,14 @@ VignetteBuilder: knitr
 RoxygenNote: 6.1.1
 Suggests: 
     covr,
+    diffr,
     ggplot2,
+    httr,
     knitr,
     microbenchmark,
     rstudioapi,
+    rvest,
     shiny,
-    testthat
+    shinythemes,
+    testthat,
+    xml2
