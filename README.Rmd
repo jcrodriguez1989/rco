@@ -30,7 +30,7 @@ To install it run the following from an R console:
 if (!require("remotes")) {
   install.packages("remotes")
 }
-remotes::install_github("jcrodriguez1989/rco")
+remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
 ```
 
 ## Usage

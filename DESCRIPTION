@@ -1,7 +1,7 @@
 Package: rco
 Type: Package
 Title: R Code Optimizer
-Version: 0.1.007
+Version: 0.1.008
 Authors@R: c(
     person(given = "Juan Cruz", family = "Rodriguez", 
         role = c("aut", "cre"), email = "jcrodriguez@unc.edu.ar"),
@@ -23,8 +23,14 @@ VignetteBuilder: knitr
 RoxygenNote: 6.1.1
 Suggests: 
     covr,
+    diffr,
     ggplot2,
+    httr,
     knitr,
     microbenchmark,
     rstudioapi,
-    testthat
+    rvest,
+    shiny,
+    shinythemes,
+    testthat,
+    xml2

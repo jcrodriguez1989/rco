@@ -19,6 +19,6 @@ optimize_text <- function(text, optimizers = all_optimizers, iterations = Inf) {
     iterations = iterations
   )
   res <- paste(read_code_file(tmp_file), collapse = "\n")
-  cat(res)
+
   return(invisible(res))
 }

@@ -92,7 +92,6 @@ remove_after_interruption <- function(fpd) {
       next
     }
     id <- intr$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     if (nrow(intr_sibl) > 5 &&
       all(intr_sibl$token[c(1, 6)] == c("IF", "ELSE"))) {
@@ -158,7 +157,6 @@ remove_false_while <- function(fpd) {
       next
     }
     id <- while_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # WHILE '(' expr ')' expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
@@ -185,7 +183,6 @@ remove_false_if <- function(fpd) {
       next
     }
     id <- if_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # IF '(' expr ')' expr_or_assign ELSE expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
@@ -216,7 +213,6 @@ remove_true_if <- function(fpd) {
       next
     }
     id <- if_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # IF '(' expr ')' expr_or_assign ELSE expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&

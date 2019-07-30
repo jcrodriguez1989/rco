@@ -64,7 +64,7 @@ Carefully examine the results after running this function!" />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -160,7 +160,7 @@ Carefully examine the results after running this function!</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>opt_common_subexpr</span>(<span class='no'>texts</span>, <span class='kw'>n_values</span> <span class='kw'>=</span> <span class='fl'>2</span>)</pre>
+    <pre class="usage"><span class='fu'>opt_common_subexpr</span>(<span class='no'>texts</span>, <span class='kw'>n_values</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>in_fun_call</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -173,6 +173,11 @@ Carefully examine the results after running this function!</p>
       <th>n_values</th>
       <td><p>Numeric indicating the minimum number of values to consider
 a subexpression.</p></td>
+    </tr>
+    <tr>
+      <th>in_fun_call</th>
+      <td><p>Logical indicating whether it should propagate in function
+calls. Note: this could change the semantics of the program.</p></td>
     </tr>
     </table>
     
