@@ -1,3 +1,7 @@
+# rco 0.1.008
+
+  - Adding Shiny GUIs, called with the `rco_gui` function.
+
 # rco 0.1.007
 
   - Adding Loop-invariant Code Motion optimizer.

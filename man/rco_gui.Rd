@@ -19,6 +19,6 @@ Starts the selected rco Graphical User Interface (GUI).
 \examples{
 ## Start the GUI
 \donttest{
-rco_gui("code_optimizer")
+rco_gui("")
 }
 }
