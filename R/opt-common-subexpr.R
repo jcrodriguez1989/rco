@@ -309,7 +309,10 @@ create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
   fst_expr_fpd <- get_children(fpd, fst_expr_id)
   var_fpd[var_fpd$terminal, "prev_spaces"][[1]] <-
     fst_expr_fpd[fst_expr_fpd$terminal, "prev_spaces"][[1]]
-  var_fpd$pos_id <- create_new_pos_id(fpd, nrow(var_fpd), to_id = fst_expr_id)
+  var_fpd$pos_id <- create_new_pos_id(
+    fpd, nrow(var_fpd),
+    from_id = "from_start", to_id = fst_expr_id
+  )
   list(fpd = var_fpd, name = var_name)
 }
 
@@ -364,7 +367,10 @@ add_braces_to_expr <- function(fpd, id) {
 
   # fix pos ids
   new_fpd$pos_id[-old_fpd_rows] <- old_fpd$pos_id
-  new_fpd$pos_id[1:3] <- create_new_pos_id(old_fpd, 3, to_id = old_fpd$id[[2]])
+  new_fpd$pos_id[1:2] <- create_new_pos_id(old_fpd, 2,
+    from_id = old_fpd$id[[1]]
+  )
+  new_fpd$pos_id[3] <- create_new_pos_id(old_fpd, 1, to_id = old_fpd$id[[2]])
   new_fpd$pos_id[nrow(new_fpd)] <-
     create_new_pos_id(old_fpd, 1, from_id = utils::tail(old_fpd$id, 1))
   new_fpd
