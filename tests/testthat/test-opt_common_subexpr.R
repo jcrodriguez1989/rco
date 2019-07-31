@@ -460,3 +460,22 @@ test_that("dont CSE in function call", {
   opt_code <- opt_common_subexpr(list(code))$codes[[1]]
   expect_equal(opt_code, code)
 })
+
+test_that("common subexprs in else if", {
+  code <- paste(
+    "if (cond) {",
+    "  body_1",
+    "} else if (b == 'w' | b == 'm' | b == 'a') {",
+    "  body_2",
+    "} else if (b == 'm' | b == 'a') {",
+    "  body_3",
+    "} else if (b == 'a') {",
+    "  body_4",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_common_subexpr(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
+})
+
+

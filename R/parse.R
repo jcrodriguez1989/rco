@@ -235,11 +235,11 @@ replace_pd <- function(fpd_from, fpd_replace) {
 #
 create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
   fpd <- fpd[order(fpd$pos_id), ]
-  from_pos_id <- fpd[fpd$id == from_id, "pos_id"]
-  to_pos_id <- fpd[fpd$id == to_id, "pos_id"]
+  from_pos_id <- fpd$pos_id[fpd$id == from_id]
+  to_pos_id <- fpd$pos_id[fpd$id == to_id]
   if (length(from_pos_id) == 0) {
     from_pos_id <- c(
-      fpd[which(fpd$id == to_id) - 1, "pos_id"],
+      fpd$pos_id[which(fpd$id == to_id) - 1],
       to_pos_id - 1
     )[[1]]
   }
