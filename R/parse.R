@@ -247,16 +247,6 @@ create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
   }
 }
 
-# Given a fpd it replaces pos_id by seq(min, max, n)
-#
-# @param fpd A flat parsed data data.frame .
-#
-fix_pos_ids <- function(fpd) {
-  fpd <- fpd[order(fpd$pos_id), ]
-  fpd$pos_id <- seq(min(fpd$pos_id), max(fpd$pos_id), length.out = nrow(fpd))
-  fpd
-}
-
 # Returns the fpd, where branches starting from ids were removed
 #
 # @param fpd a flat parsed data data.frame .
