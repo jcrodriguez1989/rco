@@ -475,7 +475,20 @@ test_that("common subexprs in else if", {
     sep = "\n"
   )
   opt_code <- opt_common_subexpr(list(code))$codes[[1]]
-  expect_equal(opt_code, code)
+  expect_equal(opt_code, paste(
+    "if (cond) {",
+    "  body_1",
+    "} else { ",
+    "  cs_1 <- b == 'a'",
+    "  cs_2 <- b == 'm'",
+    "  if (b == 'w' | cs_2 | cs_1) {",
+    "  body_2",
+    "} else if (cs_2 | cs_1) {",
+    "  body_3",
+    "} else if (cs_1) {",
+    "  body_4",
+    "}",
+    "}",
+    sep = "\n"
+  ))
 })
-
-

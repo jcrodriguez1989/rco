@@ -235,20 +235,26 @@ replace_pd <- function(fpd_from, fpd_replace) {
 #
 create_new_pos_id <- function(fpd, n, from_id = "", to_id = "") {
   fpd <- fpd[order(fpd$pos_id), ]
-  from_pos_id <- fpd$pos_id[fpd$id == from_id]
-  to_pos_id <- fpd$pos_id[fpd$id == to_id]
-  if (length(from_pos_id) == 0) {
-    from_pos_id <- c(
-      fpd$pos_id[which(fpd$id == to_id) - 1],
-      to_pos_id - 1
-    )[[1]]
-  }
+  from_pos <- which(fpd$id == from_id)
+  to_pos <- which(fpd$id == to_id)
+  from_pos_id <- utils::head(c(fpd$pos_id[from_pos], fpd$pos_id[to_pos - 1]), 1)
+  to_pos_id <- utils::head(c(fpd$pos_id[to_pos], fpd$pos_id[from_pos + 1]), 1)
 
-  if (to_pos_id - from_pos_id > 1 && from_id == "") {
-    from_pos_id <- to_pos_id - 1
+  if (from_id != "" && length(from_pos_id) > 0) {
+    from_pos_id + (10e-4 * seq_len(n))
+  } else if (to_id != "" && length(to_pos_id) > 0) {
+    rev(to_pos_id - (10e-4 * seq_len(n)))
   }
+}
 
-  from_pos_id + (10e-4 * seq_len(n))
+# Given a fpd it replaces pos_id by seq(min, max, n)
+#
+# @param fpd A flat parsed data data.frame .
+#
+fix_pos_ids <- function(fpd) {
+  fpd <- fpd[order(fpd$pos_id), ]
+  fpd$pos_id <- seq(min(fpd$pos_id), max(fpd$pos_id), length.out = nrow(fpd))
+  fpd
 }
 
 # Returns the fpd, where branches starting from ids were removed
