@@ -27,7 +27,7 @@ opt_loop_invariant <- function(texts) {
   # while (FALSE) { x <- 3 } is not equivalent to x <- 3; while (FALSE) {  }
   res <- list()
   res$codes <- lapply(texts, li_one_file)
-  return(res)
+  res
 }
 
 # Executes loop-invariant code motion on one file of code
@@ -35,7 +35,7 @@ opt_loop_invariant <- function(texts) {
 # @param text A character vector with code to optimize.
 #
 li_one_file <- function(text) {
-  fpd <- parse_flat_data(text)
+  fpd <- parse_text(text)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
   new_fpd <- li_one_fpd(new_fpd)
@@ -45,7 +45,7 @@ li_one_file <- function(text) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
 
-  deparse_flat_data(res_fpd)
+  deparse_data(res_fpd)
 }
 
 # Executes loop-invariant code motion of a fpd tree
@@ -123,7 +123,7 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
   res_fpd <- remove_nodes(fpd, exprs_ids)
   loop_fpd <- get_children(fpd, loop_id)
   exprs_fpd <- get_children(loop_fpd, exprs_ids)
-  exprs <- deparse_flat_data(exprs_fpd)
+  exprs <- deparse_data(exprs_fpd)
   exprs <- sub("^\n*", "", exprs)
 
   loop_token <- fpd$token[fpd$parent == loop_id][[1]]
@@ -131,7 +131,7 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
     loop_cond_id <- fpd$id[fpd$parent == loop_id & fpd$token == "expr"][[1]]
     loop_cond <- sub(
       "^\n*", "",
-      deparse_flat_data(get_children(fpd, loop_cond_id))
+      deparse_data(get_children(fpd, loop_cond_id))
     )
     new_expr <- paste0("if (", loop_cond, ") {\n", exprs, "}")
   } else if (loop_token == "FOR") {
@@ -139,12 +139,12 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
     loop_cond_id <- fpd$id[fpd$parent == loop_cond_id & fpd$token == "expr"]
     loop_cond <- sub(
       "^\n*", "",
-      deparse_flat_data(get_children(fpd, loop_cond_id))
+      deparse_data(get_children(fpd, loop_cond_id))
     )
     new_expr <- paste0("if (length(", loop_cond, ") > 0) {\n", exprs, "}")
   }
 
-  new_expr_fpd <- parse_flat_data(new_expr)
+  new_expr_fpd <- parse_text(new_expr)
   new_expr_fpd$prev_spaces[new_expr_fpd$terminal][[1]] <-
     loop_fpd$prev_spaces[loop_fpd$terminal][[1]]
   new_expr_fpd$line1[new_expr_fpd$terminal][[1]] <-

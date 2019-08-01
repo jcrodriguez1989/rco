@@ -22,7 +22,7 @@ opt_dead_store <- function(texts) {
   # todo: remove all variables that do not affect the returned value
   res <- list()
   res$codes <- lapply(texts, dead_store_one)
-  return(res)
+  res
 }
 
 # Executes dead store elimination on one text of code
@@ -30,7 +30,7 @@ opt_dead_store <- function(texts) {
 # @param text A character vector with code to optimize.
 #
 dead_store_one <- function(text) {
-  fpd <- parse_flat_data(text)
+  fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
@@ -47,7 +47,7 @@ dead_store_one <- function(text) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
 
-  deparse_flat_data(res_fpd)
+  deparse_data(res_fpd)
 }
 
 # Executes dead store elimination of a tree
@@ -57,7 +57,7 @@ dead_store_one <- function(text) {
 one_dead_store <- function(fpd) {
   res_fpd <- fpd
   # dead store happens only into functions, so get the expr of each function
-  fun_ids <- get_ids_of_token(fpd, "FUNCTION")
+  fun_ids <- fpd$id[fpd$token == "FUNCTION"]
   fun_prnt_ids <- fpd$parent[fpd$id %in% fun_ids]
 
   # for each function expr do a dead store removal
@@ -89,9 +89,7 @@ dead_store_in_fun <- function(fpd, id) {
   ass_to_remove <- setdiff(ass_vars, used_vars)
 
   res_fpd <- get_children(fpd, id)
-  res_fpd <- remove_assigns(res_fpd, ass_to_remove)
-
-  return(res_fpd)
+  remove_assigns(res_fpd, ass_to_remove)
 }
 
 # Returns the names of the vars that are being assigned in an expr
@@ -213,5 +211,5 @@ remove_assigns <- function(fpd, vars) {
       )
     }
   }
-  return(fpd)
+  fpd
 }

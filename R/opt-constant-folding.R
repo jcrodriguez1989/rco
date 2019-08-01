@@ -28,7 +28,7 @@ opt_constant_folding <- function(texts, fold_floats = FALSE,
     fold_floats = fold_floats,
     in_fun_call = in_fun_call
   )
-  return(res)
+  res
 }
 
 # Performs a constant folding pass on one text.
@@ -40,12 +40,12 @@ opt_constant_folding <- function(texts, fold_floats = FALSE,
 #   calls. Note: this could change the semantics of the program.
 #
 constant_fold_one <- function(text, fold_floats, in_fun_call) {
-  pd <- parse_flat_data(text)
+  pd <- parse_text(text)
   pd <- flatten_leaves(pd)
   if (nrow(pd) > 0) {
     pd <- one_fold(pd, fold_floats, in_fun_call)
   }
-  deparse_flat_data(pd)
+  deparse_data(pd)
 }
 
 # Performs the constant folding pass.
@@ -102,7 +102,7 @@ one_fold <- function(pd, fold_floats, in_fun_call) {
   }
 
   new_pd <- new_pd[order(new_pd$pos_id), ]
-  return(new_pd)
+  new_pd
 }
 
 # Returns a folded fpd, if it only had constants and operators.
@@ -147,7 +147,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     eval_val_str <- paste0("(", eval_val_str, ")")
   }
 
-  res <- parse_flat_data(eval_val_str)
+  res <- parse_text(eval_val_str)
   res <- flatten_leaves(res)
   if (grepl("^\\{.+\\}$", fpd$text)) {
     # if it was `{expr}`, then add spaces in both sides
@@ -167,7 +167,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     !is.na(eval_val) && floor(eval_val) != eval_val) {
     return(NULL)
   }
-  return(res)
+  res
 }
 
 # Returns the corresponding string for NA value

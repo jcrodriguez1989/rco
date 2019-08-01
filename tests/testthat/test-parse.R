@@ -9,9 +9,9 @@ test_that("correctly parse and deparse text", {
     "i",
     sep = "\n"
   )
-  parsed_data <- parse_flat_data(code)
+  parsed_data <- parse_text(code)
   expect_equal(dim(parsed_data), c(34, 13))
-  deparsed_data <- deparse_flat_data(parsed_data)
+  deparsed_data <- deparse_data(parsed_data)
   expect_equal(code, deparsed_data)
 })
 
@@ -24,7 +24,7 @@ test_that("keep new lines", {
     "j <- 0",
     sep = "\n"
   )
-  parsed_data <- parse_flat_data(code)
-  deparsed_data <- deparse_flat_data(parsed_data)
+  parsed_data <- parse_text(code)
+  deparsed_data <- deparse_data(parsed_data)
   expect_equal(code, deparsed_data)
 })

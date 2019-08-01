@@ -21,7 +21,7 @@
 opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
   res <- list()
   res$codes <- lapply(texts, constant_prop_one, in_fun_call = in_fun_call)
-  return(res)
+  res
 }
 
 # Executes constant propagation on one text of code
@@ -31,13 +31,13 @@ opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
 #   calls. Note: this could change the semantics of the program.
 #
 constant_prop_one <- function(text, in_fun_call) {
-  pd <- parse_flat_data(text)
+  pd <- parse_text(text)
   pd <- flatten_leaves(pd)
   pd <- eq_assign_to_expr(pd)
   res_pd <- pd[pd$parent < 0, ] # keep lines with just comments
   new_pd <- pd[pd$parent >= 0, ] # keep lines with just comments
   if (nrow(new_pd) == 0) {
-    return(deparse_flat_data(res_pd))
+    return(deparse_data(res_pd))
   }
 
   # propagate until no changes
@@ -48,7 +48,7 @@ constant_prop_one <- function(text, in_fun_call) {
   }
   res_pd <- rbind(res_pd, new_pd)
   res_pd <- res_pd[order(res_pd$pos_id), ]
-  deparse_flat_data(res_pd)
+  deparse_data(res_pd)
 }
 
 # Executes constant propagation of a tree
@@ -204,7 +204,7 @@ one_propagate <- function(fpd, values, in_fun_call) {
     }
   }
   res_fpd <- res_fpd[order(res_fpd$pos_id), ]
-  return(list(fpd = res_fpd, values = values))
+  list(fpd = res_fpd, values = values)
 }
 
 # Returns a logical indicating if a node is assignment of constant to var
@@ -272,7 +272,7 @@ get_constant_var <- function(fpd, id) {
   res <- eval(parse(text = paste0(act_code$text)))
   res <- rep(list(res), length(act_var))
   names(res) <- gsub("\"", "", act_var)
-  return(res)
+  res
 }
 
 # Returns a logical indicating if a node is only operators and vars
@@ -305,7 +305,7 @@ replace_constant_vars <- function(fpd, id, constant_vars) {
     act_fpd <- to_edit_fpd[i, ]
     act_val <- deparse(constant_vars[[act_fpd$text]])
 
-    new_act_fpd <- flatten_leaves(parse_flat_data(act_val))
+    new_act_fpd <- flatten_leaves(parse_text(act_val))
     # new ids will be old_id + _ + new_id
     new_act_fpd$id <- paste0(act_fpd$id, "_", new_act_fpd$id)
     # keep old parent for new fpd
@@ -402,7 +402,7 @@ get_assign_indexes <- function(tokens) {
   }
   idxs <- c(idxs, idxs + aux)
   idxs <- c(idxs, which(tokens %in% precedence_ops))
-  return(idxs)
+  idxs
 }
 
 # Returns the name of the var that is being assigned
@@ -419,7 +419,7 @@ get_assigned_var <- function(fpd, id) {
   if (act_pd$token[[2]] == "RIGHT_ASSIGN") {
     res <- act_pd$text[[3]]
   }
-  return(res)
+  res
 }
 
 # Returns the names of the vars that are being assigned in an expr
@@ -449,7 +449,7 @@ get_assigned_var_extra <- function(fpd, id) {
   if ("IN" %in% act_pd$token) {
     res <- act_pd[which("IN" == act_pd$token) - 1, "text"]
   }
-  return(res)
+  res
 }
 
 # Returns a logical indicating if a node is a function definition

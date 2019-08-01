@@ -1,6 +1,6 @@
-# Addin function: Optimize active file
+# Addin function: Optimize active file.
 #
-# Apply `all_optimizers` to current open file
+# Apply `all_optimizers` to current open file.
 #
 optimize_active_file <- function() {
   # try to load required package
@@ -21,9 +21,9 @@ optimize_active_file <- function() {
   rstudioapi::setCursorPosition(doc_context$selection[[1]]$range)
 }
 
-# Addin function: Optimize selection
+# Addin function: Optimize selection.
 #
-# Apply `all_optimizers` to current code selection
+# Apply `all_optimizers` to current code selection.
 #
 optimize_selection <- function() {
   # try to load required package
@@ -47,9 +47,9 @@ optimize_selection <- function() {
   )
 }
 
-# Tries to load the packages
+# Tries to load the packages.
 #
-# @param required_pkgs Character vector with names of packages to load
+# @param required_pkgs A character vector with names of packages to load.
 #
 can_load <- function(required_pkgs) {
   non_loaded_pkgs <- required_pkgs[!sapply(required_pkgs, requireNamespace)]

@@ -1,4 +1,4 @@
-#' Optimize `.R` files
+#' Optimize `.R` files.
 #'
 #' Performs the desired optimization strategies in the files specified.
 #' Carefully examine the results after running this function!
@@ -7,7 +7,7 @@
 #' information to rco.
 #'
 #' @param files A character vector with paths to files to optimize.
-#' @param optimizers A list of optimizer functions.
+#' @param optimizers A named list of optimizer functions.
 #' @param overwrite A logical indicating if files should be overwritten, or
 #'   saved into new files with "optimized_" prefix.
 #' @param iterations Numeric indicating the number of times optimizers should
@@ -65,5 +65,5 @@ optimize_files <- function(files, optimizers = all_optimizers,
     write_code_file(changed_codes[[act_file]], act_file)
   }))
 
-  return(invisible(changed))
+  invisible(changed)
 }

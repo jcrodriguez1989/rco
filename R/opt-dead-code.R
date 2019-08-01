@@ -19,7 +19,7 @@
 opt_dead_code <- function(texts) {
   res <- list()
   res$codes <- lapply(texts, dead_code_one)
-  return(res)
+  res
 }
 
 # Executes dead code elimination on one text of code
@@ -27,7 +27,7 @@ opt_dead_code <- function(texts) {
 # @param text A character vector with code to optimize.
 #
 dead_code_one <- function(text) {
-  fpd <- parse_flat_data(text)
+  fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
@@ -36,7 +36,7 @@ dead_code_one <- function(text) {
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
-  deparse_flat_data(res_fpd)
+  deparse_data(res_fpd)
 }
 
 # Executes dead code elimination of a tree
@@ -52,7 +52,7 @@ one_dead_code <- function(fpd) {
   # work on constant `while` and `if` conditions
   new_fpd <- remove_constant_conds(new_fpd)
 
-  return(new_fpd)
+  new_fpd
 }
 
 # Returns a new fpd where equally nested code after interruption commands was
@@ -127,7 +127,7 @@ remove_after_interruption <- function(fpd) {
     res_fpd$next_lines[res_fpd$id == keep_last_id] <-
       remove_fpd$next_lines[remove_fpd$id == remove_last_id]
   }
-  return(res_fpd)
+  res_fpd
 }
 
 # Returns a new fpd where constant conditionals were replaced
@@ -139,7 +139,7 @@ remove_constant_conds <- function(fpd) {
   new_fpd <- remove_false_while(fpd)
   new_fpd <- remove_false_if(new_fpd)
   new_fpd <- remove_true_if(new_fpd)
-  return(new_fpd)
+  new_fpd
 }
 
 # Returns a new fpd where `while (FALSE) { EXPR }` were removed
@@ -165,7 +165,7 @@ remove_false_while <- function(fpd) {
       res_fpd <- remove_nodes(res_fpd, id)
     }
   }
-  return(res_fpd)
+  res_fpd
 }
 
 # Returns a new fpd where `if (FALSE) { EXPR }` were removed
@@ -195,7 +195,7 @@ remove_false_if <- function(fpd) {
       res_fpd <- res_fpd[order(res_fpd$pos_id), ]
     }
   }
-  return(res_fpd)
+  res_fpd
 }
 
 # Returns a new fpd where `if (TRUE) { EXPR }` were replaced by EXPR
@@ -225,7 +225,7 @@ remove_true_if <- function(fpd) {
       res_fpd <- res_fpd[order(res_fpd$pos_id), ]
     }
   }
-  return(res_fpd)
+  res_fpd
 }
 
 # Returns a new fpd where the if/else was replaced by its expr
@@ -268,7 +268,7 @@ get_ifelse_expr <- function(fpd, id, get_if = FALSE) {
     }
     res_fpd <- if_fpd
   }
-  return(res_fpd)
+  res_fpd
 }
 
 # Returns a new fpd where new line terminals start at the same position as their
@@ -285,5 +285,5 @@ unindent_fpd <- function(fpd, parent_spaces) {
   # and remove the identation between them and parent
   fpd[fpd$id %in% new_line_ids, "prev_spaces"] <-
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
-  return(fpd)
+  fpd
 }

@@ -2,12 +2,13 @@
 % Please edit documentation in R/rco-gui.R
 \name{rco_gui}
 \alias{rco_gui}
-\title{rco GUI selector}
+\title{rco GUI selector.}
 \usage{
 rco_gui(option)
 }
 \arguments{
-\item{option}{Character indicating which GUI to open. One from:
+\item{option}{A character indicating which GUI to open.
+One from:
 \itemize{
   \item "code_optimizer" for single code optimizing.
   \item "pkg_optimizer" for package optimizing.

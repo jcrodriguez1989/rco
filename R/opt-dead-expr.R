@@ -22,7 +22,7 @@ opt_dead_expr <- function(texts) {
   # as the first one might have an error.
   res <- list()
   res$codes <- lapply(texts, de_one_file)
-  return(res)
+  res
 }
 
 # Executes dead expression elimination on one file of code
@@ -30,7 +30,7 @@ opt_dead_expr <- function(texts) {
 # @param text A character vector with code to optimize.
 #
 de_one_file <- function(text) {
-  fpd <- parse_flat_data(text)
+  fpd <- parse_text(text)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
   new_fpd <- de_one_fpd(new_fpd)
@@ -39,7 +39,7 @@ de_one_file <- function(text) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
 
-  deparse_flat_data(res_fpd)
+  deparse_data(res_fpd)
 }
 
 # Executes dead expression elimination of a fpd tree

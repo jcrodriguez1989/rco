@@ -30,7 +30,7 @@ opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
     n_values = n_values,
     in_fun_call = in_fun_call
   )
-  return(res)
+  res
 }
 
 # Executes common subexpression elimination on one file of code
@@ -42,7 +42,7 @@ opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
 #   calls. Note: this could change the semantics of the program.
 #
 cs_one_file <- function(text, n_values, in_fun_call) {
-  fpd <- parse_flat_data(text)
+  fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
@@ -52,7 +52,7 @@ cs_one_file <- function(text, n_values, in_fun_call) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
 
-  deparse_flat_data(res_fpd)
+  deparse_data(res_fpd)
 }
 
 # Executes common subexpression elimination of a fpd tree
@@ -274,7 +274,7 @@ apply_subexpr_elim <- function(fpd, parent_id, fst_expr_id, ids) {
   res_fpd <- rbind(fpd, new_var$fpd)
 
   # replace temp var in common subexprs
-  repl_fpd <- flatten_leaves(parse_flat_data(new_var$name))
+  repl_fpd <- flatten_leaves(parse_text(new_var$name))
   for (act_id in ids) {
     res_fpd <- rbind(
       remove_nodes(res_fpd, act_id),
@@ -295,11 +295,11 @@ apply_subexpr_elim <- function(fpd, parent_id, fst_expr_id, ids) {
 create_temp_var <- function(fpd, parent_id, fst_expr_id, ids) {
   # create temp var name, and assignation with the corresponding subexpr
   var_name <- create_new_var(fpd)
-  var_expr <- deparse_flat_data(get_children(fpd, ids[[1]]))
+  var_expr <- deparse_data(get_children(fpd, ids[[1]]))
   var_expr <- sub("^\n*", "", var_expr)
   var <- paste0(var_name, " <- ", var_expr)
   # create the fpd
-  var_fpd <- flatten_leaves(parse_flat_data(var))
+  var_fpd <- flatten_leaves(parse_text(var))
   # fix ids and parents
   var_fpd$id <- paste0(var_name, "_", var_fpd$id)
   var_fpd$parent <- paste0(var_name, "_", var_fpd$parent)
@@ -347,9 +347,9 @@ add_braces <- function(fpd, id) {
 add_braces_to_expr <- function(fpd, id) {
   # get old code, add braces and parse the fpd again
   old_fpd <- get_children(fpd, id)
-  new_code <- deparse_flat_data(old_fpd)
+  new_code <- deparse_data(old_fpd)
   new_code <- paste0("{\n  ", sub("^\n*", "", new_code), "\n}")
-  new_fpd <- flatten_leaves(parse_flat_data(new_code))
+  new_fpd <- flatten_leaves(parse_text(new_code))
 
   new_fpd <- replace_pd(old_fpd, new_fpd)
   # add spaces to braces

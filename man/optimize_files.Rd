@@ -2,7 +2,7 @@
 % Please edit documentation in R/optimize-files.R
 \name{optimize_files}
 \alias{optimize_files}
-\title{Optimize `.R` files}
+\title{Optimize `.R` files.}
 \usage{
 optimize_files(files, optimizers = all_optimizers, overwrite = FALSE,
   iterations = Inf)
@@ -10,7 +10,7 @@ optimize_files(files, optimizers = all_optimizers, overwrite = FALSE,
 \arguments{
 \item{files}{A character vector with paths to files to optimize.}
 
-\item{optimizers}{A list of optimizer functions.}
+\item{optimizers}{A named list of optimizer functions.}
 
 \item{overwrite}{A logical indicating if files should be overwritten, or
 saved into new files with "optimized_" prefix.}
