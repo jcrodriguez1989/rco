@@ -26,7 +26,7 @@ shinyServer(function(input, output, session) {
     if (inherits(pkg_dir, "try-error")) {
       showNotification("Could not download package", type = "error")
       removeModal()
-      return(NULL)
+      return()
     }
 
     opt_pkg_dir <- paste0(pkg_dir, "_opt")

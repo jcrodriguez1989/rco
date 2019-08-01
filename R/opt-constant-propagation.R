@@ -258,7 +258,7 @@ is_constant_or_minus <- function(fpd, id) {
 #
 get_constant_var <- function(fpd, id) {
   if (!is_constant_var_expr(fpd, id)) {
-    return(NULL)
+    return()
   }
   act_pd <- fpd[fpd$parent == id, ]
   act_pd <- get_children(fpd, id)

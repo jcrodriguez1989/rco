@@ -54,17 +54,17 @@ test_that("dead store eliminate both assigned", {
   code <- paste(
     "foo <- function() {",
     "  x <- y <- 8818",
-    "  return(NULL)",
+    "  return()",
     "}",
     "",
     "foo <- function() {",
     "  x = y = 8818",
-    "  return(NULL)",
+    "  return()",
     "}",
     "",
     "foo <- function() {",
     "  8818 -> y -> x",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   )
@@ -72,17 +72,17 @@ test_that("dead store eliminate both assigned", {
   expect_equal(opt_code, paste(
     "foo <- function() {",
     "  8818",
-    "  return(NULL)",
+    "  return()",
     "}",
     "",
     "foo <- function() {",
     "  8818",
-    "  return(NULL)",
+    "  return()",
     "}",
     "",
     "foo <- function() {",
     "  8818 ",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   ))
@@ -92,7 +92,7 @@ test_that("dead function store", {
   code <- paste(
     "foo <- function() {",
     "  x <- function() { FALSE }",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   )
@@ -100,7 +100,7 @@ test_that("dead function store", {
   expect_equal(opt_code, paste(
     "foo <- function() {",
     "  function() { FALSE }",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   ))
@@ -141,7 +141,7 @@ test_that("dont dead store <<-", {
     "foo <- function() {",
     "  a <<- 3",
     "  3 ->> b",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   )
@@ -150,7 +150,7 @@ test_that("dont dead store <<-", {
     "foo <- function() {",
     "  a <<- 3",
     "  3 ->> b",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   ))
@@ -210,7 +210,7 @@ test_that("dead store eliminate lists", {
     "  b <- 1:3",
     "  a[b] <- 1:3",
     "  c <- 1:3",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   )
@@ -222,7 +222,7 @@ test_that("dead store eliminate lists", {
     "  b <- 1:3",
     "  a[b] <- 1:3",
     "  1:3",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   ))
@@ -233,7 +233,7 @@ test_that("dead store dont eliminate pkg name", {
     "foo <- function() {",
     "  stats <- 8818",
     "  stats::acf(4)",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   )
@@ -242,7 +242,7 @@ test_that("dead store dont eliminate pkg name", {
     "foo <- function() {",
     "  8818",
     "  stats::acf(4)",
-    "  return(NULL)",
+    "  return()",
     "}",
     sep = "\n"
   ))

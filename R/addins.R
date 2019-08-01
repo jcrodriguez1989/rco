@@ -6,7 +6,7 @@ optimize_active_file <- function() {
   # try to load required package
   req_pkgs <- c("rstudioapi")
   if (!can_load(req_pkgs)) {
-    return(NULL)
+    return()
   }
 
   # get context, get the code, optimize, and put the new code
@@ -29,7 +29,7 @@ optimize_selection <- function() {
   # try to load required package
   req_pkgs <- c("rstudioapi")
   if (!can_load(req_pkgs)) {
-    return(NULL)
+    return()
   }
 
   # get context, get the code, optimize, and put the new code
