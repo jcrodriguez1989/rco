@@ -50,9 +50,9 @@ dead_store_one <- function(text) {
   deparse_data(res_fpd)
 }
 
-# Executes dead store elimination of a tree
+# Executes dead store elimination of a fpd.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 one_dead_store <- function(fpd) {
   res_fpd <- fpd
@@ -75,7 +75,7 @@ one_dead_store <- function(fpd) {
 
 # Executes dead store elimination in the expr of a function definition
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the node ID of the function def expression.
 #
 dead_store_in_fun <- function(fpd, id) {
@@ -196,7 +196,7 @@ remove_assigns <- function(fpd, vars) {
         c(act_prnt_id, act_sblngs$id), ]
       new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
 
-      # the expr to keep will skip the assignment expr in the tree
+      # the expr to keep will skip the assignment expr in the fpd
       new_ass_fpd[new_ass_fpd$id == keep_fpd$id, "parent"] <- act_prnt$parent
 
       # some fixes on the resulting fpd

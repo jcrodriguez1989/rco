@@ -42,9 +42,9 @@ de_one_file <- function(text) {
   deparse_data(res_fpd)
 }
 
-# Executes dead expression elimination of a fpd tree
+# Executes dead expression elimination of a fpd.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 de_one_fpd <- function(fpd) {
   res_fpd <- fpd
@@ -67,7 +67,7 @@ de_one_fpd <- function(fpd) {
 
 # Returns the ids of expressions that are not being assigned to a var.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the node ID of the function to search for
 #   unassigned expressions.
 #
@@ -116,7 +116,7 @@ get_unassigned_exprs <- function(fpd, id) {
 
 # Returns the IDs of the exprs that can return in a function.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the fun node ID to check.
 #
 get_fun_last_exprs <- function(fpd, id) {

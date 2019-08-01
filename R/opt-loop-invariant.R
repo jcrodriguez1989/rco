@@ -48,9 +48,9 @@ li_one_file <- function(text) {
   deparse_data(res_fpd)
 }
 
-# Executes loop-invariant code motion of a fpd tree
+# Executes loop-invariant code motion of a fpd.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 li_one_fpd <- function(fpd) {
   res_fpd <- fpd
@@ -78,7 +78,7 @@ li_one_fpd <- function(fpd) {
 
 # Executes loop-invariant code motion in one loop
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the node ID of the loop.
 #
 li_in_loop <- function(fpd, id) {
@@ -111,7 +111,7 @@ li_in_loop <- function(fpd, id) {
 
 # Moves expressions that are inside a loop to outside of it
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param exprs_ids Numeric indicating the node IDs of the expressions.
 # @param loop_id Numeric indicating the node ID of the parent loop.
 #
@@ -167,7 +167,7 @@ unloop_expr <- function(fpd, exprs_ids, loop_id) {
 
 # Returns which variables vary depending on loop execution
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the node ID of the loop.
 #
 get_loop_variant_vars <- function(fpd, id) {
@@ -207,7 +207,7 @@ get_loop_variant_vars <- function(fpd, id) {
 
 # Returns the node ids of all vars that are being updated, e.g., x <- x + 1
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 get_updated_vars_ids <- function(fpd) {
   assigned_ids <- get_assigned_vars_ids(fpd, get_roots(fpd)$id)
@@ -225,7 +225,7 @@ get_updated_vars_ids <- function(fpd) {
 
 # Returns the ids of the fpd exprs that are being assigned
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the node ID to find assigns.
 #
 get_assigned_exprs_ids <- function(fpd, id) {

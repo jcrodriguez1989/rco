@@ -51,7 +51,7 @@ cp_one_file <- function(text, in_fun_call) {
   deparse_data(res_fpd)
 }
 
-# Executes constant propagation of a tree
+# Executes constant propagation of a fpd.
 #
 # @param fpd A flatten parsed data data.frame.
 # @param values A named list of variables and their value.

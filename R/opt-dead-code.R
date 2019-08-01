@@ -1,4 +1,4 @@
-#' Optimizer: Dead Code Elimination
+#' Optimizer: Dead Code Elimination.
 #'
 #' Performs one dead code elimination pass.
 #' Carefully examine the results after running this function!
@@ -18,20 +18,20 @@
 #'
 opt_dead_code <- function(texts) {
   res <- list()
-  res$codes <- lapply(texts, dead_code_one)
+  res$codes <- lapply(texts, dc_one_file)
   res
 }
 
-# Executes dead code elimination on one text of code
+# Executes dead code elimination on one text of code.
 #
 # @param text A character vector with code to optimize.
 #
-dead_code_one <- function(text) {
+dc_one_file <- function(text) {
   fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
-  new_fpd <- one_dead_code(new_fpd)
+  new_fpd <- dc_one_fpd(new_fpd)
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
@@ -39,13 +39,11 @@ dead_code_one <- function(text) {
   deparse_data(res_fpd)
 }
 
-# Executes dead code elimination of a tree
+# Executes dead code elimination of a fpd.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
-one_dead_code <- function(fpd) {
-  # todo: remove not assigned expressions `x + 5` (they were used for debug)?
-
+dc_one_fpd <- function(fpd) {
   # first remove code that is after (and equally nested) next, break, or return
   new_fpd <- remove_after_interruption(fpd)
 
@@ -55,11 +53,11 @@ one_dead_code <- function(fpd) {
   new_fpd
 }
 
-# Returns a new fpd where equally nested code after interruption commands was
-# removed ( break, next, return(...) )
-# Assumes `return` base function has not been overwritten
+# Returns a new fpd where equally nested code after interruption commands is
+# removed ( break, next, return(...) ).
+# Assumes `return` base function has not been overwritten.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_after_interruption <- function(fpd) {
   res_fpd <- fpd
@@ -131,9 +129,9 @@ remove_after_interruption <- function(fpd) {
 }
 
 # Returns a new fpd where constant conditionals were replaced
-# ( if(TRUE), while (FALSE), etc )
+# ( if(TRUE), while (FALSE), etc ).
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_constant_conds <- function(fpd) {
   new_fpd <- remove_false_while(fpd)
@@ -142,9 +140,9 @@ remove_constant_conds <- function(fpd) {
   new_fpd
 }
 
-# Returns a new fpd where `while (FALSE) { EXPR }` were removed
+# Returns a new fpd where `while (FALSE) { EXPR }` were removed.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_false_while <- function(fpd) {
   res_fpd <- fpd
@@ -168,9 +166,9 @@ remove_false_while <- function(fpd) {
   res_fpd
 }
 
-# Returns a new fpd where `if (FALSE) { EXPR }` were removed
+# Returns a new fpd where `if (FALSE) { EXPR }` were removed.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_false_if <- function(fpd) {
   res_fpd <- fpd
@@ -198,9 +196,9 @@ remove_false_if <- function(fpd) {
   res_fpd
 }
 
-# Returns a new fpd where `if (TRUE) { EXPR }` were replaced by EXPR
+# Returns a new fpd where `if (TRUE) { EXPR }` were replaced by EXPR.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_true_if <- function(fpd) {
   res_fpd <- fpd
@@ -228,11 +226,13 @@ remove_true_if <- function(fpd) {
   res_fpd
 }
 
-# Returns a new fpd where the if/else was replaced by its expr
+# Returns a new fpd where the if/else was replaced by its expr.
 #
-# @param fpd A flat parsed data data.frame .
-# @param id ID of the expr that contains the if/else
-# @param get_if Logical indicating if get if (else otherwise)
+# @param fpd A flatten parsed data data.frame.
+# @param id A numeric indicating the node ID of the expr that contains the
+#   if/else.
+# @param get_if A logical indicating if the `if` should be obtained (`else`
+#   otherwise).
 #
 get_ifelse_expr <- function(fpd, id, get_if = FALSE) {
   token <- ifelse(get_if, "IF", "ELSE")
@@ -272,10 +272,10 @@ get_ifelse_expr <- function(fpd, id, get_if = FALSE) {
 }
 
 # Returns a new fpd where new line terminals start at the same position as their
-# parent
+# parent.
 #
-# @param fpd A flat parsed data data.frame .
-# @param parent_spaces Numeric indicating prev_spaces parent had.
+# @param fpd A flatten parsed data data.frame.
+# @param parent_spaces A numeric indicating prev_spaces the parent had.
 #
 unindent_fpd <- function(fpd, parent_spaces) {
   # get which are the terminals that start in a new line
