@@ -2,14 +2,14 @@
 % Please edit documentation in R/optimize-text.R
 \name{optimize_text}
 \alias{optimize_text}
-\title{Optimize text containing code}
+\title{Optimize text containing code.}
 \usage{
 optimize_text(text, optimizers = all_optimizers, iterations = Inf)
 }
 \arguments{
 \item{text}{A character vector with the code to optimize.}
 
-\item{optimizers}{A list of optimizer functions.}
+\item{optimizers}{A named list of optimizer functions.}
 
 \item{iterations}{Numeric indicating the number of times optimizers should
 pass. If there was no change after current pass, it will stop.}

@@ -1,4 +1,4 @@
-#' All optimizers list
+#' All optimizers list.
 #'
 #' List of all the optimizer functions:
 #' \itemize{

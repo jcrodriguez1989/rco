@@ -1,4 +1,4 @@
-#' Optimizer: Dead Store Elimination
+#' Optimizer: Dead Store Elimination.
 #'
 #' Performs one dead store elimination pass.
 #' Carefully examine the results after running this function!
@@ -21,16 +21,16 @@ opt_dead_store <- function(texts) {
   # a <- 2; a <- 3; return(a) # remove first assign
   # todo: remove all variables that do not affect the returned value
   res <- list()
-  res$codes <- lapply(texts, dead_store_one)
-  return(res)
+  res$codes <- lapply(texts, ds_one_file)
+  res
 }
 
-# Executes dead store elimination on one text of code
+# Executes dead store elimination on one text of code.
 #
 # @param text A character vector with code to optimize.
 #
-dead_store_one <- function(text) {
-  fpd <- parse_flat_data(text)
+ds_one_file <- function(text) {
+  fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
@@ -39,7 +39,7 @@ dead_store_one <- function(text) {
   old_fpd <- NULL
   while (!isTRUE(all.equal(old_fpd, new_fpd))) {
     old_fpd <- new_fpd
-    new_fpd <- one_dead_store(new_fpd)
+    new_fpd <- ds_one_fpd(new_fpd)
   }
 
   res_fpd <- rbind(res_fpd, new_fpd)
@@ -47,17 +47,17 @@ dead_store_one <- function(text) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
 
-  deparse_flat_data(res_fpd)
+  deparse_data(res_fpd)
 }
 
-# Executes dead store elimination of a tree
+# Executes dead store elimination of a fpd.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
-one_dead_store <- function(fpd) {
+ds_one_fpd <- function(fpd) {
   res_fpd <- fpd
   # dead store happens only into functions, so get the expr of each function
-  fun_ids <- get_ids_of_token(fpd, "FUNCTION")
+  fun_ids <- fpd$id[fpd$token == "FUNCTION"]
   fun_prnt_ids <- fpd$parent[fpd$id %in% fun_ids]
 
   # for each function expr do a dead store removal
@@ -70,13 +70,13 @@ one_dead_store <- function(fpd) {
     )
   }
 
-  return(res_fpd)
+  res_fpd
 }
 
-# Executes dead store elimination in the expr of a function definition
+# Executes dead store elimination in the expr of a function definition.
 #
-# @param fpd A flat parsed data data.frame .
-# @param id Numeric indicating the node ID of the function def expression.
+# @param fpd A flatten parsed data data.frame.
+# @param id A numeric indicating the node ID of the function def expression.
 #
 dead_store_in_fun <- function(fpd, id) {
   # get the expression of the function
@@ -89,16 +89,14 @@ dead_store_in_fun <- function(fpd, id) {
   ass_to_remove <- setdiff(ass_vars, used_vars)
 
   res_fpd <- get_children(fpd, id)
-  res_fpd <- remove_assigns(res_fpd, ass_to_remove)
-
-  return(res_fpd)
+  remove_assigns(res_fpd, ass_to_remove)
 }
 
 # Returns the names of the vars that are being assigned in an expr
-# `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=``
+# `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=`.
 #
-# @param fpd a flat parsed data data.frame .
-# @param id Numeric indicating the node ID.
+# @param fpd A flatten parsed data data.frame.
+# @param id A numeric indicating the node ID.
 #
 ods_get_assigned_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
@@ -129,8 +127,8 @@ ods_get_assigned_vars <- function(fpd, id) {
 # Returns the names of the vars that are being used in an expr.
 # Not counting assignations.
 #
-# @param fpd a flat parsed data data.frame .
-# @param id Numeric indicating the node ID.
+# @param fpd A flatten parsed data data.frame.
+# @param id A numeric indicating the node ID.
 #
 get_used_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
@@ -163,7 +161,7 @@ get_used_vars <- function(fpd, id) {
 
 # Returns a new fpd with desired assignations removed.
 #
-# @param fpd a flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param vars Character vector with names of vars to remove.
 #
 remove_assigns <- function(fpd, vars) {
@@ -198,7 +196,7 @@ remove_assigns <- function(fpd, vars) {
         c(act_prnt_id, act_sblngs$id), ]
       new_ass_fpd <- rbind(new_ass_fpd, keep_fpd)
 
-      # the expr to keep will skip the assignment expr in the tree
+      # the expr to keep will skip the assignment expr in the fpd
       new_ass_fpd[new_ass_fpd$id == keep_fpd$id, "parent"] <- act_prnt$parent
 
       # some fixes on the resulting fpd
@@ -213,5 +211,5 @@ remove_assigns <- function(fpd, vars) {
       )
     }
   }
-  return(fpd)
+  fpd
 }

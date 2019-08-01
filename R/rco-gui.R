@@ -1,12 +1,13 @@
-#' rco GUI selector
+#' rco GUI selector.
 #'
 #' Starts the selected rco Graphical User Interface (GUI).
 #'
-#' @param option Character indicating which GUI to open. One from:
-#' \itemize{
-#'   \item "code_optimizer" for single code optimizing.
-#'   \item "pkg_optimizer" for package optimizing.
-#' }
+#' @param option A character indicating which GUI to open.
+#'   One from:
+#'   \itemize{
+#'     \item "code_optimizer" for single code optimizing.
+#'     \item "pkg_optimizer" for package optimizing.
+#'   }
 #'
 #' @examples
 #' ## Start the GUI
@@ -21,8 +22,10 @@ rco_gui <- function(option) {
 
   if (app_dir == "") {
     stop(paste("Selected GUI not found. Select one of:",
-               paste(guis, collapse = "\n"), sep = "\n"),
-      call. = FALSE
+      paste(guis, collapse = "\n"),
+      sep = "\n"
+    ),
+    call. = FALSE
     )
   }
 
@@ -38,7 +41,7 @@ rco_gui <- function(option) {
 
 # Tries to load the packages
 #
-# @param required_pkgs Character vector with names of packages to load
+# @param required_pkgs A character vector with names of packages to load.
 #
 can_load <- function(required_pkgs) {
   non_loaded_pkgs <- required_pkgs[!sapply(required_pkgs, requireNamespace)]
