@@ -95,7 +95,7 @@ dead_store_in_fun <- function(fpd, id) {
 # Returns the names of the vars that are being assigned in an expr
 # `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=``
 #
-# @param fpd a flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the node ID.
 #
 ods_get_assigned_vars <- function(fpd, id) {
@@ -127,7 +127,7 @@ ods_get_assigned_vars <- function(fpd, id) {
 # Returns the names of the vars that are being used in an expr.
 # Not counting assignations.
 #
-# @param fpd a flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param id Numeric indicating the node ID.
 #
 get_used_vars <- function(fpd, id) {
@@ -161,7 +161,7 @@ get_used_vars <- function(fpd, id) {
 
 # Returns a new fpd with desired assignations removed.
 #
-# @param fpd a flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 # @param vars Character vector with names of vars to remove.
 #
 remove_assigns <- function(fpd, vars) {
