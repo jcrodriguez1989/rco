@@ -1,4 +1,4 @@
-#' Optimizer: Dead Store Elimination
+#' Optimizer: Dead Store Elimination.
 #'
 #' Performs one dead store elimination pass.
 #' Carefully examine the results after running this function!
@@ -21,15 +21,15 @@ opt_dead_store <- function(texts) {
   # a <- 2; a <- 3; return(a) # remove first assign
   # todo: remove all variables that do not affect the returned value
   res <- list()
-  res$codes <- lapply(texts, dead_store_one)
+  res$codes <- lapply(texts, ds_one_file)
   res
 }
 
-# Executes dead store elimination on one text of code
+# Executes dead store elimination on one text of code.
 #
 # @param text A character vector with code to optimize.
 #
-dead_store_one <- function(text) {
+ds_one_file <- function(text) {
   fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
@@ -39,7 +39,7 @@ dead_store_one <- function(text) {
   old_fpd <- NULL
   while (!isTRUE(all.equal(old_fpd, new_fpd))) {
     old_fpd <- new_fpd
-    new_fpd <- one_dead_store(new_fpd)
+    new_fpd <- ds_one_fpd(new_fpd)
   }
 
   res_fpd <- rbind(res_fpd, new_fpd)
@@ -54,7 +54,7 @@ dead_store_one <- function(text) {
 #
 # @param fpd A flatten parsed data data.frame.
 #
-one_dead_store <- function(fpd) {
+ds_one_fpd <- function(fpd) {
   res_fpd <- fpd
   # dead store happens only into functions, so get the expr of each function
   fun_ids <- fpd$id[fpd$token == "FUNCTION"]
@@ -70,10 +70,10 @@ one_dead_store <- function(fpd) {
     )
   }
 
-  return(res_fpd)
+  res_fpd
 }
 
-# Executes dead store elimination in the expr of a function definition
+# Executes dead store elimination in the expr of a function definition.
 #
 # @param fpd A flatten parsed data data.frame.
 # @param id A numeric indicating the node ID of the function def expression.
@@ -93,7 +93,7 @@ dead_store_in_fun <- function(fpd, id) {
 }
 
 # Returns the names of the vars that are being assigned in an expr
-# `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=``
+# `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=`.
 #
 # @param fpd A flatten parsed data data.frame.
 # @param id A numeric indicating the node ID.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/opt-dead-store.R
 \name{opt_dead_store}
 \alias{opt_dead_store}
-\title{Optimizer: Dead Store Elimination}
+\title{Optimizer: Dead Store Elimination.}
 \usage{
 opt_dead_store(texts)
 }
