@@ -65,7 +65,8 @@ cf_one_fpd <- function(fpd, fold_floats, in_fun_call) {
   if (!in_fun_call) {
     # get ids of exprs in fun calls
     in_fun_call_ids <- get_children(
-      fpd, fpd$parent[fpd$token == "SYMBOL_FUNCTION_CALL"])$id
+      fpd, fpd$parent[fpd$token == "SYMBOL_FUNCTION_CALL"]
+    )$id
   }
 
   # start visiting root nodes

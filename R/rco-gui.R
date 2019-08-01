@@ -22,8 +22,10 @@ rco_gui <- function(option) {
 
   if (app_dir == "") {
     stop(paste("Selected GUI not found. Select one of:",
-               paste(guis, collapse = "\n"), sep = "\n"),
-      call. = FALSE
+      paste(guis, collapse = "\n"),
+      sep = "\n"
+    ),
+    call. = FALSE
     )
   }
 

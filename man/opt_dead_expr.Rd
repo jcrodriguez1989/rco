@@ -2,7 +2,7 @@
 % Please edit documentation in R/opt-dead-expr.R
 \name{opt_dead_expr}
 \alias{opt_dead_expr}
-\title{Optimizer: Dead Expression Elimination}
+\title{Optimizer: Dead Expression Elimination.}
 \usage{
 opt_dead_expr(texts)
 }

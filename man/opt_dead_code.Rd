@@ -2,7 +2,7 @@
 % Please edit documentation in R/opt-dead-code.R
 \name{opt_dead_code}
 \alias{opt_dead_code}
-\title{Optimizer: Dead Code Elimination}
+\title{Optimizer: Dead Code Elimination.}
 \usage{
 opt_dead_code(texts)
 }
