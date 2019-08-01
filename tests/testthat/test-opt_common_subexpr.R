@@ -115,8 +115,8 @@ test_that("common subexpr elimination with loop 1", {
     "c <- 2",
     "while (a < 5) {",
     "  cs_1 <- (5 + 1)",
-    "  b <- b + cs_1",
-    "  c <- c + cs_1",
+    "  b <- b +  cs_1 ",
+    "  c <- c +  cs_1 ",
     "  a <- a + 1",
     "}",
     sep = "\n"
@@ -300,21 +300,21 @@ test_that("CSE in right place loops", {
     "sapply(indls, function(x) { ",
     "  cs_1 <- ind == x",
     "  mean(c(dmat[cs_1, cs_1]))",
-    "})",
+    "} )",
     "while (x == 3) { ",
     "  cs_1 <- ind == x",
     "  mean(c(dmat[cs_1, cs_1]))",
     "",
-    "}",
+    "} ",
     "for (x in 1:10) { ",
     "  cs_2 <- ind == x",
     "  mean(c(dmat[cs_2, cs_2]))",
     "",
-    "}",
+    "} ",
     "repeat { ",
     "  cs_3 <- ind == x",
     "  mean(c(dmat[cs_3, cs_3]))",
-    "}",
+    "} ",
     sep = "\n"
   ))
 })
@@ -337,7 +337,7 @@ test_that("CSE in right place if/else", {
     "  cs_1 <- ind == x",
     "  mean(c(dmat[cs_1, cs_1]))",
     "",
-    "}",
+    "} ",
     "if (x == 3) { cs_2 <- ind == x",
     "mean(c(dmat[cs_2, cs_2])) }",
     "if (x == 3) { ",
@@ -347,13 +347,13 @@ test_that("CSE in right place if/else", {
     "  cs_4 <- ind == x",
     "  mean(c(dmat[cs_4, cs_4]))",
     "",
-    "}",
+    "} ",
     "if (x == 3) { cs_5 <- ind == x",
     "mean(c(dmat[cs_5, cs_5])) } else { ",
     "  cs_6 <- ind == x",
     "  mean(c(dmat[cs_6, cs_6]))",
     "",
-    "}",
+    "} ",
     "if (x == 3) { ",
     "  cs_7 <- ind == x",
     "  mean(c(dmat[cs_7, cs_7]))",
@@ -369,7 +369,7 @@ test_that("CSE in right place if/else", {
     "mean(c(dmat[cs_13, cs_13])) } else if (x != 3) { ",
     "  cs_14 <- ind == x",
     "  mean(c(dmat[cs_14, cs_14]))",
-    "}",
+    "} ",
     sep = "\n"
   ))
 })
@@ -409,7 +409,7 @@ test_that("CSE in right place: `;` issue", {
   expect_equal(opt_code, paste(
     "x <- 3;",
     "cs_1 <- (x+1)",
-    "cs_1*cs_1;",
+    " cs_1 * cs_1 ;",
     "foo <- function(x) {",
     "  x1 <- x;",
     "  cs_1 <-   x1^2",
@@ -488,7 +488,7 @@ test_that("common subexprs in else if", {
     "} else if (cs_1) {",
     "  body_4",
     "}",
-    "}",
+    "} ",
     sep = "\n"
   ))
 })

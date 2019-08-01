@@ -28,9 +28,9 @@ test_that("correctly constant fold", {
   )
   opt_code <- opt_constant_folding(list(code), fold_floats = TRUE)$codes[[1]]
   expect_equal(opt_code, paste(
-    "x <- (-1)",
+    "x <- (-1) ",
     "x <- 0.999232",
-    "x <- 0.3168",
+    "x <-  0.3168 ",
     "x <- 0.999232",
     "x <- FALSE",
     "x <- FALSE",
@@ -82,9 +82,9 @@ test_that("dont fold floats", {
   )
   opt_code <- opt_constant_folding(list(code), fold_floats = FALSE)$codes[[1]]
   expect_equal(opt_code, paste(
-    "x <- (-1)",
+    "x <- (-1) ",
     "x <- 1 - 12 / 15625",
-    "x <- 990 / 3125",
+    "x <-  990 / 3125 ",
     "x <- 2 - 12 / 15625 - 1",
     "x <- FALSE",
     "x <- FALSE",
@@ -129,9 +129,9 @@ test_that("constant fold in while", {
     "n <- 100",
     "res <- 0",
     "while (i <n) {",
-    "  TRUE",
+    "  TRUE ",
     "  if (TRUE)",
-    "    i <- 1 * (i / 1)",
+    "    i <-  1 * (i / 1)",
     "  if (0+i %% 2 == 0)",
     "    res <- res + 1",
     "  i <- i + 1",
@@ -205,7 +205,7 @@ test_that("constant fold NULL function", {
   )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
-    "foo <- function(n) NULL",
+    "foo <- function(n)  NULL ",
     "res <- foo()",
     sep = "\n"
   ))
@@ -350,4 +350,18 @@ test_that("dont fold in function call", {
   )
   opt_code <- opt_constant_folding(list(code))$codes[[1]]
   expect_equal(opt_code, code)
+})
+
+test_that("add spaces if precedence ops removed", {
+  code <- paste(
+    "if(cond){}else{}",
+    "if(cond)(1+3)else(1+3)",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_folding(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "if(cond) NULL else NULL ",
+    "if(cond) 4 else 4 ",
+    sep = "\n"
+  ))
 })
