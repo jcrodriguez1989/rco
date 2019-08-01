@@ -76,7 +76,7 @@ one_dead_store <- function(fpd) {
 # Executes dead store elimination in the expr of a function definition
 #
 # @param fpd A flatten parsed data data.frame.
-# @param id Numeric indicating the node ID of the function def expression.
+# @param id A numeric indicating the node ID of the function def expression.
 #
 dead_store_in_fun <- function(fpd, id) {
   # get the expression of the function
@@ -96,7 +96,7 @@ dead_store_in_fun <- function(fpd, id) {
 # `=` , `<-`, `->` . Discards `<<-`, `->>`, `:=``
 #
 # @param fpd A flatten parsed data data.frame.
-# @param id Numeric indicating the node ID.
+# @param id A numeric indicating the node ID.
 #
 ods_get_assigned_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
@@ -128,7 +128,7 @@ ods_get_assigned_vars <- function(fpd, id) {
 # Not counting assignations.
 #
 # @param fpd A flatten parsed data data.frame.
-# @param id Numeric indicating the node ID.
+# @param id A numeric indicating the node ID.
 #
 get_used_vars <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)

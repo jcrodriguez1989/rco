@@ -1,4 +1,4 @@
-#' Optimizer: Loop-invariant Code Motion
+#' Optimizer: Loop-invariant Code Motion.
 #'
 #' Performs one loop-invariant code motion pass.
 #' Carefully examine the results after running this function!
@@ -30,7 +30,7 @@ opt_loop_invariant <- function(texts) {
   res
 }
 
-# Executes loop-invariant code motion on one file of code
+# Executes loop-invariant code motion on one file of code.
 #
 # @param text A character vector with code to optimize.
 #
@@ -56,9 +56,8 @@ li_one_pd <- function(pd) {
   res_pd <- pd
 
   # get loops
-  # loop_parent_ids <- pd$parent[pd$token %in% loops]
   # For the moment, remove `repeat` loop invariant
-  loop_parent_ids <- pd$parent[pd$token %in% c("FOR", "WHILE")]
+  loop_parent_ids <- pd$parent[pd$token %in% c("FOR", "WHILE")] # %in% loops]
 
   # remove loops that have function calls inside
   loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt)
@@ -76,10 +75,10 @@ li_one_pd <- function(pd) {
   res_pd
 }
 
-# Executes loop-invariant code motion in one loop
+# Executes loop-invariant code motion in one loop.
 #
 # @param pd A parsed data data.frame.
-# @param id Numeric indicating the node ID of the loop.
+# @param id A numeric indicating the node ID of the loop.
 #
 li_in_loop <- function(pd, id) {
   lv_vars <- get_loop_variant_vars(pd, id)
@@ -109,11 +108,11 @@ li_in_loop <- function(pd, id) {
   unloop_expr(pd, to_unloop_ids, id)
 }
 
-# Moves expressions that are inside a loop to outside of it
+# Moves expressions that are inside a loop to outside of it.
 #
 # @param pd A parsed data data.frame.
-# @param exprs_ids Numeric indicating the node IDs of the expressions.
-# @param loop_id Numeric indicating the node ID of the parent loop.
+# @param exprs_ids A numeric vector indicating the node IDs of the expressions.
+# @param loop_id A numeric indicating the node ID of the parent loop.
 #
 unloop_expr <- function(pd, exprs_ids, loop_id) {
   if (length(exprs_ids) == 0) {
@@ -165,10 +164,10 @@ unloop_expr <- function(pd, exprs_ids, loop_id) {
   )
 }
 
-# Returns which variables vary depending on loop execution
+# Returns which variables vary depending on loop execution.
 #
 # @param pd A parsed data data.frame.
-# @param id Numeric indicating the node ID of the loop.
+# @param id A numeric indicating the node ID of the loop.
 #
 get_loop_variant_vars <- function(pd, id) {
   act_pd <- get_children(pd, id)
@@ -205,7 +204,7 @@ get_loop_variant_vars <- function(pd, id) {
   unique(act_pd$text[act_pd$id %in% lv_vars_ids])
 }
 
-# Returns the node ids of all vars that are being updated, e.g., x <- x + 1
+# Returns the node ids of all vars that are being updated, e.g., x <- x + 1.
 #
 # @param pd A parsed data data.frame.
 #
@@ -223,10 +222,10 @@ get_updated_vars_ids <- function(pd) {
   })]
 }
 
-# Returns the ids of the pd exprs that are being assigned
+# Returns the ids of the pd exprs that are being assigned.
 #
 # @param pd A parsed data data.frame.
-# @param id Numeric indicating the node ID to find assigns.
+# @param id A numeric indicating the node ID to find assigns.
 #
 get_assigned_exprs_ids <- function(pd, id) {
   act_pd <- get_children(pd, id)
