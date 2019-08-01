@@ -142,7 +142,7 @@ save(bchmark_res, file = paste0("bchmark_res_", pkg_name, ".RData"))
 (bchmark_sumry <- summary(bchmark_res))
 bchmark_sumry <- bchmark_sumry[, c("min", "lq", "mean", "median", "uq", "max")]
 
-test_speedup <- bchmark_sumry[2, ] / bchmark_sumry[1, ]
+test_speedup <- bchmark_sumry[1, ] / bchmark_sumry[2, ]
 cat("\n\n*****************************\n")
 cat("rco obtained a speedup of:\n")
 print(test_speedup)
