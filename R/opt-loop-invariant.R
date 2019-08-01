@@ -231,8 +231,9 @@ get_updated_vars_ids <- function(fpd) {
 get_assigned_exprs_ids <- function(fpd, id) {
   act_fpd <- get_children(fpd, id)
   # get parents of <- <<- -> ->> and =
-  assign_exprs_prnts <- act_fpd$parent[
-    act_fpd$token %in% assigns & act_fpd$text != ":="
+  assign_exprs_prnts <- act_fpd[
+    act_fpd$token %in% assigns & act_fpd$text != ":=",
+    "parent"
   ]
   # get the assigned expr fpd id
   sapply(assign_exprs_prnts, function(assign_exprs_prnt) {
