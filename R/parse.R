@@ -211,13 +211,14 @@ replace_pd <- function(pd_from, pd_replace) {
   fst_term <- from_terms[which.min(from_terms$pos_id), ]
   last_term <- from_terms[which.max(from_terms$pos_id), ]
   new_terms <- new_pd$id[new_pd$terminal]
-  if (fst_term$prev_spaces != 0) {
+  # if first or last token was a precedence op then add at least 1 extra space
+  if (fst_term$prev_spaces != 0 || fst_term$token %in% c("'{'", "'('")) {
     new_pd$prev_spaces[new_pd$id == new_terms[[1]]] <-
-      fst_term$prev_spaces
+      max(fst_term$prev_spaces, fst_term$token %in% c("'{'", "'('"))
   }
-  if (last_term$next_spaces != 0) {
+  if (last_term$next_spaces != 0 || last_term$token %in% c("'}'", "')'")) {
     new_pd$next_spaces[new_pd$id == new_terms[[length(new_terms)]]] <-
-      last_term$next_spaces
+      max(last_term$next_spaces, last_term$token %in% c("'}'", "')'"))
   }
   if (last_term$next_lines != 0) {
     new_pd$next_lines[new_pd$id == new_terms[[length(new_terms)]]] <-

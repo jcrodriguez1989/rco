@@ -99,7 +99,7 @@ test_that("dead function store", {
   opt_code <- opt_dead_store(list(code))$codes[[1]]
   expect_equal(opt_code, paste(
     "foo <- function() {",
-    "  function() { FALSE }",
+    "  function() { FALSE } ",
     "  return()",
     "}",
     sep = "\n"
