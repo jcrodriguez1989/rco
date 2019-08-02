@@ -226,3 +226,17 @@ test_that("dont eliminate part of exprs", {
     sep = "\n"
   ))
 })
+
+test_that("dont eliminate empty `if` or loop", {
+  code <- paste(
+    "foo <- function() {",
+    "  if (cond) NULL",
+    "  while (cond) NULL",
+    "  for (i in cond) NULL",
+    "  3",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_expr(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
+})
