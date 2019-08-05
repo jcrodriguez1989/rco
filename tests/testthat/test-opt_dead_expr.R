@@ -231,12 +231,33 @@ test_that("dont eliminate empty `if` or loop", {
   code <- paste(
     "foo <- function() {",
     "  if (cond) NULL",
+    "  if (cond) NULL else NULL",
     "  while (cond) NULL",
     "  for (i in cond) NULL",
-    "  3",
+    "  8818",
     "}",
     sep = "\n"
   )
   opt_code <- opt_dead_expr(list(code))$codes[[1]]
   expect_equal(opt_code, code)
+})
+
+test_that("eliminate empty in one side of `ifelse`", {
+  code <- paste(
+    "foo <- function() {",
+    "  if (cond) x else NULL",
+    "  if (cond) NULL else x",
+    "  8818",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_dead_expr(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "foo <- function() {",
+    "  if (cond) {} else NULL",
+    "  if (cond) NULL else {}",
+    "  8818",
+    "}",
+    sep = "\n"
+  ))
 })
