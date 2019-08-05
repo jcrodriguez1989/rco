@@ -96,11 +96,14 @@ get_unassigned_exprs <- function(pd, id) {
         body_ids <- body_ids[seq(
           any(c("')'", "forcond") %in% act_sblngs$token) + 1, length(body_ids)
         )]
-        act_terms <- get_children(act_prnt_pd, body_ids)
-        act_terms <- act_terms$text[act_terms$terminal]
-        # dont eliminate in `if (cond) NULL`
-        if (!(length(act_terms) == 1 && act_terms == "NULL")) {
-          new_visit <- c(new_visit, body_ids)
+
+        for (body_id in body_ids) {
+          act_terms <- get_children(act_prnt_pd, body_id)
+          act_terms <- act_terms$text[act_terms$terminal]
+          # dont eliminate in `if (cond) NULL`
+          if (!(length(act_terms) == 1 && act_terms == "NULL")) {
+            new_visit <- c(new_visit, body_id)
+          }
         }
       } else {
         next
