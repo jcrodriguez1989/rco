@@ -23,7 +23,7 @@ test_that("keep new lines", {
     "j <- 0",
     sep = "\n"
   )
-  parsed_data <- rco:::parse_text(code)
-  deparsed_data <- rco:::deparse_data(parsed_data)
+  parsed_data <- parse_text(code)
+  deparsed_data <- deparse_data(parsed_data)
   expect_equal(code, deparsed_data)
 })
