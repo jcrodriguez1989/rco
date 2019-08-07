@@ -1,6 +1,12 @@
 # rco 0.1.008
 
   - Adding Shiny GUIs, called with the `rco_gui` function.
+  
+  - Adding RStudio Addins.
+  
+  - Improving code quality.
+  
+  - Adding new optimizers list.
 
 # rco 0.1.007
 
