@@ -127,18 +127,7 @@ test_that("dont eliminate DE in if/else", {
     sep = "\n"
   )
   opt_code <- opt_dead_expr(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    "bar <- function(x) {",
-    "  if (x == 0) {",
-    "    x + 8818",
-    "  } else if (x == 1) {",
-    "    x + 8818",
-    "  } else {",
-    "    x + 8818",
-    "  }",
-    "}",
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })
 
 test_that("eliminate DE in if/else", {
@@ -217,14 +206,7 @@ test_that("dont eliminate part of exprs", {
     sep = "\n"
   )
   opt_code <- opt_dead_expr(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    "bar <- function(x) {",
-    "  tp <- ip[startsWith(ip, token)]",
-    "  completions <- lapply(tp, function(package) NULL)",
-    "  x + 8818",
-    "}",
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })
 
 test_that("dont eliminate empty `if` or loop", {
