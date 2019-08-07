@@ -4,9 +4,9 @@ context("optimize_text")
 testing_optimizer <- function(codes, edit) {
   optim_codes <- codes
   if (edit) {
-    optim_codes[[1]] <- c("hw <- 'hw'", "", optim_codes[[1]])
+    optim_codes[[1]] <- c("IACC <- 'IACC'", "", optim_codes[[1]])
   }
-  return(list(codes = optim_codes))
+  list(codes = optim_codes)
 }
 
 testing_optimizer_no_edit <- function(codes) {
@@ -18,7 +18,7 @@ testing_optimizer_edit <- function(codes) {
 }
 
 test_that("optimizing text", {
-  code <- "hello_world <- 'hello_world'\n"
+  code <- "InstitutoACC <- 'InstitutoACC'\n"
 
   opt_code_no_change <-
     optimize_text(code, optimizers = list(testing_optimizer_no_edit))
