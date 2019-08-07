@@ -143,6 +143,13 @@ test_that("simple loop invariant", {
     "}",
     sep = "\n"
   ))
+
+  env_orig <- new.env()
+  eval(parse(text = code), envir = env_orig)
+  env_opt <- new.env()
+  eval(parse(text = opt_code), envir = env_opt)
+
+  expect_equal(env_orig, env_opt)
 })
 
 test_that("dont propagate", {
@@ -166,25 +173,7 @@ test_that("dont propagate", {
     sep = "\n"
   )
   opt_code <- opt_loop_invariant(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    "for(i in 1:20) {",
-    "  x <- i + 1",
-    "}",
-    "",
-    "i <- 0",
-    "while (i < 20) {",
-    "  x <- x + i",
-    "  i <- i + 1",
-    "}",
-    "",
-    "i <- 0",
-    "repeat{",
-    "  x <- x + i",
-    "  i <- i + 1",
-    "  if (i >= 20) break",
-    "}",
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })
 
 test_that("abort loop invariant if next/break/return", {
