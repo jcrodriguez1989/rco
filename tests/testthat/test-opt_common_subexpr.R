@@ -49,15 +49,7 @@ test_that("dont common subexpr elimination for one op or symbol", {
     sep = "\n"
   )
   opt_code <- opt_common_subexpr(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    "a <- 1",
-    "b <- 1",
-    "c <- (2)",
-    "d <- (2)",
-    "e <- -3",
-    "f <- -3",
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })
 
 test_that("common subexpr elimination with precedence", {
@@ -446,10 +438,7 @@ test_that("dont CSE in function def", {
     sep = "\n"
   )
   opt_code <- opt_common_subexpr(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    "foo <- function(x = c(1/3, 1/3, 1/3), y = 1/3) 1/3",
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })
 
 test_that("dont CSE in function call", {

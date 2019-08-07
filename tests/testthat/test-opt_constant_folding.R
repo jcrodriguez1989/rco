@@ -58,7 +58,7 @@ test_that("correctly constant fold", {
   env_opt <- new.env()
   eval(parse(text = opt_code), envir = env_opt)
 
-  expect_equal(as.list(env_orig), as.list(env_opt))
+  expect_equal(env_orig, env_opt)
 })
 
 test_that("dont fold floats", {
@@ -119,7 +119,7 @@ test_that("dont fold floats", {
   env_opt <- new.env()
   eval(parse(text = opt_code), envir = env_opt)
 
-  expect_equal(as.list(env_orig), as.list(env_opt))
+  expect_equal(env_orig, env_opt)
 })
 
 test_that("constant fold in while", {
@@ -158,7 +158,7 @@ test_that("constant fold in while", {
   env_opt <- new.env()
   eval(parse(text = opt_code), envir = env_opt)
 
-  expect_equal(as.list(env_orig), as.list(env_opt))
+  expect_equal(env_orig, env_opt)
 })
 
 test_that("constant fold in function", {
