@@ -32,13 +32,15 @@ speed_up <- function(obj) {
 
 ## Background
 
-Constant folding is an optimization technique that eliminates expressions that calculate a value that can already be determined before execution. These are typically calculations that only reference constant values or expressions that reference variables whose values are constant.
+Constant folding is an optimization technique that eliminates expressions that calculate a value that can already be determined before code execution. These are typically calculations that only reference constant values or expressions that reference variables whose values are constant.
 
 For example, consider the statement:
 
 `i <- 320 * 200 * 32`
 
-Most compilers would not actually generate two multiply instructions. Instead, they identify constructs such as these and substitute the computed values (in this case, `2048000`).
+Most compilers would not actually generate two multiply instructions. Instead, they identify constructs such as these and substitute the computed values (in this case, `2048000`). This way, the code will be replaced by:
+
+`i <- 2048000`
 
 ## Example
 
@@ -78,7 +80,7 @@ speed_up(bmark_res)
 
 ## Implementation
 
-Actually, `opt_constant_folding` will fold expressions that are conformed solely by operators and constants which tokens are (`utils::getParseData`):
+Actually, `opt_constant_folding` will fold expressions that are conformed solely by operators and constants which tokens parsed with `utils::getParseData` function are:
 
 ```{r echo=FALSE}
 rco:::ops
@@ -88,7 +90,7 @@ rco:::precedence_ops
 
 ## Floating-point precision
 
-When constant folding, we can have floating-point precision issues, for instance, consider the following code:
+When folding, we can have floating-point precision issues, for instance, consider the following code:
 
 ```{r}
 x <- 1 / (2 + 1)
@@ -97,7 +99,7 @@ z <- 1 / (2 + 1)
 x + y + z == 1
 ```
 
-If we constant fold it, we would have:
+If we fold it, we would have:
 
 ```{r}
 code <- paste(
@@ -121,14 +123,14 @@ eval(parse(text = code))
 eval(parse(text = opt_code))
 ```
 
-In this case, we can use the parameter `fold_floats`. If set to FALSE, then the optimizer will fold every expression except those which fold loses precision:
+In this case, we can use the parameter `fold_floats`. If set to FALSE, then the optimizer will fold every expression except those which will lose precision:
 
 ```{r}
 opt_code <- opt_constant_folding(list(code), fold_floats = FALSE)$codes[[1]]
 cat(opt_code)
 ```
 
-Consider this nice example where a sub-expression folding causes precision loss, but as it is not important in overall, then it can be folded:
+Consider this example where a sub-expression folding causes precision loss, but as it is not important in overall, then it can be folded:
 
 ```{r}
 opt_code <- opt_constant_folding(list(paste(
@@ -145,25 +147,10 @@ cat(opt_code)
   
   For example: fold `0 * x` to `0`
   
-  However, this could change code behavior, in the second case, if `x` does not exist then the code would not throw an error, meanwhile, in the first case, it would.
+  However, this could change code semantics, in the second case, if `x` does not exist then the code would not throw an error, meanwhile, in the first case, it would.
 
 * Reorder variables with associative operators?
   
   The R parser has left associativity, so `x + 10 + 200` is `((x + 10) + 200)`. So this is not being folded to `x + 210`.
   
   If we consider operators with associativity, we could replace `x + 10 + 200` to  `10 + 200 + x`, and then fold it to `210 + x`
-
-* Try constant folding if a function takes constants?
-  
-  For example: If we have `paste("aa", "bb")`, we know that this can be folded to `"aa bb"`. The optimizer could try function calls that have all constants as input.
-  
-  However, this could break the optimizer, for instance, if we try to optimize the following code (when evaluating `foo(3)`):
-  
-  ```{r eval=FALSE}
-  foo <- function(x) {
-    while (TRUE) {
-      x <- x + 1
-    }
-  }
-  foo(3)
-  ```
