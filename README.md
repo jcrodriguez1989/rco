@@ -9,6 +9,10 @@ status](https://ci.appveyor.com/api/projects/status/github/jcrodriguez1989/rco?b
 [![Coverage
 status](https://codecov.io/gh/jcrodriguez1989/rco/branch/master/graph/badge.svg)](https://codecov.io/github/jcrodriguez1989/rco?branch=master)
 
+Make your R code run faster\! `rco` analyzes your code and applies
+different optimization strategies that return an R code that runs
+faster.
+
 This project is being supported by [Google Summer of
 Code 2019](https://summerofcode.withgoogle.com/projects/#5337917017292800).
 
@@ -25,16 +29,45 @@ To install it run the following from an R console:
 if (!require("remotes")) {
   install.packages("remotes")
 }
-remotes::install_github("jcrodriguez1989/rco")
+remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
 ```
 
 ## Usage
 
-Optimize some `.R` code files:
+`rco` can be used in two ways:
 
-``` r
-optimize_files(c("file_to_optimize1.R", "file_to_optimize2.R"))
-```
+  - Using the RStudio Addins
+    
+    1.  `Optimize active file`: Optimizes the file currently open in
+        RStudio. It will apply the optimizers present in
+        `all_optimizers`.
+    
+    2.  `Optimize selection`: Optimizes the code currently highlited in
+        the RStudio Source Pane. It will apply the optimizers present in
+        `all_optimizers`.
+
+  - Using the R functions
+    
+    1.  Optimize some `.R` code files
+    
+    <!-- end list -->
+    
+    ``` r
+    optimize_files(c("file_to_optimize_1.R", "file_to_optimize_2.R"))
+    ```
+    
+    2.  Optimize some code in a character vector
+    
+    <!-- end list -->
+    
+    ``` r
+    code <- paste(
+      "code_to_optimize <- 8 ^ 8 * 1918",
+      "cto <- code_to_optimize * 2",
+      sep = "\n"
+    )
+    optimize_text(code)
+    ```
 
 ## Example
 
@@ -64,6 +97,7 @@ opt_code <- optimize_text(code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 365 * 29 # leap years don't exist
@@ -84,6 +118,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -104,6 +139,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -124,6 +160,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist
@@ -144,6 +181,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
 ```
 
     ## Optimization number 1
+
     ## # I want to know my age in seconds!
     ## years_old <- 29
     ## days_old <- 10585 # leap years don't exist

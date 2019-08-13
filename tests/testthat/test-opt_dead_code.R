@@ -42,6 +42,13 @@ test_that("dead code eliminate for command interruption", {
     "}",
     sep = "\n"
   ))
+
+  env_orig <- new.env()
+  eval(parse(text = code), envir = env_orig)
+  env_opt <- new.env()
+  eval(parse(text = opt_code), envir = env_opt)
+
+  expect_equal(env_orig, env_orig)
 })
 
 test_that("dead code eliminate after `next`", {
@@ -102,6 +109,13 @@ test_that("dead code eliminate after `break`", {
     "}",
     sep = "\n"
   ))
+
+  env_orig <- new.env()
+  eval(parse(text = code), envir = env_orig)
+  env_opt <- new.env()
+  eval(parse(text = opt_code), envir = env_opt)
+
+  expect_equal(env_orig, env_orig)
 })
 
 test_that("dead code eliminate after `return`", {
@@ -239,13 +253,7 @@ test_that("dont eliminate in `if return() else ...`", {
     sep = "\n"
   )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    "if (rhs) rhs else return(0L)",
-    "if (rhs) return(1L) else rhs",
-    "if (rhs) return(0L) else rhs",
-    "if (rhs) rhs else return(1L)",
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })
 
 test_that("dead code careful with if () next", {
@@ -264,8 +272,8 @@ test_that("dead code careful with if () next", {
 
 test_that("dont dead code in function call", {
   code <- paste(
-    'foo <- function(method) {',
-    '  switch(method,',
+    "foo <- function(method) {",
+    "  switch(method,",
     '         return("precmat.RW1(n)"),',
     '         return("precmat.RW2(n)"),',
     '         return("precmat.RWn(n, order)"),',
@@ -273,21 +281,9 @@ test_that("dont dead code in function call", {
     '         return("precmat.IGMRFreglat(n,m,...)"),',
     '         return("precmat.IGMRFirreglat(A,...)"),',
     '         return("precmat.GMRFreglat(n,m,...)"))',
-    '}',
+    "}",
     sep = "\n"
   )
   opt_code <- opt_dead_code(list(code))$codes[[1]]
-  expect_equal(opt_code, paste(
-    'foo <- function(method) {',
-    '  switch(method,',
-    '         return("precmat.RW1(n)"),',
-    '         return("precmat.RW2(n)"),',
-    '         return("precmat.RWn(n, order)"),',
-    '         return("precmat.season(n,season)"),',
-    '         return("precmat.IGMRFreglat(n,m,...)"),',
-    '         return("precmat.IGMRFirreglat(A,...)"),',
-    '         return("precmat.GMRFreglat(n,m,...)"))',
-    '}',
-    sep = "\n"
-  ))
+  expect_equal(opt_code, code)
 })

@@ -1,11 +1,13 @@
-#' Optimizer: Constant Folding
+#' Optimizer: Constant Folding.
 #'
 #' Performs one constant folding pass.
 #' Carefully examine the results after running this function!
 #'
 #' @param texts A list of character vectors with the code to optimize.
-#' @param fold_floats Logical indicating if floating-point results should be
+#' @param fold_floats A logical indicating if floating-point results should be
 #'   folded (will reduce precision).
+#' @param in_fun_call A logical indicating whether it should propagate in
+#'   function calls. Note: this could change the semantics of the program.
 #'
 #' @examples
 #' code <- paste(
@@ -16,94 +18,110 @@
 #' cat(opt_constant_folding(list(code))$codes[[1]])
 #' @export
 #'
-opt_constant_folding <- function(texts, fold_floats = FALSE) {
+opt_constant_folding <- function(texts, fold_floats = FALSE,
+                                 in_fun_call = FALSE) {
   # todo: implement intelligent constant folding? for example: fold 0 * x to 0
   # todo: reorder vars in associativity?
-  # todo: try constant fold knoww-functions with constants?
+  # todo: try constant fold known-functions with constants?
   res <- list()
-  res$codes <- lapply(texts, constant_fold_one, fold_floats = fold_floats)
-  return(res)
+  res$codes <- lapply(texts, cf_one_file,
+    fold_floats = fold_floats,
+    in_fun_call = in_fun_call
+  )
+  res
 }
 
 # Performs a constant folding pass on one text.
 #
 # @param text A character vector with code to optimize.
-# @param fold_floats Logical indicating if floating-point results should be
+# @param fold_floats A logical indicating if floating-point results should be
 #   folded (will reduce precision).
+# @param in_fun_call A logical indicating whether it should propagate in
+#   function calls. Note: this could change the semantics of the program.
 #
-constant_fold_one <- function(text, fold_floats) {
-  pd <- parse_flat_data(text)
-  pd <- flatten_leaves(pd)
-  if (nrow(pd) > 0) {
-    pd <- one_fold(pd, fold_floats)
+cf_one_file <- function(text, fold_floats, in_fun_call) {
+  fpd <- parse_text(text)
+  fpd <- flatten_leaves(fpd)
+  if (nrow(fpd) > 0) {
+    fpd <- cf_one_fpd(fpd, fold_floats, in_fun_call)
   }
-  deparse_flat_data(pd)
+  deparse_data(fpd)
 }
 
 # Performs the constant folding pass.
 #
-# @param pd A parse data data.frame with code to optimize.
-# @param fold_floats Logical indicating if floating-point results should be
+# @param fpd A flatten parsed data data.frame.
+# @param fold_floats A logical indicating if floating-point results should be
 #   folded (will reduce precision).
+# @param in_fun_call A logical indicating whether it should propagate in
+#   function calls. Note: this could change the semantics of the program.
 #
-one_fold <- function(pd, fold_floats) {
+cf_one_fpd <- function(fpd, fold_floats, in_fun_call) {
   # keep but dont fold comments ( < 0 )
-  new_pd <- pd[pd$parent < 0, ]
-  pd <- pd[pd$parent >= 0, ]
+  new_fpd <- fpd[fpd$parent < 0, ]
+  fpd <- fpd[fpd$parent >= 0, ]
+
+  in_fun_call_ids <- c()
+  if (!in_fun_call) {
+    # get ids of exprs in fun calls
+    in_fun_call_ids <- get_children(
+      fpd, fpd$parent[fpd$token == "SYMBOL_FUNCTION_CALL"]
+    )$id
+  }
 
   # start visiting root nodes
-  visit_nodes <- get_roots(pd)$id
+  visit_nodes <- get_roots(fpd)$id
   while (length(visit_nodes) > 0) {
     new_visit_nodes <- c()
     for (act_parent in visit_nodes) {
-      act_pd <- get_children(pd, act_parent)
-      if (all(act_pd$token %in% c(constants, ops, precedence_ops, "expr")) &&
-        !is_minus_constant(act_pd, act_parent)) {
+      act_fpd <- get_children(fpd, act_parent)
+      if (all(act_fpd$token %in% c(constants, ops, precedence_ops, "expr")) &&
+        !is_minus_constant(act_fpd, act_parent) &&
+        !act_parent %in% in_fun_call_ids) {
         # all the children are terminals or ops. try to evaluate it
         # And it is not just -constant
-        act_code_pd <- pd[pd$id == act_parent, ]
-        folded_fpd <- get_folded_fpd(act_code_pd, fold_floats)
+        act_code_fpd <- fpd[fpd$id == act_parent, ]
+        folded_fpd <- get_folded_fpd(act_code_fpd, fold_floats)
         if (!is.null(folded_fpd)) {
           # it is a constant or -constant
           # replace the parent expr by the new expr (folded)
-          act_new_fpd <- replace_pd(act_pd, folded_fpd)
-          new_pd <- rbind(new_pd, act_new_fpd)
+          act_new_fpd <- replace_pd(act_fpd, folded_fpd)
+          new_fpd <- rbind(new_fpd, act_new_fpd)
           next
         }
       }
       # it could not be folded, so save parent, and terminal childs
-      new_pd <- rbind(new_pd, pd[pd$id == act_parent, ])
-      new_pd <- rbind(new_pd, pd[pd$parent == act_parent & pd$terminal, ])
+      new_fpd <- rbind(new_fpd, fpd[fpd$id == act_parent, ])
+      new_fpd <- rbind(new_fpd, fpd[fpd$parent == act_parent & fpd$terminal, ])
       # continue visiting child exprs
       new_visit_nodes <- c(
         new_visit_nodes,
-        pd[pd$parent == act_parent & !pd$terminal, "id"]
+        fpd[fpd$parent == act_parent & !fpd$terminal, "id"]
       )
     }
     visit_nodes <- new_visit_nodes
   }
 
-  new_pd <- new_pd[order(new_pd$pos_id), ]
-  return(new_pd)
+  new_fpd[order(new_fpd$pos_id), ]
 }
 
 # Returns a folded fpd, if it only had constants and operators.
-# If it could not fold then it returns NULL
+# If it could not fold then it returns NULL.
 #
-# @param fpd a flat parsed data data.frame .
-# @param fold_floats Logical indicating if floating-point results should be
+# @param fpd A flatten parsed data data.frame.
+# @param fold_floats A logical indicating if floating-point results should be
 #   folded (will reduce precision).
 #
 get_folded_fpd <- function(fpd, fold_floats) {
   if (fpd$token %in% constants) {
-    return(NULL)
+    return()
   }
 
   eval_val <- try({
     eval(parse(text = fpd$text))
   }, silent = TRUE)
   if (inherits(eval_val, "try-error")) {
-    return(NULL)
+    return()
   }
 
   # it was correctly evaluated then create the fpd of the eval val
@@ -129,7 +147,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     eval_val_str <- paste0("(", eval_val_str, ")")
   }
 
-  res <- parse_flat_data(eval_val_str)
+  res <- parse_text(eval_val_str)
   res <- flatten_leaves(res)
   if (grepl("^\\{.+\\}$", fpd$text)) {
     # if it was `{expr}`, then add spaces in both sides
@@ -139,23 +157,23 @@ get_folded_fpd <- function(fpd, fold_floats) {
     res[res$terminal, ][n_terms, "next_spaces"] <- 1
   }
   if (!all(res$token %in%
-           c("expr", "'-'", "'('", "')'", constants, "SYMBOL_FUNCTION_CALL"))) {
+    c("expr", "'-'", "'('", "')'", constants, "SYMBOL_FUNCTION_CALL"))) {
     # SYMBOL_FUNCTION_CALL for logical(0)
-    return(NULL)
+    return()
   }
 
   # it is a constant or -constant
   if (!fold_floats && "NUM_CONST" %in% res$token && length(eval_val) != 0 &&
-      !is.na(eval_val) && floor(eval_val) != eval_val) {
-    return(NULL)
+    !is.na(eval_val) && floor(eval_val) != eval_val) {
+    return()
   }
-  return(res)
+  res
 }
 
-# Returns the corresponding string for NA value
-# NA_character_ if class(na) == "character"
+# Returns the corresponding string for NA value.
+# E.g., NA_character_ if class(na) == "character"
 #
-# @param na a NA value.
+# @param na A NA value.
 #
 na_to_correct_str <- function(na) {
   if (!is.na(na)) {
@@ -170,15 +188,15 @@ na_to_correct_str <- function(na) {
   )
 }
 
-# Returns a logical indicating if a node is -constant
-# Can have precedence ops
+# Returns a logical indicating if a node is -constant.
+# Can have precedence ops.
 #
-# @param fpd a flat parsed data data.frame .
-# @param id Numeric indicating the node ID.
+# @param pd A parsed data data.frame.
+# @param id A numeric indicating the node ID.
 #
-is_minus_constant <- function(fpd, id) {
-  act_fpd <- get_children(fpd, id)
-  all(act_fpd$token %in% c(constants, ops, precedence_ops, "expr")) &&
-    sum(act_fpd$token %in% constants) == 1 &&
-    sum(act_fpd$token == "'-'") == 1
+is_minus_constant <- function(pd, id) {
+  act_pd <- get_children(pd, id)
+  all(act_pd$token %in% c(constants, ops, precedence_ops, "expr")) &&
+    sum(act_pd$token %in% constants) == 1 &&
+    sum(act_pd$token == "'-'") == 1
 }

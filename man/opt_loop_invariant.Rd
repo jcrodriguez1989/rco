@@ -2,7 +2,7 @@
 % Please edit documentation in R/opt-loop-invariant.R
 \name{opt_loop_invariant}
 \alias{opt_loop_invariant}
-\title{Optimizer: Loop-invariant Code Motion}
+\title{Optimizer: Loop-invariant Code Motion.}
 \usage{
 opt_loop_invariant(texts)
 }

@@ -2,15 +2,18 @@
 % Please edit documentation in R/opt-common-subexpr.R
 \name{opt_common_subexpr}
 \alias{opt_common_subexpr}
-\title{Optimizer: Common Subexpression Elimination}
+\title{Optimizer: Common Subexpression Elimination.}
 \usage{
-opt_common_subexpr(texts, n_values = 2)
+opt_common_subexpr(texts, n_values = 2, in_fun_call = FALSE)
 }
 \arguments{
 \item{texts}{A list of character vectors with the code to optimize.}
 
-\item{n_values}{Numeric indicating the minimum number of values to consider
+\item{n_values}{A numeric indicating the minimum number of values to consider
 a subexpression.}
+
+\item{in_fun_call}{A logical indicating whether it should propagate in
+function calls. Note: this could change the semantics of the program.}
 }
 \description{
 Performs one common subexpression elimination pass.

@@ -11,8 +11,10 @@ RUN R -e "\
   options(repos = \
     list(CRAN = 'http://mirror.las.iastate.edu/CRAN/')); \
   install.packages('devtools'); \
-  install.packages('testthat'); \
+  install.packages('dplyr'); \
+  install.packages('microbenchmark'); \
   install.packages('rvest'); \
+  install.packages('testthat'); \
   install.packages('withr');"
 
 # Copy the script
@@ -22,5 +24,4 @@ COPY optimize_rand_pkg.R ./
 
 # Run the script and save results in /rco_results
 RUN mkdir /rco_results
-CMD R -e "source('optimize_rand_pkg.R')"\
-  && mv /rco_files/* /rco_results/
+CMD Rscript optimize_rand_pkg.R && mv /rco_files/* /rco_results/

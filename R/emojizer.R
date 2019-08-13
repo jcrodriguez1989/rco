@@ -28,12 +28,12 @@ emojizer <- function(texts) {
 # @param text A character vector with code to optimize.
 #
 emojize_text <- function(text) {
-  fpd <- parse_flat_data(text)
+  fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   if (nrow(fpd) > 0) {
     fpd <- emojize_fpd(fpd)
   }
-  deparse_flat_data(fpd)
+  deparse_data(fpd)
 }
 
 # Performs the emojizer pass.

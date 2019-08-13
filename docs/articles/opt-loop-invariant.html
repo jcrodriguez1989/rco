@@ -30,7 +30,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.8</span>
       </span>
     </div>
 
@@ -179,7 +179,9 @@
 ## y &lt;- rnorm(1)
 ## z &lt;- rnorm(1)
 ## a &lt;- c()
-## x &lt;- y + z
+## if (i &lt; n) {
+##   x &lt;- y + z
+## } 
 ## while (i &lt; n) {
 ##   a[i] &lt;- 6 * i + x * x
 ##   i &lt;- i + 1
@@ -193,18 +195,19 @@
 <a class="sourceLine" id="cb6-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-loop-invariant_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.  Median     Mean  3rd Qu.     Max.
-## Expr_2 69.98681 66.43264 55.3739 63.84977 54.22683 159.3795</code></pre>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 63.70488 60.67823 49.58155 57.43704 47.75924 116.3457</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#implementation" class="anchor"></a>Implementation</h2>
 <p>The <code>opt_loop_invariant</code> optimizer does:</p>
 <ul>
-<li><p>Finds all loops in the code, i.e., FOR, WHILE, REPEAT.</p></li>
-<li><p>Removes loops that have function calls inside, as function calls can edit the environment.</p></li>
+<li><p>Finds <code>for</code> and <code>while</code> loops in the code.</p></li>
+<li><p>Discards loops that have function calls inside, as function calls can edit the environment.</p></li>
 <li><p>Gets which variables are variant inside the loop.</p></li>
-<li><p>Detects which expressions do not use any variant variable, and moves them outside the loop.</p></li>
+<li><p>Detects which expressions do not use any variant variable.</p></li>
+<li><p>Gets these invariant variables, and moves them outside the loop, but inside an <code>if</code> statement (with the same conditional).</p></li>
 </ul>
 </div>
 <div id="to-do" class="section level2">
@@ -239,21 +242,28 @@
 <a class="sourceLine" id="cb12-4" data-line-number="4">}</a></code></pre></div>
 </li>
 <li>
-<p>Check that assigned vars that are moved, were present in parent environment, if not, add an <code>if</code>.</p>
-<p>Invariant expressions are moved outside of the loop independently if the loop conditions was <code>TRUE</code> or <code>FALSE</code>, this could lead to not equivalent codes, as for example in:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="cf">while</span> (<span class="ot">FALSE</span>) {</a>
-<a class="sourceLine" id="cb13-2" data-line-number="2">  x &lt;-<span class="st"> </span><span class="dv">3</span></a>
-<a class="sourceLine" id="cb13-3" data-line-number="3">}</a></code></pre></div>
-<p>that would be optimized to:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">x &lt;-<span class="st"> </span><span class="dv">3</span></a>
-<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="cf">while</span> (<span class="ot">FALSE</span>) {</a>
-<a class="sourceLine" id="cb14-3" data-line-number="3">}</a></code></pre></div>
-<p>The optimizer should check if <code>x</code> was previously assigned in code, and if not, optimize to:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="cf">if</span> (<span class="ot">FALSE</span>) {</a>
-<a class="sourceLine" id="cb15-2" data-line-number="2">  x &lt;-<span class="st"> </span><span class="dv">3</span></a>
-<a class="sourceLine" id="cb15-3" data-line-number="3">}</a>
-<a class="sourceLine" id="cb15-4" data-line-number="4"><span class="cf">while</span> (<span class="ot">FALSE</span>) {</a>
-<a class="sourceLine" id="cb15-5" data-line-number="5">}</a></code></pre></div>
+<p>Include <code>repeat</code> optimization?</p>
+<p>Since determining the conditional that causes a <code>repeat</code> loop to stop is not that simple, it is not easy to remove invariant variables and place them in an <code>if</code>.</p>
+<p>For example, the code:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1">y &lt;-<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="cf">repeat</span>{</a>
+<a class="sourceLine" id="cb13-3" data-line-number="3">  <span class="cf">if</span> (y <span class="op">&gt;</span><span class="st"> </span><span class="dv">4</span>) {</a>
+<a class="sourceLine" id="cb13-4" data-line-number="4">    <span class="cf">break</span></a>
+<a class="sourceLine" id="cb13-5" data-line-number="5">  }</a>
+<a class="sourceLine" id="cb13-6" data-line-number="6">  x &lt;-<span class="st"> </span><span class="dv">8</span> <span class="op">*</span><span class="st"> </span><span class="dv">8</span></a>
+<a class="sourceLine" id="cb13-7" data-line-number="7">  y &lt;-<span class="st"> </span>y <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb13-8" data-line-number="8">}</a></code></pre></div>
+<p>Must be optimized to:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">y &lt;-<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="cf">if</span> (y <span class="op">&lt;=</span><span class="st"> </span><span class="dv">4</span>) {</a>
+<a class="sourceLine" id="cb14-3" data-line-number="3">  x &lt;-<span class="st"> </span><span class="dv">8</span> <span class="op">*</span><span class="st"> </span><span class="dv">8</span></a>
+<a class="sourceLine" id="cb14-4" data-line-number="4">}</a>
+<a class="sourceLine" id="cb14-5" data-line-number="5"><span class="cf">repeat</span>{</a>
+<a class="sourceLine" id="cb14-6" data-line-number="6">  <span class="cf">if</span> (y <span class="op">&gt;</span><span class="st"> </span><span class="dv">4</span>) {</a>
+<a class="sourceLine" id="cb14-7" data-line-number="7">    <span class="cf">break</span></a>
+<a class="sourceLine" id="cb14-8" data-line-number="8">  }</a>
+<a class="sourceLine" id="cb14-9" data-line-number="9">  y &lt;-<span class="st"> </span>y <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb14-10" data-line-number="10">}</a></code></pre></div>
 </li>
 </ul>
 </div>

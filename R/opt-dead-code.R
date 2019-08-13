@@ -1,4 +1,4 @@
-#' Optimizer: Dead Code Elimination
+#' Optimizer: Dead Code Elimination.
 #'
 #' Performs one dead code elimination pass.
 #' Carefully examine the results after running this function!
@@ -18,48 +18,46 @@
 #'
 opt_dead_code <- function(texts) {
   res <- list()
-  res$codes <- lapply(texts, dead_code_one)
-  return(res)
+  res$codes <- lapply(texts, dc_one_file)
+  res
 }
 
-# Executes dead code elimination on one text of code
+# Executes dead code elimination on one text of code.
 #
 # @param text A character vector with code to optimize.
 #
-dead_code_one <- function(text) {
-  fpd <- parse_flat_data(text)
+dc_one_file <- function(text) {
+  fpd <- parse_text(text)
   fpd <- flatten_leaves(fpd)
   res_fpd <- fpd[fpd$parent < 0, ] # keep lines with just comments
   new_fpd <- fpd[fpd$parent >= 0, ] # keep lines with just comments
-  new_fpd <- one_dead_code(new_fpd)
+  new_fpd <- dc_one_fpd(new_fpd)
   res_fpd <- rbind(res_fpd, new_fpd)
   if (nrow(res_fpd) > 0) {
     res_fpd <- res_fpd[order(res_fpd$pos_id), ]
   }
-  deparse_flat_data(res_fpd)
+  deparse_data(res_fpd)
 }
 
-# Executes dead code elimination of a tree
+# Executes dead code elimination of a fpd.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
-one_dead_code <- function(fpd) {
-  # todo: remove not assigned expressions `x + 5` (they were used for debug)?
-
+dc_one_fpd <- function(fpd) {
   # first remove code that is after (and equally nested) next, break, or return
   new_fpd <- remove_after_interruption(fpd)
 
   # work on constant `while` and `if` conditions
   new_fpd <- remove_constant_conds(new_fpd)
 
-  return(new_fpd)
+  new_fpd
 }
 
-# Returns a new fpd where equally nested code after interruption commands was
-# removed ( break, next, return(...) )
-# Assumes `return` base function has not been overwritten
+# Returns a new fpd where equally nested code after interruption commands is
+# removed ( break, next, return(...) ).
+# Assumes `return` base function has not been overwritten.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_after_interruption <- function(fpd) {
   res_fpd <- fpd
@@ -73,10 +71,12 @@ remove_after_interruption <- function(fpd) {
     act_fpd <- get_children(fpd, act_id)
     # remove function calls that are not returns
     act_fpd <- remove_nodes(act_fpd, act_fpd$parent[
-      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text != "return"])
+      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text != "return"
+    ])
     # get only returns not in fun calls
     act_fpd$id[
-      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text == "return"]
+      act_fpd$token == "SYMBOL_FUNCTION_CALL" & act_fpd$text == "return"
+    ]
   })
   return_calls <- fpd[fpd$id %in% ret_ids, ]
 
@@ -90,7 +90,6 @@ remove_after_interruption <- function(fpd) {
       next
     }
     id <- intr$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     if (nrow(intr_sibl) > 5 &&
       all(intr_sibl$token[c(1, 6)] == c("IF", "ELSE"))) {
@@ -126,24 +125,24 @@ remove_after_interruption <- function(fpd) {
     res_fpd$next_lines[res_fpd$id == keep_last_id] <-
       remove_fpd$next_lines[remove_fpd$id == remove_last_id]
   }
-  return(res_fpd)
+  res_fpd
 }
 
 # Returns a new fpd where constant conditionals were replaced
-# ( if(TRUE), while (FALSE), etc )
+# ( if(TRUE), while (FALSE), etc ).
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_constant_conds <- function(fpd) {
-  new_fpd <- remove_false_while (fpd)
+  new_fpd <- remove_false_while(fpd)
   new_fpd <- remove_false_if(new_fpd)
   new_fpd <- remove_true_if(new_fpd)
-  return(new_fpd)
+  new_fpd
 }
 
-# Returns a new fpd where `while (FALSE) { EXPR }` were removed
+# Returns a new fpd where `while (FALSE) { EXPR }` were removed.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_false_while <- function(fpd) {
   res_fpd <- fpd
@@ -156,7 +155,6 @@ remove_false_while <- function(fpd) {
       next
     }
     id <- while_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # WHILE '(' expr ')' expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
@@ -165,12 +163,12 @@ remove_false_while <- function(fpd) {
       res_fpd <- remove_nodes(res_fpd, id)
     }
   }
-  return(res_fpd)
+  res_fpd
 }
 
-# Returns a new fpd where `if (FALSE) { EXPR }` were removed
+# Returns a new fpd where `if (FALSE) { EXPR }` were removed.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_false_if <- function(fpd) {
   res_fpd <- fpd
@@ -183,7 +181,6 @@ remove_false_if <- function(fpd) {
       next
     }
     id <- if_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # IF '(' expr ')' expr_or_assign ELSE expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
@@ -196,12 +193,12 @@ remove_false_if <- function(fpd) {
       res_fpd <- res_fpd[order(res_fpd$pos_id), ]
     }
   }
-  return(res_fpd)
+  res_fpd
 }
 
-# Returns a new fpd where `if (TRUE) { EXPR }` were replaced by EXPR
+# Returns a new fpd where `if (TRUE) { EXPR }` were replaced by EXPR.
 #
-# @param fpd A flat parsed data data.frame .
+# @param fpd A flatten parsed data data.frame.
 #
 remove_true_if <- function(fpd) {
   res_fpd <- fpd
@@ -214,7 +211,6 @@ remove_true_if <- function(fpd) {
       next
     }
     id <- if_nodes$parent[[i]]
-    intr_prnt <- res_fpd[res_fpd$id == id, ]
     intr_sibl <- res_fpd[res_fpd$parent == id, ]
     # IF '(' expr ')' expr_or_assign ELSE expr_or_assign
     if (is_constant_or_minus(res_fpd, intr_sibl$id[[3]]) &&
@@ -227,14 +223,16 @@ remove_true_if <- function(fpd) {
       res_fpd <- res_fpd[order(res_fpd$pos_id), ]
     }
   }
-  return(res_fpd)
+  res_fpd
 }
 
-# Returns a new fpd where the if/else was replaced by its expr
+# Returns a new fpd where the if/else was replaced by its expr.
 #
-# @param fpd A flat parsed data data.frame .
-# @param id ID of the expr that contains the if/else
-# @param get_if Logical indicating if get if (else otherwise)
+# @param fpd A flatten parsed data data.frame.
+# @param id A numeric indicating the node ID of the expr that contains the
+#   if/else.
+# @param get_if A logical indicating if the `if` should be obtained (`else`
+#   otherwise).
 #
 get_ifelse_expr <- function(fpd, id, get_if = FALSE) {
   token <- ifelse(get_if, "IF", "ELSE")
@@ -270,14 +268,14 @@ get_ifelse_expr <- function(fpd, id, get_if = FALSE) {
     }
     res_fpd <- if_fpd
   }
-  return(res_fpd)
+  res_fpd
 }
 
 # Returns a new fpd where new line terminals start at the same position as their
-# parent
+# parent.
 #
-# @param fpd A flat parsed data data.frame .
-# @param parent_spaces Numeric indicating prev_spaces parent had.
+# @param fpd A flatten parsed data data.frame.
+# @param parent_spaces A numeric indicating prev_spaces the parent had.
 #
 unindent_fpd <- function(fpd, parent_spaces) {
   # get which are the terminals that start in a new line
@@ -287,5 +285,5 @@ unindent_fpd <- function(fpd, parent_spaces) {
   # and remove the identation between them and parent
   fpd[fpd$id %in% new_line_ids, "prev_spaces"] <-
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
-  return(fpd)
+  fpd
 }

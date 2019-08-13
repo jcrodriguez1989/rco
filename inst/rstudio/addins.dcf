@@ -1,0 +1,9 @@
+Name: Optimize active file
+Description: Apply `all_optimizers` to current open file
+Binding: optimize_active_file
+Interactive: true
+
+Name: Optimize selection
+Description: Apply `all_optimizers` to current code selection
+Binding: optimize_selection
+Interactive: true

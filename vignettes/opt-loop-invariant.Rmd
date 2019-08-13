@@ -95,13 +95,15 @@ speed_up(bmark_res)
 
 The `opt_loop_invariant` optimizer does:
 
-* Finds all loops in the code, i.e., `r rco:::loops`.
+* Finds `for` and `while` loops in the code.
 
-* Removes loops that have function calls inside, as function calls can edit the environment.
+* Discards loops that have function calls inside, as function calls can edit the environment.
 
 * Gets which variables are variant inside the loop.
 
-* Detects which expressions do not use any variant variable, and moves them outside the loop.
+* Detects which expressions do not use any variant variable.
+
+* Gets these invariant variables, and moves them outside the loop, but inside an `if` statement (with the same conditional).
 
 ## To-Do
 
@@ -146,30 +148,34 @@ The `opt_loop_invariant` optimizer does:
   }
   ```
 
-* Check that assigned vars that are moved, were present in parent environment, if not, add an `if`.
+* Include `repeat` optimization?
   
-  Invariant expressions are moved outside of the loop independently if the loop conditions was `TRUE` or `FALSE`, this could lead to not equivalent codes, as for example in:
+  Since determining the conditional that causes a `repeat` loop to stop is not that simple, it is not easy to remove invariant variables and place them in an `if`.
+  
+  For example, the code:
   
   ```{r eval=FALSE}
-  while (FALSE) {
-    x <- 3
+  y <- 1
+  repeat{
+    if (y > 4) {
+      break
+    }
+    x <- 8 * 8
+    y <- y + 1
   }
   ```
   
-  that would be optimized to:
+  Must be optimized to:
   
   ```{r eval=FALSE}
-  x <- 3
-  while (FALSE) {
+  y <- 1
+  if (y <= 4) {
+    x <- 8 * 8
   }
-  ```
-  
-  The optimizer should check if `x` was previously assigned in code, and if not, optimize to:
-  
-  ```{r eval=FALSE}
-  if (FALSE) {
-    x <- 3
-  }
-  while (FALSE) {
+  repeat{
+    if (y > 4) {
+      break
+    }
+    y <- y + 1
   }
   ```

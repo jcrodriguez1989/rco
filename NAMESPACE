@@ -2,6 +2,7 @@
 
 export(all_optimizers)
 export(emojizer)
+export(max_optimizers)
 export(opt_common_subexpr)
 export(opt_constant_folding)
 export(opt_constant_propagation)
@@ -11,3 +12,4 @@ export(opt_dead_store)
 export(opt_loop_invariant)
 export(optimize_files)
 export(optimize_text)
+export(rco_gui)
