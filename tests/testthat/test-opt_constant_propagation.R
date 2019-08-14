@@ -553,14 +553,34 @@ test_that("dont propagate if/else variables", {
     "x <- 1",
     "y <- 2",
     "if (bool) {",
-    "  z <- x",
+    "  z <- 1",
     "  x <- 2",
     "} else {",
-    "  z <- y",
+    "  z <- 2",
     "  y <- 1",
     "}",
     "z <- y",
     "z <- x",
+    sep = "\n"
+  ))
+})
+
+test_that("propagate in if condition", {
+  code <- paste(
+    "x <- 8818",
+    "if (x < y) {",
+    "  x <- x + 1",
+    "}",
+    "y <- x + 8818",
+    sep = "\n"
+  )
+  opt_code <- opt_constant_propagation(list(code))$codes[[1]]
+  expect_equal(opt_code, paste(
+    "x <- 8818",
+    "if (8818 < y) {",
+    "  x <- 8818 + 1",
+    "}",
+    "y <- x + 8818",
     sep = "\n"
   ))
 })
