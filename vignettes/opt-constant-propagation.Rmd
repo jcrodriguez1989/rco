@@ -148,9 +148,9 @@ which is not equivalent.
 
 ### `IF (COND) { BODY } ELSE { BODY }`
 
-If it is an `if`: it will get which variables are being assigned in the if/else `BODY` and remove them from `values`, and then propagate in `COND` and `BODY`.
+If it is an `if`: it will propagate `values` in `COND` and `BODY`, then it will get which variables are being assigned in the if/else `BODY` and remove them from `values`.
 
-In-loop assigned variables are removed from `values`, as it is possible that the `BODY` is never executed (`FALSE` cond).
+In-loop assigned variables are removed from `values`, as it is possible that the `BODY` is never executed (`FALSE` condition), and thus, these variables would not be updated or assigned.
 
 ### `VAR <- EXPR`
 
