@@ -7,3 +7,8 @@ Name: Optimize selection
 Description: Apply `all_optimizers` to current code selection
 Binding: optimize_selection
 Interactive: true
+
+Name: Emojize active file
+Description: Apply `emojizer` to current open file
+Binding: emojize_active_file
+Interactive: true

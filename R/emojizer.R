@@ -20,7 +20,7 @@ emojizer <- function(texts) {
   if (requireNamespace("emo")) {
     res$codes <- lapply(texts, emojize_text)
   }
-  return(res)
+  res
 }
 
 # Performs a emojizer pass on one text.
