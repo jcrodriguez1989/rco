@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Background
 
-Dead Code Elimination is an optimization to remove code which does not affect the program results. You might wonder why you would write this type of source code, but it can easily creep into large, long-lived programs even at the source code level. Removing such code has several benefits: it shrinks program size, an important consideration in some contexts, and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure.
+Dead Code Elimination is an optimization that removes code which does not affect the program results. You might wonder why someone would write this type of source code, but it can easily creep into large, long-lived programs even at the source code level. Removing such code has several benefits: it shrinks program size and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure.
 
 For example, consider the following code:
 
@@ -86,7 +86,7 @@ This dead code optimizer also removes code after `next` or `break` calls.
 
 ## Example
 
-Consider the following (useless) example:
+Consider the following example:
 
 ```{r}
 code <- paste(
@@ -140,35 +140,3 @@ This task has sub-items:
   * Remove `FALSE` ifs: `if (FALSE) { expr }` expressions are removed. And `if (FALSE) { expr1 } else { expr2 }` is replaced by `expr2`.
   
   * Replace `TRUE` ifs: `if (TRUE) { expr }` is replaced by `expr`. And `if (TRUE) { expr1 } else { expr2 }` is replaced by `expr1`.
-
-## To-Do
-
-* Remove not assigned expressions?
-
-  When coding, for debugging, sometimes instead of using `print` or `cat` we just write the expression. This causes that we get code as for example:
-  
-  ```{r eval=FALSE}
-  foo <- function(x) {
-    x != 0
-    return(100 / x)
-  }
-  ```
-  
-  Here, the expression `x != 0` would be evaluated each time we call the `foo` function, but would not have any effect as it is not assigned, nor printed. And thus, could be removed.
-  
-  However, removing expressions could result in behaviour missmatches, for instance, the following two codes:
-  
-  ```{r eval=FALSE}
-  foo <- function() {
-    x != 0
-    return(100)
-  }
-  bar <- function() {
-    return(100)
-  }
-  
-  foo()
-  bar()
-  ```
-  
-  The `foo` call would give an error, while the `bar` call would not.
