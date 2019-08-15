@@ -129,7 +129,7 @@
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
-<p>Dead Code Elimination is an optimization to remove code which does not affect the program results. You might wonder why you would write this type of source code, but it can easily creep into large, long-lived programs even at the source code level. Removing such code has several benefits: it shrinks program size, an important consideration in some contexts, and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure.</p>
+<p>Dead Code Elimination is an optimization that removes code which does not affect the program results. You might wonder why someone would write this type of source code, but it can easily creep into large, long-lived programs even at the source code level. Removing such code has several benefits: it shrinks program size and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure.</p>
 <p>For example, consider the following code:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
 <a class="sourceLine" id="cb1-2" data-line-number="2">  a &lt;-<span class="st"> </span><span class="dv">24</span></a>
@@ -167,7 +167,7 @@
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
-<p>Consider the following (useless) example:</p>
+<p>Consider the following example:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(</a>
 <a class="sourceLine" id="cb5-2" data-line-number="2">  <span class="st">"i &lt;- 0"</span>,</a>
 <a class="sourceLine" id="cb5-3" data-line-number="3">  <span class="st">"n &lt;- 1000"</span>,</a>
@@ -207,8 +207,8 @@
 <a class="sourceLine" id="cb9-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-dead-code_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.   Median    Mean  3rd Qu.     Max.
-## Expr_2 78.27302 75.24146 52.30595 64.7211 49.32903 266.2569</code></pre>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 80.63368 73.06502 62.63779 63.95352 52.02779 178.2896</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -230,33 +230,6 @@
 </ul>
 </div>
 </div>
-<div id="to-do" class="section level2">
-<h2 class="hasAnchor">
-<a href="#to-do" class="anchor"></a>To-Do</h2>
-<ul>
-<li>
-<p>Remove not assigned expressions?</p>
-<p>When coding, for debugging, sometimes instead of using <code>print</code> or <code>cat</code> we just write the expression. This causes that we get code as for example:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>(x) {</a>
-<a class="sourceLine" id="cb12-2" data-line-number="2">  x <span class="op">!=</span><span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb12-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span> <span class="op">/</span><span class="st"> </span>x)</a>
-<a class="sourceLine" id="cb12-4" data-line-number="4">}</a></code></pre></div>
-<p>Here, the expression <code>x != 0</code> would be evaluated each time we call the <code>foo</code> function, but would not have any effect as it is not assigned, nor printed. And thus, could be removed.</p>
-<p>However, removing expressions could result in behaviour missmatches, for instance, the following two codes:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1">foo &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
-<a class="sourceLine" id="cb13-2" data-line-number="2">  x <span class="op">!=</span><span class="st"> </span><span class="dv">0</span></a>
-<a class="sourceLine" id="cb13-3" data-line-number="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb13-4" data-line-number="4">}</a>
-<a class="sourceLine" id="cb13-5" data-line-number="5">bar &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
-<a class="sourceLine" id="cb13-6" data-line-number="6">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/function">return</a></span>(<span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb13-7" data-line-number="7">}</a>
-<a class="sourceLine" id="cb13-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb13-9" data-line-number="9"><span class="kw">foo</span>()</a>
-<a class="sourceLine" id="cb13-10" data-line-number="10"><span class="kw"><a href="https://www.rdocumentation.org/packages/grDevices/topics/plotmath">bar</a></span>()</a></code></pre></div>
-<p>The <code>foo</code> call would give an error, while the <code>bar</code> call would not.</p>
-</li>
-</ul>
-</div>
 </div>
   </div>
 
@@ -270,7 +243,6 @@
 <li><a href="#background">Background</a></li>
       <li><a href="#example">Example</a></li>
       <li><a href="#implementation">Implementation</a></li>
-      <li><a href="#to-do">To-Do</a></li>
       </ul>
 </li>
       </ul>
