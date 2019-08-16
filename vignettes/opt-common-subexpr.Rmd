@@ -51,7 +51,7 @@ b <- cs_1 * 2
 
 ## Example
 
-Consider the following (useless) example:
+Consider the following example:
 
 ```{r}
 code <- paste(
@@ -87,7 +87,7 @@ speed_up(bmark_res)
 
 ## Implementation
 
-The `opt_common_subexpr` will first detect different "environments", i.e., separate between function definitions and parent environment. Then, for each environment it will detect all those subexpressions in common between at least two expressions. If between two occurrences of the same subexpression, a variable involved in the subexpression is reassigned or a function is called (it can change the environment), then for these two occurrences the optimization is not performed. For all those remaining common subexpressions, the first common parent expression will be detected, a new variable called `cs_#` will be created in the parent, and replaced in each call to the subexpression.
+The `opt_common_subexpr` will first detect different "environments", i.e., separate between function definitions and parent environment. Then, for each environment it will detect all those subexpressions in common between at least two expressions. If between two occurrences of the same subexpression, a variable involved in the subexpression is reassigned or a function is called (it can change the environment), then for these two occurrences the optimization is not performed. For all those remaining common subexpressions, the first common parent expression will be detected, a new variable called `cs_#` will be created in the parent expression, and replaced in each call to the subexpression.
 
 ## To-Do
 
@@ -110,7 +110,7 @@ The `opt_common_subexpr` will first detect different "environments", i.e., separ
   b <-cs_1 * 18
   ```
 
-* Use information about functions modify the parent env?
+* Use information about which functions modify their parent env?
   
   If the optimizer knows which functions modify their parent env, then function
   calls won't stop optimization
