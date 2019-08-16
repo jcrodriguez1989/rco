@@ -17,9 +17,7 @@
 #'
 emojizer <- function(texts) {
   res <- list(codes = texts)
-  if (requireNamespace("emo")) {
-    res$codes <- lapply(texts, emojize_text)
-  }
+  res$codes <- lapply(texts, emojize_text)
   res
 }
 
@@ -73,6 +71,8 @@ get_emojizable_ids <- function(fpd) {
 }
 
 get_emoji_mapping <- function(names) {
+  jis <- rco::jis
+
   ji_map <- do.call(rbind, lapply(seq_len(nrow(jis)), function(i) {
     names <- jis[i, "name", drop = TRUE]
     names <- c(names, jis[i, "keywords", drop = TRUE][[1]])
