@@ -13,7 +13,8 @@ Make your R code run faster\! `rco` analyzes your code and applies
 different optimization strategies that return an R code that runs
 faster.
 
-This project is being supported by [Google Summer of
+The `rco` project, from its start to version 0.1.008, was supported by
+[Google Summer of
 Code 2019](https://summerofcode.withgoogle.com/projects/#5337917017292800).
 
 Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.name/en/)
