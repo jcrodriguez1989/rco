@@ -63,10 +63,12 @@ get_emojizable_ids <- function(fpd) {
 
   # get calls of defined functions
   def_fun_calls_prnts <- fpd$parent[
-    fpd$token == "SYMBOL_FUNCTION_CALL" & fpd$text %in% def_funs]
+    fpd$token == "SYMBOL_FUNCTION_CALL" & fpd$text %in% def_funs
+  ]
   fun_calls_emoj_ids <- fpd$id[
     fpd$parent %in% def_fun_calls_prnts &
-      fpd$token %in% c("SYMBOL_FUNCTION_CALL", "SYMBOL_SUB")]
+      fpd$token %in% c("SYMBOL_FUNCTION_CALL", "SYMBOL_SUB")
+  ]
   c(emojizable_ids, fun_calls_emoj_ids)
 }
 
@@ -92,14 +94,35 @@ get_emoji_mapping <- function(names) {
 
   # remove emojis that are not substrings of names
   ji_map <- ji_map[
-    sapply(ji_map[, "name"], function(act_ji) any(grepl(act_ji, names))), ]
+    sapply(ji_map[, "name"], function(act_ji) any(grepl(act_ji, names))),
+  ]
 
   new_names <- names
   for (i in seq_len(nrow(ji_map))) {
     new_names <- sub(ji_map[i, "name"], ji_map[i, "emoji"], new_names)
   }
 
-  new_names[new_names != names] <- paste0("`", new_names[new_names != names], "`")
+  new_names[new_names != names] <-
+    paste0("`", new_names[new_names != names], "`")
   names(new_names) <- names
   new_names
 }
+
+#' full list of emojis
+#'
+#' Obtained from `emo` R package. Could not import `emo` package, as it is a
+#' GitHub-only package.
+#'
+#' @source [Unicode® Emoji Charts v5.0](http://unicode.org/emoji/charts/index.html)
+#'
+#' @format tibble with columns
+#' - id: identifier
+#' - emoji: character representation of the emoji
+#' - name: name
+#' - group: group, e.g. "Smileys & People"
+#' - subgroup: sub group, e.g. "face-positive"
+#' - keywords: vector of keywords
+#' - runes: vector of unicode runes, i.e. hexadecimal representations prefixed with "U+"
+#' - nrunes: number of runes the emoji uses
+#' - apple ... windows: logical indicating if the given vendor supports the emoji
+"jis"
