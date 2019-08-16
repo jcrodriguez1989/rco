@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Background
 
-Dead Expression Elimination is an optimization that intends to remove those expressions that do not modify the environment.
+Dead Expression Elimination intends to remove those expressions that do not modify the environment.
 
 In R, when evaluating an expression which is not assigned to any variable, its result will be seen in the console. However, when the expression is within a function definition, the value will not be printed, the environment will not be modified, and anyway the computational cost will be incurred.
 
@@ -42,12 +42,12 @@ For example, in the code:
 foo <- function() {
   val <- rnorm(1)
   e <- exp(1)
-  e ^ val
+  val
   res <- e ^ val
 }
 ```
 
-The unassigned `e ^ val` expression is a dead expression, and could be removed.
+The unassigned `val` expression is a dead expression, and could be removed.
 
 This optimization strategy is closely related to [dead store elimination](opt-dead-store.html), since when a dead store is deleted, it is possible that a dead expression is generated.
 
