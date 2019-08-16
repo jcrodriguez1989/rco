@@ -137,13 +137,20 @@
 <div id="usage" class="section level2">
 <h2 class="hasAnchor">
 <a href="#usage" class="anchor"></a>Usage</h2>
-<p><code>rco</code> can be used in two ways:</p>
+<p><code>rco</code> can be used in three ways:</p>
 <ul>
 <li>
 <p>Using the RStudio Addins</p>
 <ol style="list-style-type: decimal">
 <li><p><code>Optimize active file</code>: Optimizes the file currently open in RStudio. It will apply the optimizers present in <code>all_optimizers</code>.</p></li>
 <li><p><code>Optimize selection</code>: Optimizes the code currently highlited in the RStudio Source Pane. It will apply the optimizers present in <code>all_optimizers</code>.</p></li>
+</ol>
+</li>
+<li>
+<p>Using the <code>shiny</code> GUIs</p>
+<ol style="list-style-type: decimal">
+<li><p><code><a href="reference/rco_gui.html">rco_gui("code_optimizer")</a></code> opens a <code>shiny</code> interface in a browser. This GUI allows to easily optimize chunks of code.</p></li>
+<li><p><code><a href="reference/rco_gui.html">rco_gui("pkg_optimizer")</a></code> opens a <code>shiny</code> interface in a browser. This GUI allows to easily optimize R packages that are hosted at CRAN or GitHub.</p></li>
 </ol>
 </li>
 <li>
