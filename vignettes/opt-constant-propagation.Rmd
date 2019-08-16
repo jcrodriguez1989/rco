@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Background
 
-Constant propagation is the process of substituting the values of known constants in expressions, this eliminates cases in which values are copied from one location or variable to another in order to simply assign their value to another variable.
+Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.
 
 For example, consider the following code:
 
@@ -54,7 +54,7 @@ Constant propagation enables the code to assign static values, which is faster t
 
 ## Example
 
-A simple example would be to have to convert the unit of many temporary samples from hours to miliseconds `miliseconds <- 1000 * 60 * 60 * hours`.
+A simple example would be a code that converts the unit of many temporary samples, from hours to miliseconds `miliseconds <- 1000 * 60 * 60 * hours`.
 
 ```{r}
 code <- paste(
@@ -104,17 +104,17 @@ Depending on what expression it finds, it applies one of the following criteria:
 
 ### `VAR <- CONST`
 
-If it is an assignment of a constant value: then it returns the same expression, and saves `VAR = CONST` in `values`.
+If it is an assignment of a constant value: then it keeps the same expression, and saves `VAR = CONST` in `values`.
 
-This criteria point also includes, multi-assign ( `VAR <- VAR <- CONST` ).
+This criteria also includes, multi-assign ( `VAR <- VAR <- CONST` ).
 
-### `VAR * 3 + VAR`
+### `VAR * CONST + VAR`
 
-If it is only operators, variables and constants: then it will check if any of the variables is stored in `values` vector, and would replace it in the expression. It will return the modified expression.
+If it is only operators, variables, constants, and precedence operators: then it will check if any of the variables is stored in `values` vector, and would replace them in the expression. It will return the modified expression.
 
 ### `FUN({FUN_PARAMS})`
 
-If it is a function call: then it returns the same expression, but trying to constant propagate in `{FUN_PARAMS}`, consider the case that the function call is `seq_len(x+30)`, it could be replaced by `seq_len(-3+30)`.
+If it is a function call, and `opt_constant_propagation`'s `in_fun_call` parameter is set to `TRUE`: then it will try to constant propagate in `{FUN_PARAMS}`. Consider the case that the function call is `seq_len(x+30)`, it could be replaced by `seq_len(-3+30)`.
 
 Then, **it empties the `values` vector** ( `values <- c()` ). It should be noted that in R, calling a function can modify the current environment, being the simplest example `rm(list = ls())`, or `assign("x", 4)`.
 
@@ -148,9 +148,9 @@ which is not equivalent.
 
 ### `IF (COND) { BODY } ELSE { BODY }`
 
-If it is an `if`: it will get which variables are being assigned in the if/else `BODY` and remove them from `values`, and then propagate in `COND` and `BODY`.
+If it is an `if`: it will propagate `values` in `COND` and `BODY`, then it will get which variables are being assigned in the if/else `BODY` and remove them from `values`.
 
-In-loop assigned variables are removed from `values`, as it is possible that the `BODY` is never executed (FALSE cond).
+In-loop assigned variables are removed from `values`, as it is possible that the `BODY` is never executed (`FALSE` condition), and thus, these variables would not be updated or assigned.
 
 ### `VAR <- EXPR`
 
@@ -158,7 +158,7 @@ If it is an assignment (of a non constant value): it will keep `VAR <-` and try 
 
 ### `FUN ({FUN_PARAMS}) { BODY }`
 
-If it is a function definition: it will propagate on the `BODY` but with an empty `values` vector (the global `values` vector would not be changed). Note that in R, a function definition will have another environment, and thus it should not use the current `values`.
+If it is a function definition: it will propagate on the `BODY` but with a new empty `values` vector (the global `values` vector would not be changed). Note that in R, a function definition will have another environment, and thus it should not use the current `values`.
 
 ### Other cases
 

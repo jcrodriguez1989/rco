@@ -124,9 +124,6 @@ cp_one_fpd <- function(fpd, values, in_fun_call) {
         values <- list()
       }
     } else if (is_if(fpd, act_node$id)) {
-      # if it is an if, then remove the in-if/else assigned vars from values
-      if_ass_vars <- ocp_get_assigned_vars(fpd, act_node$id)
-      values <- values[!names(values) %in% if_ass_vars]
       childs <- fpd[fpd$parent == act_node$id, ]
       res_fpd <- rbind(res_fpd, act_node)
       res_fpd <- rbind(res_fpd, childs[childs$terminal, ])
@@ -140,6 +137,9 @@ cp_one_fpd <- function(fpd, values, in_fun_call) {
         res_fpd <- rbind(res_fpd, res$fpd)
         # cant keep res$values, because maybe the if condition is FALSE
       }
+      # if it is an if, then remove the in-if/else assigned vars from values
+      if_ass_vars <- ocp_get_assigned_vars(fpd, act_node$id)
+      values <- values[!names(values) %in% if_ass_vars]
       if (ocp_has_function_call(fpd, act_node$id)) {
         # but if the if/else had a function call, we should delete values
         values <- list()

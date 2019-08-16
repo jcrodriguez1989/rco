@@ -129,7 +129,7 @@
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
-<p>Constant propagation is the process of substituting the values of known constants in expressions, this eliminates cases in which values are copied from one location or variable to another in order to simply assign their value to another variable.</p>
+<p>Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.</p>
 <p>For example, consider the following code:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">x &lt;-<span class="st"> </span><span class="dv">14</span></a>
 <a class="sourceLine" id="cb1-2" data-line-number="2">y &lt;-<span class="st"> </span><span class="dv">7</span> <span class="op">-</span><span class="st"> </span>x <span class="op">/</span><span class="st"> </span><span class="dv">2</span></a>
@@ -143,7 +143,7 @@
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
-<p>A simple example would be to have to convert the unit of many temporary samples from hours to miliseconds <code>miliseconds &lt;- 1000 * 60 * 60 * hours</code>.</p>
+<p>A simple example would be a code that converts the unit of many temporary samples, from hours to miliseconds <code>miliseconds &lt;- 1000 * 60 * 60 * hours</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(</a>
 <a class="sourceLine" id="cb3-2" data-line-number="2">  <span class="st">"n &lt;- 1000"</span>,</a>
 <a class="sourceLine" id="cb3-3" data-line-number="3">  <span class="st">"hours_vector &lt;- runif(n, 0, 24)"</span>,</a>
@@ -190,8 +190,8 @@
 <a class="sourceLine" id="cb7-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-constant-propagation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 28.61197 28.36696 25.57904 28.09193 26.68192 73.69085</code></pre>
+<pre><code>##            Min. 1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 28.48748 27.7365 25.40247 28.76843 25.88823 81.86788</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -206,20 +206,20 @@
 <h3 class="hasAnchor">
 <a href="#var---const" class="anchor"></a><code>VAR &lt;- CONST</code>
 </h3>
-<p>If it is an assignment of a constant value: then it returns the same expression, and saves <code>VAR = CONST</code> in <code>values</code>.</p>
-<p>This criteria point also includes, multi-assign ( <code>VAR &lt;- VAR &lt;- CONST</code> ).</p>
+<p>If it is an assignment of a constant value: then it keeps the same expression, and saves <code>VAR = CONST</code> in <code>values</code>.</p>
+<p>This criteria also includes, multi-assign ( <code>VAR &lt;- VAR &lt;- CONST</code> ).</p>
 </div>
-<div id="var-3-var" class="section level3">
+<div id="var-const-var" class="section level3">
 <h3 class="hasAnchor">
-<a href="#var-3-var" class="anchor"></a><code>VAR * 3 + VAR</code>
+<a href="#var-const-var" class="anchor"></a><code>VAR * CONST + VAR</code>
 </h3>
-<p>If it is only operators, variables and constants: then it will check if any of the variables is stored in <code>values</code> vector, and would replace it in the expression. It will return the modified expression.</p>
+<p>If it is only operators, variables, constants, and precedence operators: then it will check if any of the variables is stored in <code>values</code> vector, and would replace them in the expression. It will return the modified expression.</p>
 </div>
 <div id="funfun_params" class="section level3">
 <h3 class="hasAnchor">
 <a href="#funfun_params" class="anchor"></a><code>FUN({FUN_PARAMS})</code>
 </h3>
-<p>If it is a function call: then it returns the same expression, but trying to constant propagate in <code>{FUN_PARAMS}</code>, consider the case that the function call is <code><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq_len(x+30)</a></code>, it could be replaced by <code><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq_len(-3+30)</a></code>.</p>
+<p>If it is a function call, and <code>opt_constant_propagation</code>’s <code>in_fun_call</code> parameter is set to <code>TRUE</code>: then it will try to constant propagate in <code>{FUN_PARAMS}</code>. Consider the case that the function call is <code><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq_len(x+30)</a></code>, it could be replaced by <code><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq_len(-3+30)</a></code>.</p>
 <p>Then, <strong>it empties the <code>values</code> vector</strong> ( <code>values &lt;- c()</code> ). It should be noted that in R, calling a function can modify the current environment, being the simplest example <code><a href="https://www.rdocumentation.org/packages/base/topics/rm">rm(list = ls())</a></code>, or <code><a href="https://www.rdocumentation.org/packages/base/topics/assign">assign("x", 4)</a></code>.</p>
 </div>
 <div id="loop-cond-body" class="section level3">
@@ -247,8 +247,8 @@
 <h3 class="hasAnchor">
 <a href="#if-cond-body-else-body" class="anchor"></a><code>IF (COND) { BODY } ELSE { BODY }</code>
 </h3>
-<p>If it is an <code>if</code>: it will get which variables are being assigned in the if/else <code>BODY</code> and remove them from <code>values</code>, and then propagate in <code>COND</code> and <code>BODY</code>.</p>
-<p>In-loop assigned variables are removed from <code>values</code>, as it is possible that the <code>BODY</code> is never executed (FALSE cond).</p>
+<p>If it is an <code>if</code>: it will propagate <code>values</code> in <code>COND</code> and <code>BODY</code>, then it will get which variables are being assigned in the if/else <code>BODY</code> and remove them from <code>values</code>.</p>
+<p>In-loop assigned variables are removed from <code>values</code>, as it is possible that the <code>BODY</code> is never executed (<code>FALSE</code> condition), and thus, these variables would not be updated or assigned.</p>
 </div>
 <div id="var---expr" class="section level3">
 <h3 class="hasAnchor">
@@ -260,7 +260,7 @@
 <h3 class="hasAnchor">
 <a href="#fun-fun_params-body" class="anchor"></a><code>FUN ({FUN_PARAMS}) { BODY }</code>
 </h3>
-<p>If it is a function definition: it will propagate on the <code>BODY</code> but with an empty <code>values</code> vector (the global <code>values</code> vector would not be changed). Note that in R, a function definition will have another environment, and thus it should not use the current <code>values</code>.</p>
+<p>If it is a function definition: it will propagate on the <code>BODY</code> but with a new empty <code>values</code> vector (the global <code>values</code> vector would not be changed). Note that in R, a function definition will have another environment, and thus it should not use the current <code>values</code>.</p>
 </div>
 <div id="other-cases" class="section level3">
 <h3 class="hasAnchor">

@@ -146,7 +146,7 @@
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
-<p>Consider the same example to be automatically optimized.</p>
+<p>Consider the previous example to be automatically optimized.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(</a>
 <a class="sourceLine" id="cb2-2" data-line-number="2">  <span class="st">"i &lt;- 0"</span>,</a>
 <a class="sourceLine" id="cb2-3" data-line-number="3">  <span class="st">"n &lt;- 1000"</span>,</a>
@@ -196,7 +196,7 @@
 <p><img src="opt-loop-invariant_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
 <pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 63.70488 60.67823 49.58155 57.43704 47.75924 116.3457</code></pre>
+## Expr_2 64.10131 62.86889 60.72741 59.81977 50.05959 170.5961</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -207,7 +207,7 @@
 <li><p>Discards loops that have function calls inside, as function calls can edit the environment.</p></li>
 <li><p>Gets which variables are variant inside the loop.</p></li>
 <li><p>Detects which expressions do not use any variant variable.</p></li>
-<li><p>Gets these invariant variables, and moves them outside the loop, but inside an <code>if</code> statement (with the same conditional).</p></li>
+<li><p>Gets these invariant variables, and moves them outside the loop, but inside an <code>if</code> statement (with the same conditional as the loop).</p></li>
 </ul>
 </div>
 <div id="to-do" class="section level2">
@@ -223,11 +223,13 @@
 <a class="sourceLine" id="cb9-4" data-line-number="4">  }</a>
 <a class="sourceLine" id="cb9-5" data-line-number="5">}</a></code></pre></div>
 <p>Will not be optimized to its equivalent code:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="cf">if</span> (n <span class="op">&gt;</span><span class="st"> </span><span class="dv">3</span>) {</a>
-<a class="sourceLine" id="cb10-2" data-line-number="2">  something_without_i</a>
-<a class="sourceLine" id="cb10-3" data-line-number="3">}</a>
-<a class="sourceLine" id="cb10-4" data-line-number="4"><span class="cf">while</span> (i <span class="op">&lt;</span><span class="st"> </span>n) {</a>
-<a class="sourceLine" id="cb10-5" data-line-number="5">}</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="cf">if</span> (i <span class="op">&lt;</span><span class="st"> </span>n) {</a>
+<a class="sourceLine" id="cb10-2" data-line-number="2">  <span class="cf">if</span> (n <span class="op">&gt;</span><span class="st"> </span><span class="dv">3</span>) {</a>
+<a class="sourceLine" id="cb10-3" data-line-number="3">    something_without_i</a>
+<a class="sourceLine" id="cb10-4" data-line-number="4">  }</a>
+<a class="sourceLine" id="cb10-5" data-line-number="5">}</a>
+<a class="sourceLine" id="cb10-6" data-line-number="6"><span class="cf">while</span> (i <span class="op">&lt;</span><span class="st"> </span>n) {</a>
+<a class="sourceLine" id="cb10-7" data-line-number="7">}</a></code></pre></div>
 </li>
 <li>
 <p>Invariant subexpressions motion?</p>

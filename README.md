@@ -13,8 +13,9 @@ Make your R code run faster\! `rco` analyzes your code and applies
 different optimization strategies that return an R code that runs
 faster.
 
-This project is being supported by [Google Summer of
-Code 2019](https://summerofcode.withgoogle.com/projects/#5337917017292800).
+The `rco` project, from its start to version 0.1.008, was made possible
+by a [Google Summer of Code 2019
+project](https://summerofcode.withgoogle.com/projects/#5337917017292800).
 
 Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.name/en/)
 and [Dr. Nicolás Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
@@ -34,7 +35,7 @@ remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
 
 ## Usage
 
-`rco` can be used in two ways:
+`rco` can be used in three ways:
 
   - Using the RStudio Addins
     
@@ -45,6 +46,15 @@ remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
     2.  `Optimize selection`: Optimizes the code currently highlited in
         the RStudio Source Pane. It will apply the optimizers present in
         `all_optimizers`.
+
+  - Using the `shiny` GUIs
+    
+    1.  `rco_gui("code_optimizer")` opens a `shiny` interface in a
+        browser. This GUI allows to easily optimize chunks of code.
+    
+    2.  `rco_gui("pkg_optimizer")` opens a `shiny` interface in a
+        browser. This GUI allows to easily optimize R packages that are
+        hosted at CRAN or GitHub.
 
   - Using the R functions
     

@@ -43,8 +43,8 @@ DEST_FOLDER=/tmp/rco_dock_res
 docker run -v $DEST_FOLDER:/rco_results jcrodriguez1989/rco
 ```
 
-In summary, if we want to optimize the `rflights` package and save its
-results, we can
+**In summary**, if we want to optimize the `rflights` package and save
+its results, we can
 do:
 
 ``` bash

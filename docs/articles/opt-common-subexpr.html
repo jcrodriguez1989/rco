@@ -141,7 +141,7 @@
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
-<p>Consider the following (useless) example:</p>
+<p>Consider the following example:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(</a>
 <a class="sourceLine" id="cb3-2" data-line-number="2">  <span class="st">"a &lt;- b &lt;- c &lt;- 1"</span>,</a>
 <a class="sourceLine" id="cb3-3" data-line-number="3">  <span class="st">"for (i in 1:1000) {"</span>,</a>
@@ -177,13 +177,13 @@
 <a class="sourceLine" id="cb7-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-common-subexpr_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min.  1st Qu.  Median     Mean  3rd Qu.     Max.
-## Expr_2 70.19474 69.86132 57.7736 66.16352 57.87679 137.4127</code></pre>
+<pre><code>##           Min.  1st Qu.   Median     Mean  3rd Qu.    Max.
+## Expr_2 75.4779 70.60656 57.17564 63.81079 53.26101 116.653</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#implementation" class="anchor"></a>Implementation</h2>
-<p>The <code>opt_common_subexpr</code> will first detect different “environments”, i.e., separate between function definitions and parent environment. Then, for each environment it will detect all those subexpressions in common between at least two expressions. If between two occurrences of the same subexpression, a variable involved in the subexpression is reassigned or a function is called (it can change the environment), then for these two occurrences the optimization is not performed. For all those remaining common subexpressions, the first common parent expression will be detected, a new variable called <code>cs_#</code> will be created in the parent, and replaced in each call to the subexpression.</p>
+<p>The <code>opt_common_subexpr</code> will first detect different “environments”, i.e., separate between function definitions and parent environment. Then, for each environment it will detect all those subexpressions in common between at least two expressions. If between two occurrences of the same subexpression, a variable involved in the subexpression is reassigned or a function is called (it can change the environment), then for these two occurrences the optimization is not performed. For all those remaining common subexpressions, the first common parent expression will be detected, a new variable called <code>cs_#</code> will be created in the parent expression, and replaced in each call to the subexpression.</p>
 </div>
 <div id="to-do" class="section level2">
 <h2 class="hasAnchor">
@@ -201,7 +201,7 @@
 <a class="sourceLine" id="cb11-3" data-line-number="3">b &lt;-cs_<span class="dv">1</span> <span class="op">*</span><span class="st"> </span><span class="dv">18</span></a></code></pre></div>
 </li>
 <li>
-<p>Use information about functions modify the parent env?</p>
+<p>Use information about which functions modify their parent env?</p>
 <p>If the optimizer knows which functions modify their parent env, then function calls won’t stop optimization</p>
 </li>
 </ul>
