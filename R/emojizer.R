@@ -73,8 +73,6 @@ get_emojizable_ids <- function(fpd) {
 }
 
 get_emoji_mapping <- function(names) {
-  jis <- emo::jis
-
   ji_map <- do.call(rbind, lapply(seq_len(nrow(jis)), function(i) {
     names <- jis[i, "name", drop = TRUE]
     names <- c(names, jis[i, "keywords", drop = TRUE][[1]])
