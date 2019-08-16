@@ -35,7 +35,7 @@ remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
 
 ## Usage
 
-`rco` can be used in two ways:
+`rco` can be used in three ways:
 
   - Using the RStudio Addins
     
@@ -46,6 +46,15 @@ remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
     2.  `Optimize selection`: Optimizes the code currently highlited in
         the RStudio Source Pane. It will apply the optimizers present in
         `all_optimizers`.
+
+  - Using the `shiny` GUIs
+    
+    1.  `rco_gui("code_optimizer")` opens a `shiny` interface in a
+        browser. This GUI allows to easily optimize chunks of code.
+    
+    2.  `rco_gui("pkg_optimizer")` opens a `shiny` interface in a
+        browser. This GUI allows to easily optimize R packages that are
+        hosted at CRAN or GitHub.
 
   - Using the R functions
     
