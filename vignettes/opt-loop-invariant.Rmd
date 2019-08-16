@@ -53,7 +53,7 @@ Here, `x` is assigned a value `y + z` that is constant in each loop execution. I
 
 ## Example
 
-Consider the same example to be automatically optimized.
+Consider the previous example to be automatically optimized.
 
 ```{r}
 code <- paste(
@@ -103,7 +103,7 @@ The `opt_loop_invariant` optimizer does:
 
 * Detects which expressions do not use any variant variable.
 
-* Gets these invariant variables, and moves them outside the loop, but inside an `if` statement (with the same conditional).
+* Gets these invariant variables, and moves them outside the loop, but inside an `if` statement (with the same conditional as the loop).
 
 ## To-Do
 
@@ -122,8 +122,10 @@ The `opt_loop_invariant` optimizer does:
   Will not be optimized to its equivalent code:
   
   ```{r eval=FALSE}
-  if (n > 3) {
-    something_without_i
+  if (i < n) {
+    if (n > 3) {
+      something_without_i
+    }
   }
   while (i < n) {
   }
