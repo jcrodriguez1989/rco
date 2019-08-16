@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Background
 
-Dead Store Elimination is an optimization that intends to remove a local variable that is assigned a value but is not read by any subsequent instruction.
+Dead Store Elimination is an optimization that intends to remove an assignation of a variable that is not read by any subsequent instruction.
 
 For instance, consider the following code:
 
@@ -47,7 +47,7 @@ Variable `i` is never used, so this assignation could be removed, resulting in:
 
 ```{r eval=FALSE}
 foo <- function(x) {
-  8818 # could be removed by Dead Expression Elimination
+  8818 # this line can be removed by Dead Expression Elimination
   return(x ^ 3)
 }
 ```
@@ -69,7 +69,7 @@ foo <- function(x) {
 }
 ```
 
-After Constant Propagation would return:
+After [Constant Propagation](opt-constant-propagation.html) we would get:
 
 ```{r eval=FALSE}
 foo <- function(x) {
@@ -88,7 +88,7 @@ And thus, `n` would become a dead store.
 
 ## Example
 
-Consider the following (useless) example:
+Consider the following example:
 
 ```{r}
 code <- paste(
@@ -131,7 +131,7 @@ speed_up(bmark_res)
 
 A dead store will be an assignment of a variable that is not read by any subsequent instruction. To be considered dead store, the assignment must be given within the definition of a function, since otherwise, the assignment would affect the global environment and therefore could be aimed to be used by the user.
 
-The `opt_dead_store` detects which code chunks are function definitions. Then for each function, the optimizer gets it expression, detects dead stores, i.e., assigned but not read variables, and eliminates them.
+The `opt_dead_store` detects which code chunks are function definitions. Then for each function, the optimizer gets it body, detects dead stores, i.e., assigned but not read variables, and eliminates them.
 
 ## To-Do
 
