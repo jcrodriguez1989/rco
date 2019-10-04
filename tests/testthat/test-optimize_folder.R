@@ -1,6 +1,6 @@
 context("optimize_folder")
 
-dash <- ifelse(Sys.info()[["sysname"]] == "windows", "\\", "/")
+dash <- ifelse(Sys.info()[["sysname"]] == "Windows", "\\", "/")
 
 test_that("optimize non recursively in a folder", {
   tmp_dir <- tempdir()
