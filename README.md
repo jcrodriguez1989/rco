@@ -78,6 +78,14 @@ remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
     )
     optimize_text(code)
     ```
+    
+    3.  Optimize all `.R` code files into a folder
+    
+    <!-- end list -->
+    
+    ``` r
+    optimize_folder("~/myfolder_to_optimize", recursive = FALSE)
+    ```
 
 ## Example
 
