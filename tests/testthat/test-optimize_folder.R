@@ -73,3 +73,16 @@ test_that("optimize recursively in a folder", {
     read_code_file(file_opt)
   )
 })
+
+test_that("error on non-exiting folder", {
+  expect_error(optimize_folder("non_existing_folder"))
+})
+
+test_that("optimize empty folder", {
+  tmp_dir <- tempdir()
+  base_dir <- paste0(tmp_dir, dash, "folder", dash)
+  unlink(base_dir, force = TRUE, recursive = TRUE)
+  dir.create(base_dir, showWarnings = FALSE)
+
+  expect_null(optimize_folder(base_dir))
+})
