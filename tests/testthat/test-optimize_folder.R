@@ -1,11 +1,9 @@
 context("optimize_folder")
 
-dash <- ifelse(Sys.info()[["sysname"]] == "Windows", "\\", "/")
-
 test_that("optimize non recursively in a folder", {
   tmp_dir <- tempdir()
-  base_dir <- paste0(tmp_dir, dash, "folder", dash)
-  sub_dir <- paste0(base_dir, "subdir", dash)
+  base_dir <- paste0(tmp_dir, "/folder1/")
+  sub_dir <- paste0(base_dir, "subdir/")
   unlink(base_dir, force = TRUE, recursive = TRUE)
   dir.create(base_dir, showWarnings = FALSE)
   dir.create(sub_dir, showWarnings = FALSE)
@@ -38,8 +36,8 @@ test_that("optimize non recursively in a folder", {
 
 test_that("optimize recursively in a folder", {
   tmp_dir <- tempdir()
-  base_dir <- paste0(tmp_dir, dash, "folder", dash)
-  sub_dir <- paste0(base_dir, "subdir", dash)
+  base_dir <- paste0(tmp_dir, "/folder2/")
+  sub_dir <- paste0(base_dir, "subdir/")
   unlink(base_dir, force = TRUE, recursive = TRUE)
   dir.create(base_dir, showWarnings = FALSE)
   dir.create(sub_dir, showWarnings = FALSE)
@@ -80,7 +78,7 @@ test_that("error on non-exiting folder", {
 
 test_that("optimize empty folder", {
   tmp_dir <- tempdir()
-  base_dir <- paste0(tmp_dir, dash, "folder", dash)
+  base_dir <- paste0(tmp_dir, "/folder3/")
   unlink(base_dir, force = TRUE, recursive = TRUE)
   dir.create(base_dir, showWarnings = FALSE)
 
