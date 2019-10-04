@@ -1,9 +1,11 @@
 context("optimize_folder")
 
+dash <- ifelse(Sys.info()[["sysname"]] == "windows", "\\", "/")
+
 test_that("optimize non recursively in a folder", {
   tmp_dir <- tempdir()
-  base_dir <- paste0(tmp_dir, "/folder/")
-  sub_dir <- paste0(base_dir, "subdir/")
+  base_dir <- paste0(tmp_dir, dash, "folder", dash)
+  sub_dir <- paste0(base_dir, "subdir", dash)
   unlink(base_dir, force = TRUE, recursive = TRUE)
   dir.create(base_dir, showWarnings = FALSE)
   dir.create(sub_dir, showWarnings = FALSE)
@@ -36,8 +38,8 @@ test_that("optimize non recursively in a folder", {
 
 test_that("optimize recursively in a folder", {
   tmp_dir <- tempdir()
-  base_dir <- paste0(tmp_dir, "/folder/")
-  sub_dir <- paste0(base_dir, "subdir/")
+  base_dir <- paste0(tmp_dir, dash, "folder", dash)
+  sub_dir <- paste0(base_dir, "subdir", dash)
   unlink(base_dir, force = TRUE, recursive = TRUE)
   dir.create(base_dir, showWarnings = FALSE)
   dir.create(sub_dir, showWarnings = FALSE)
