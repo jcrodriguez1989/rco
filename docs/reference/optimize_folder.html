@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Optimize `.R` files. — optimize_files • rco</title>
+<title>Optimize a folder with `.R` files. — optimize_folder • rco</title>
 
 
 <!-- jquery -->
@@ -33,8 +33,8 @@
 
 
 
-<meta property="og:title" content="Optimize `.R` files. — optimize_files" />
-<meta property="og:description" content="Performs the desired optimization strategies in the files specified.
+<meta property="og:title" content="Optimize a folder with `.R` files. — optimize_folder" />
+<meta property="og:description" content="Performs the desired optimization strategies in all the `.R` in a directory.
 Carefully examine the results after running this function!
 If several files interact between them (functions from one file use
 functions from the other), then optimizing all of them together gives more
@@ -153,28 +153,28 @@ information to rco." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Optimize `.R` files.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/jcrodriguez1989/rco/blob/master/R/optimize-files.R'><code>R/optimize-files.R</code></a></small>
-    <div class="hidden name"><code>optimize_files.Rd</code></div>
+    <h1>Optimize a folder with `.R` files.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/jcrodriguez1989/rco/blob/master/R/optimize-folder.R'><code>R/optimize-folder.R</code></a></small>
+    <div class="hidden name"><code>optimize_folder.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Performs the desired optimization strategies in the files specified.
+    <p>Performs the desired optimization strategies in all the `.R` in a directory.
 Carefully examine the results after running this function!
 If several files interact between them (functions from one file use
 functions from the other), then optimizing all of them together gives more
 information to rco.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>optimize_files</span>(<span class='no'>files</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>, <span class='kw'>overwrite</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>iterations</span> <span class='kw'>=</span> <span class='fl'>Inf</span>)</pre>
+    <pre class="usage"><span class='fu'>optimize_folder</span>(<span class='no'>folder</span>, <span class='kw'>optimizers</span> <span class='kw'>=</span> <span class='no'>all_optimizers</span>, <span class='kw'>overwrite</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>iterations</span> <span class='kw'>=</span> <span class='fl'>Inf</span>, <span class='kw'>pattern</span> <span class='kw'>=</span> <span class='st'>"\\.R$"</span>, <span class='kw'>recursive</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>files</th>
-      <td><p>A character vector with paths to files to optimize.</p></td>
+      <th>folder</th>
+      <td><p>Path to a directory with files to optimize.</p></td>
     </tr>
     <tr>
       <th>optimizers</th>
@@ -189,6 +189,16 @@ saved into new files with "optimized_" prefix.</p></td>
       <th>iterations</th>
       <td><p>Numeric indicating the number of times optimizers should
 pass. If there was no change after current pass, it will stop.</p></td>
+    </tr>
+    <tr>
+      <th>pattern</th>
+      <td><p>An optional regular expression. Only file names which match
+the regular expression will be optimized.</p></td>
+    </tr>
+    <tr>
+      <th>recursive</th>
+      <td><p>A logical value indicating whether or not files
+in subdirectories of `folder` should be optimized as well.</p></td>
     </tr>
     </table>
 
