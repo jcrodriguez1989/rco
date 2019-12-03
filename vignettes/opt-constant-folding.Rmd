@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Constant Folding
 
+## Idea
+
+Constant folding gets rid of unneeded calculations later on in the program, that always result in the same value. When the program's first compiled, it converts phrases like `320 * 200` to `64000`; this means that less time will be spent on this calculation later on.
+
 ## Background
 
 Constant folding is an optimization technique that eliminates expressions that calculate a value that can already be determined before code execution. These are typically calculations that only reference constant values or expressions that reference variables whose values are constant.
