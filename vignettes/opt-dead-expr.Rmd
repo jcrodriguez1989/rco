@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-Simply put, variables 
+Simply put, dead expressions are useless variable declarations that were not used at all in the method. As these declarations take up memory, they must be deleted to speed up the code.
 
 ## Background
 
