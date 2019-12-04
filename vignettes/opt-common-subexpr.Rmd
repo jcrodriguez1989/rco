@@ -49,6 +49,23 @@ a <-  1 / cs_1
 b <- cs_1 * 2
 ```
 
+Consider another example wherein you have to concatenate two strings:
+
+For example, you have boolean statements as seen below.
+
+```{r eval=FALSE}
+c <- ((1 + 1 == 2) && (2 + 2 == 4) && (3 + 3 == 6)) || (2)
+d <- !((1 + 1 == 2) && (2 + 2 == 4) && (3 + 3 == 6))
+```
+
+This could could be simplified to:
+
+```{r eval=FALSE}
+cs2 <- (1 + 1 == 2) && (2 + 2 == 4) && (3 + 3 == 6)
+c <-  cs_2 || 2
+d <- !cs_2 
+```
+
 ## Example
 
 Consider the following example:
@@ -84,6 +101,9 @@ bmark_res <- microbenchmark({
 autoplot(bmark_res)
 speed_up(bmark_res)
 ```
+
+
+
 
 ## Implementation
 
