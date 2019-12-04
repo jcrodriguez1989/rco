@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-Pieces of code that could be run outside of a loop are referred to as loop-invariant. If these pieces of code were not included in the loop, this would greatly speed up the program.
+Pieces of code that could be run outside of a loop are referred to as loop-invariants. These may come in the form of variables that are not modified after going through the loop and as such are called "invariants" or non-changing. If these pieces of code were not included in the loop, this would greatly speed up the program.
 
 ## Background
 
