@@ -49,6 +49,21 @@ a <-  1 / cs_1
 b <- cs_1 * 2
 ```
 
+Consider another example where we have a long boolean expression:
+
+```{r eval=FALSE}
+c <- ((1 + 1 == 2) && (2 + 2 == 4) || (3 + 3 == 6)) || 2
+d <-  !((1 + 1 == 2) && (2 + 2 == 4) || (3 + 3 == 6))
+```
+
+This would be simplified to
+
+```{r eval=FALSE}
+cs_2 <- (1 + 1 == 2) && (2 + 2 == 4) || (3 + 3 == 6)
+c <- cs_2 || 2
+d <-  !(cs_2)
+```
+
 ## Example
 
 Consider the following example:
