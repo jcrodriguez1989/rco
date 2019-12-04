@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-Constant folding gets rid of unneeded calculations later on in the program, that always result in the same value. When the program's first compiled, it converts phrases like `320 * 200` to `64000`; this means that less time will be spent on this calculation later on.
+Constant folding gets rid of unneeded calculations later on in the program. These calculations only use inputs that don't change, meaning their result will always be the same. To reduce the time needed to run these expressions later on, phrases like `320 * 200` are converted to `64000`; this means that the value doesn't have to be computed.
 
 ## Background
 
