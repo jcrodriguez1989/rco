@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Constant Propagation
 
+## Idea
+
+If a variable is a known numerical value and the variable is used in later expressions, constant propagation decreases run-time by substituting the numerical value of the variable in the expression.
+
 ## Background
 
 Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.
