@@ -17,7 +17,27 @@
 #' )
 #' cat(opt_loop_invariant(list(code))$codes[[1]])
 #' @export
+#Example of invariant code
+#This code is unoptimised as there are invariant statements (the calculation of x)
+#that do not change during the evaluation of the loop. 
+#assuming y and z are already declared
+#for (i in 2010:2015){
+# x = y + z
+#  i = 6 * i + x * x
+#  print(i)
+#}
+
+#These can be moved outside the loop without effecting its function,
+#whilst improving its performance as the number of statements that must be evaluated in total is reduced,
+#as the calculation of x is performed only once.
+#After removing the invariant code, the loop resembles this.
+#x = (y + z) ** 2
+#for (i in 2010:2015){
+#  i = 6 * i + x
+#  print(i)
+#} 
 #'
+
 opt_loop_invariant <- function(texts) {
   # todo: invariant subexpressions motion?
   # while (i < n) { i <- (x * y) + 1 } is equivalent to
