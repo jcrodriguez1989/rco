@@ -16,6 +16,55 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
+#counter1 <- 0;
+#fibonacci <- function(x){
+#  print(paste("function call to fibonacci: ", toString(x)));
+#  counter1 <<- counter1 + 1;
+#  if(x<=2)
+#  {
+#    return (1);
+#  }
+#  return (fibonacci(x-1) + fibonacci(x-2));
+#}
+#print(paste("Answer to fibonacci:",toString(10),"=",toString(fibonacci(10))));
+#print(paste("Number of function calls:",counter1));
+#counter2 <- 0;
+#memoizedVector <- vector(mode = "integer", length = 10);
+
+#memoizedVector[1] <- 1;
+#memoizedVector[2] <- 1;
+
+#optimized.fibonacci <- function(x){
+#  print(paste("function call to optimized.fibonacci: ", toString(x)));
+#  counter2 <<- counter2 + 1;
+#  if(x<=2)
+#    return (memoizedVector[x]);
+#  if(memoizedVector[x-1]==0)
+#   memoizedVector[x-1] <<- optimized.fibonacci(x-1);
+#  if(memoizedVector[x-2]==0)
+#    memoisedVector[x-2] <<- optimized.fibonacci(x-2);
+#  return (memoizedVector[x-1] + memoizedVector[x-2]);
+#}
+#print(paste("Answer to optimized.fibonacci:",toString(10),"=",toString(optimized.fibonacci(10))));
+#print(paste("Number of function calls:",counter2));
+## 109 function calls reduced to 8 function calls using memoization and top-down dynamic programming to perform common subexpression elimination
+## here common subexpressions were functions being called repeatedly although they gave same value
+##a vector was used to store the value returned by a function call
+
+##Example 2, common subexpression elimination in calculating area of a triangle using sides
+
+#a <- 3; #side 1 of triangle
+#b <- 4; #side 2
+#c <- 5; #side 3
+#area <- sqrt( ((a+b+c)/2) * ((b+c-a)/2) * ((a+c-b)/2) * ((a+b-c)/2));
+#print(paste("area is", toString(area)));
+
+#s <- (a + b + c)/2;
+#opt.area<- sqrt(s * (s-a) * (s-b) * (s-c));
+#print(paste("opt.area is",toString(opt.area)));
+#
+#
+#
 #' @export
 #'
 opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
