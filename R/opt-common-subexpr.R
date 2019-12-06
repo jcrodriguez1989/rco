@@ -17,40 +17,15 @@
 #' )
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
 #'
-#' # Example
-#' # Unoptimized code
-#' for(i in 1:10) {
-#'   a = i + (c * 5)
-#'   for(j in 1:10) {
-#'     b = d * 100 + i * 10 + j
-#'   }
-#' }
-#'
-#' # Optimized code
-#' temp1 = c * 5
-#' temp2 = d * 100 
-#' for(i in 1:10) {
-#'   a = i + temp1
-#'   for(j in 1:10) {
-#'     b = temp2 + i * 10 + j
-#'   }
-#' }
-#'
-#' # Additional Example
-#' # Unoptimized code
-#' if(c > d){
-#'   a = (c * d - c) + a * 2
-#' } else {
-#'   b = (c * d - c) + b * 2
-#' }
-#'
-#' # Optimized code
-#' temp1 = c * d - c
-#' if(c > d){
-#'   a = temp1 + a * 2
-#' } else {
-#'   b = temp1 + b * 2
-#' }
+#' code <- paste(
+#'  "if(c > d){",
+#'    "a = (c * d - c) + a * 2",
+#'  "} else {",
+#'    "b = (c * d - c) + b * 2",
+#'  "}",
+#'  sep = "\n"
+#' )
+#' cat(opt_common_subexpr(list(code))$codes[[1]])
 #'
 #' @export
 #'
