@@ -7,7 +7,13 @@
 #'
 #' @examples
 #' code <- paste(
-#'   "while (TRUE) {",
+#'   "if (TRUE) {",
+#'   "  live_code()",
+#'   "} else {",
+#'   "  dead_code()",
+#'   "}",
+#'   "for (i in 1:100) {",
+#'   "  live_code()",
 #'   "  break",
 #'   "  dead_code()",
 #'   "}",
