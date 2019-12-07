@@ -16,6 +16,29 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
+#'
+#'
+#'#Area of a triangle
+#'code1 <- paste(
+#'  "area <- (a/2 + b/2 +c/2) * (a/2 + b/2 + c/2 - a) * (a/2 + b/2 + c/2 - b) * (a/2 + b/2 + c/2 - c);",
+#'  "area <- sqrt(area)",
+#'  sep = '\n'
+#')
+
+#'#trigonometric ratios
+#'code2 <- paste(
+#'  "sinx <- p/(p*p + b*b);",
+#'  "cosx <- b/(p*p + b*b);",
+#'  "tanx <- p/b;",
+#'  "cotx <- b/p;",
+#'  "secx <- (p*p + b*b)/b;",
+#'  "cosecx <- (p*p + b*b)/p;",
+#'  sep = '\n'
+#')
+#' cat(opt_common_subexpr(list(code1))$codes[[1]] );
+#' cat(opt_common_subexpr(list(code2)$codes[[1]] );
+#'
+#'
 #' @export
 #'
 opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
