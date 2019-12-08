@@ -287,19 +287,3 @@ unindent_fpd <- function(fpd, parent_spaces) {
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
   fpd
 }
-
-# Example
-code <- paste(
- "if (TRUE) {",
- "  live_code()",
- "} else {",
- "  dead_code()",
- "}",
- "for (i in 1:100) {",
- "  live_code()",
- "  break",
- "  dead_code()",
- "}",
- sep = "\n"
-)
-cat(opt_dead_code(list(code))$codes[[1]])
