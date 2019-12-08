@@ -288,6 +288,7 @@ unindent_fpd <- function(fpd, parent_spaces) {
   fpd
 }
 
+# Example
 code <- paste(
  "if (TRUE) {",
  "  live_code()",
