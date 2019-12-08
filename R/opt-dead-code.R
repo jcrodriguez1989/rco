@@ -287,3 +287,32 @@ unindent_fpd <- function(fpd, parent_spaces) {
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
   fpd
 }
+
+f <- function(n) {
+  m <- 24
+  a <- 25 # Dead store, as it is neither used, nor returned.
+  c <- 0
+  
+  for (p in seq_len(n)) {
+    c <- c + m * 4 
+    can <- c*5  # Dead store, as it is neither used, nor returned.
+    if (FALSE) { # Dead code (maybe, evaluate it in another f_opt).
+      a <- a + 24  # Dead store, as it never enters.
+    }
+  }
+  return(c)
+}
+
+f_opt <- function(n) {
+  m <- 24
+  c <- 0
+  ao <- (45 +67) * 5  # Dead code, it's result is not at all used in program.
+  
+  for (p in seq_len(n)) {
+    c <- c + m * 4
+  }
+  return(c)
+}
+
+f_c <- cmpfun(f)
+f_opt_c <- cmpfun(f_opt)
