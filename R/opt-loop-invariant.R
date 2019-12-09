@@ -7,24 +7,16 @@
 #'
 #' @examples
 #' code <- paste(
-#'   "i <- 0",
-#'   "while (i < n) {",
-#'   "  x <- y + z",
-#'   "  a[i] <- 6 * i + x * x",
-#'   "  i <- i + 1",
+#'   "old_units <- c(2,5,3,9,8,11,6)",
+#'   "for (val in old_units) {",
+#'   "  mult = z * y * w",
+#'   "  new_units = val * mult",
+#'   "  print(new_units)",
 #'   "}",
 #'   sep = "\n"
 #' )
 #' cat(opt_loop_invariant(list(code))$codes[[1]])
 #' @export
-#' Example of invariant code
-#' old_units <- c(2,5,3,9,8,11,6)
-#' for (val in old_units) {
-#'  mult = z * y * w
-#'  new_units = val * mult
-#'  print(new_units)
-#' }
-#'
 
 opt_loop_invariant <- function(texts) {
   # todo: invariant subexpressions motion?
