@@ -14,8 +14,25 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_code(list(code))$codes[[1]])
+#' 
+#' verify <- paste(
+#'  "function(age){",
+#'  "  if (age>13 & age<17){",
+#'  "    result  <- c('Wow! You can participate in GCI')",              
+#'  "  }",
+#'  "  else", {
+#'  "    result <- c('Sorry! You cannot participate in GCI')",
+#'  "  }",
+#'  "  return (result)", 
+#'  "  dead <- c('This is dead code!')",
+#'  "  return (dead)",
+#'  "}",
+#'  sep = "\n"
+#' )
+#' cat(opt_dead_code(list(verify))$codes[[1]])
+#' 
 #' @export
-#'
+#'                                               
 opt_dead_code <- function(texts) {
   res <- list()
   res$codes <- lapply(texts, dc_one_file)
@@ -287,3 +304,6 @@ unindent_fpd <- function(fpd, parent_spaces) {
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
   fpd
 }
+
+
+
