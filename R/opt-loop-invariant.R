@@ -20,7 +20,8 @@
 #' Example of invariant code
 #' old_units <- c(2,5,3,9,8,11,6)
 #' for (val in old_units) {
-#'  new_units = val * z * y * w
+#'  mult = z * y * w
+#'  new_units = val * mult
 #'  print(new_units)
 #' }
 #'
