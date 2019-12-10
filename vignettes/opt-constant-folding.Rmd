@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-Constant folding simplifies constant operands involved in expressions. This means that any constant number expressions (integers or doubles) or compound boolean expressions within the given expression will be simplified to a single value to prevent repetition of multiple calculation steps when running a specific portion of code. This ensures that all the calculations in the expression involving will be simplified prior to executing the code to reduce run-time.
+Constant folding simplifies constant operands involved in expressions. This means that any constant number expressions (integers or doubles) or compound boolean expressions within the given expression will be simplified to a single value to prevent repetition of multiple calculation steps when running a specific portion of code. This ensures that all the calculations in the expression involved will be simplified prior to executing the code to reduce run-time.
 
 ## Background
 

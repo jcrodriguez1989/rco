@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-If a variable is a known numerical value and the variable is used in later expressions, constant propagation decreases run-time by substituting the numerical value of the variable in the expression.
+Constant propagation can be used when a previously-defined variable with a constant (integer, double, or boolean) is used in an expression. It is the process of substituting the variable with its constant when the variable is used in an expression. Constant propagation reduces run-time as it eliminates time spent during execution assigning the variable's constant to the variable.
 
 ## Background
 
