@@ -14,6 +14,34 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_expr(list(code))$codes[[1]])
+
+#' code1 <- paste(
+#'   "sum_fibo <- function(n){",
+#'     "a<-1;",
+#'     "b<-1;",
+#'     "i<-1;",
+#'     "if(n==1)",
+#'       "return(1);",
+#'     "if(n==2)",
+#'       "return(2);",
+#'     "sum=2;",
+#'     "while(i<=n-2){",
+#'       "c <- a+b;",
+#'       "a=b;",
+#'       "b=c;",
+#'       "sum <- sum+c;",
+#'       "i<-i+1;",
+#'       "a;",
+#'       "b;",
+#'       "c;",
+#'       "sum;",
+#'     "}",
+#'     "sum;",
+#'   "}",
+#'   sep = '\n'
+#' )
+#' cat(opt_dead_expr(list(code1))$codes[[1]]);
+
 #' @export
 #'
 opt_dead_expr <- function(texts) {
