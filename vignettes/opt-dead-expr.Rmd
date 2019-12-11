@@ -30,6 +30,9 @@ speed_up <- function(obj) {
 
 # Dead Expression Elimination
 
+## Idea
+Dead code refers to code that will not affect the output of code, this code has no purpose so we can remove it and reduce the file size making programs smaller and therefore more efficient. This optimization can be useful as old code that is modified might contain code that will never run, examples might be a line of code after a return statement or an if statement that always returns TRUE.
+
 ## Background
 
 Dead Expression Elimination intends to remove those expressions that do not modify the environment.
