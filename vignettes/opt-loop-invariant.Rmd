@@ -30,6 +30,14 @@ speed_up <- function(obj) {
 
 # Loop-invariant Code Motion
 
+## Idea
+
+A loop is an algorithm that continuously executes a piece of code until a condition is met, or not met. 
+
+However, a part of the piece of code in a loop may not be directly affected by the condition of the loop. For example, given a variable ```i``` of arbitrary value, a loop can define a condition to run until ```i``` is greater than a constant ```n``` with ```i``` being incremented by 1 for each iteration of the loop. Any piece of code that only uses operands defined or assigned outside the loop can be removed and still yield the same value. In this case, an operation ```x = y + z``` is in no way affected by the incrementation of variable ```i```. 
+
+The following documentation will provide a background behind this optimization technique and examples of how this can be implemented on production-grade code.
+
 ## Background
 
 Loop-invariant code consists of statements or expressions which can be moved outside the body of a loop without affecting the semantics of the program. Loop-invariant code motion is a compiler optimization which performs this movement automatically. 
