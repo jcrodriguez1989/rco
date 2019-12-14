@@ -16,6 +16,13 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_constant_folding(list(code))$codes[[1]])
+#'code1 <- paste(
+#'  "fact10 <- 10*9*8*7*6*5*4*3*2*1;",
+#'  "fact11 <- 11 * fact10;",
+#'  "fact12 <- 11*12*fact10",
+#'  sep = "\n"
+#')
+#'cat(opt_constant_folding(list(code1))$codes[[1]]);
 #' @export
 #'
 opt_constant_folding <- function(texts, fold_floats = FALSE,
