@@ -29,6 +29,9 @@ speed_up <- function(obj) {
 ```
 
 # Constant Propagation
+##Idea 
+During compilation of a R program, when we fold or substitute values of known constants such as 
+```x <- 3+27-10``` with the value of the operation of the constants ```x<-20```, it is known as constant propogation. Constant propogation acts as a means to reduce redundancies in your r program and increase its efficiency.
 
 ## Background
 
