@@ -14,6 +14,21 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_store(list(code))$codes[[1]])
+#'
+#' code1 <- paste(
+#'   "function() {",
+#'   "  A <- 1",
+#'   "  A <- 1 # Code maintainer needs to implement optimizing this away",
+#'   "  B <- 2",
+#'   "  C <- 3",
+#'   "  D <- 4",
+#'   "  E <- D",
+#'   "  F <- E",
+#'   "  c(D, E, A, D)",
+#'   "}",
+#'   sep = "\n"
+#' )
+#' cat(opt_dead_store(list(code1))$codes[[1]])
 #' @export
 #'
 opt_dead_store <- function(texts) {
