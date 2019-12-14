@@ -29,6 +29,16 @@ speed_up <- function(obj) {
 ```
 
 # Common Subexpression Elimination
+## Idea
+Common Subexpression Elminination (CSE) refers to the compiler optimisation by which similar and/or identical expressions such as:
+a = b * c + g;
+d = b * c * e; 
+are analyzed and in cases where required are transformed as:
+tmp = b * c;
+a = tmp + g;
+d = tmp * e;
+In the above example , it is transformed if the cost of storing and fetching temp is less than b*c.
+CSE analyzes the expression and considers whther it is useful to transform the expression.
 
 ## Background
 
