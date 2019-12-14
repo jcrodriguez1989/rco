@@ -200,3 +200,7 @@ is_minus_constant <- function(pd, id) {
     sum(act_pd$token %in% constants) == 1 &&
     sum(act_pd$token == "'-'") == 1
 }
+#x <- 34/12 + 14*600
+#y <- 111+23+1-77
+#z <- x+y
+#z
