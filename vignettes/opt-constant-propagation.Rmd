@@ -29,6 +29,13 @@ speed_up <- function(obj) {
 ```
 
 # Constant Propagation
+##Idea
+Constant porpogation can be used to discover constant variables and expressions which can then be propogated through the program.
+It's uses are to:
+-Evaluate expressions at compile time instead of run time
+– Eliminate dead code (e.g., debugging code)
+– Improve efficacy of other optimizations (e.g., value numbering and
+software pipelining)
 
 ## Background
 
