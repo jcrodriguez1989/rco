@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Dead Code Elimination
 
+## Idea
+
+Dead code are pieces of code that do not affect the output of a program. Dead Code Elimination is an optimization technique that removes dead code, of which common examples include code that will never be executed known as unreachable code, or code that affects dead variables. Dead code elimination shrinks the program size, making the program run significantly faster. 
+
 ## Background
 
 Dead Code Elimination is an optimization that removes code which does not affect the program results. You might wonder why someone would write this type of source code, but it can easily creep into large, long-lived programs even at the source code level. Removing such code has several benefits: it shrinks program size and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure.
