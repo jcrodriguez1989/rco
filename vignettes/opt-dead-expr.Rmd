@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Dead Expression Elimination
 
+## Idea
+
+A Dead Expression is any piece of code or more specifically an expression that is executed but its result is neither used in the program nor does the removal of such expressions affect the result of the code. Dead Expression elimination refers to the process of eliminating or removing such expressions which reduce the space taken by the program in the memory and the execution time which undoubtedly speeds up the code. 
+
 ## Background
 
 Dead Expression Elimination intends to remove those expressions that do not modify the environment.
