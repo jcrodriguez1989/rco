@@ -456,3 +456,10 @@ is_function_def <- function(fpd, id) {
   act_fpd <- fpd[fpd$parent == id, ]
   "FUNCTION" %in% act_fpd$token
 }
+#x <- 400
+#y <- 300
+#z <- x*y
+#a<- z*y
+#b<- a-z-y-x                                    
+#'                                    
+                 
