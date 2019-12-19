@@ -16,6 +16,17 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_constant_folding(list(code))$codes[[1]])
+#' 
+#' 
+#' sphere_vol <- paste(
+#'  "function(radius){",
+#'  " vol <- 4/3 * pi * radius ^ 3 ",
+#'  " return(vol) ",
+#'  "  } ",
+#'  sep = "\n"
+#' )
+#' cat(opt_constant_folding(list(sphere_vol))$codes[[1]])
+#' 
 #' @export
 #'
 opt_constant_folding <- function(texts, fold_floats = FALSE,
