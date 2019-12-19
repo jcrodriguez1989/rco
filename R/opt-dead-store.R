@@ -14,6 +14,24 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_store(list(code))$codes[[1]])
+#' 
+#' 
+#'name_len <- paste(
+#'  "function(name){",
+#'  "  if (length(name) > 7){",
+#'  "    statement  <- c('Hello, Your name is short, less than 7 characters.')",
+#'  "  }",
+#'  "  else { ",
+#'  "    statement <- c('Hello! Your name is long, more than 7 characters.')",
+#'  "  }",
+#'  "  len <- length(name) ",         
+#'  "  return (statement)", 
+#'  "}",
+#'  sep = "\n"
+#' )
+#' cat(opt_dead_store(list(name_len))$codes[[1]])
+#'
+#' 
 #' @export
 #'
 opt_dead_store <- function(texts) {
