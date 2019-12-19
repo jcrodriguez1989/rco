@@ -14,6 +14,25 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_expr(list(code))$codes[[1]])
+#' 
+#' 
+#' comp <- paste(
+#'  "function(num){",
+#'  "  if (num > 15){",
+#'  "    state  <- c('Hello, the number you entered is greater than 15')",
+#'  "    num ^ 2 ",         
+#'  "  }",
+#'  "  else { ",
+#'  "    state <- c('Hello! the number you entered is smaller than 15.')",
+#'  "  num ^ 3",
+#'  "  }",
+#'  "  return (state)", 
+#'  "}",
+#'  sep = "\n"
+#' )
+#' cat(opt_dead_expr(list(verify))$codes[[1]])
+#' 
+#' 
 #' @export
 #'
 opt_dead_expr <- function(texts) {
