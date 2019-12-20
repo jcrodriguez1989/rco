@@ -16,6 +16,17 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_constant_propagation(list(code))$codes[[1]])
+#' 
+#' hemisphere_vol <- paste(
+#'  " pie <- 3.141593 ",
+#'  " radius <- 25 ",
+#'  " hemis_vol <- 2/3 * pie * radius ^ 3 ",
+#'  " print(hemis_vol) ",
+#'  sep = "\n"
+#' )
+#' cat(opt_constant_propagation(list(hemisphere_vol))$codes[[1]])
+#' 
+#' 
 #' @export
 #'
 opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
