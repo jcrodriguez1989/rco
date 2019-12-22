@@ -23,6 +23,22 @@ opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
   res$codes <- lapply(texts, cp_one_file, in_fun_call = in_fun_call)
   res
 }
+code <- paste(
+"i <- 1700",
+"x <- -13134",
+"y <- x + 1287",
+"z <- i - 14098",
+"a <- z*y-i-x",
+sep = "\n"
+)
+cat(opt_constant_propagation(list(code))$codes[[1]])
+@export
+
+opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
+res <- list()
+res$codes <- lapply(texts, cp_one_file, in_fun_call = in_fun_call)
+res
+}
 
 # Executes constant propagation on one text of code.
 #
