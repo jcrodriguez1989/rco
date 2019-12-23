@@ -1,2 +1,2 @@
 A logo for the RCO package.
-The two main features of this package are shown on either sides. The speedometer indicates the speed achieved by the code after optimization. The Sand Clock with a small amount of sand at the bottom indicates the time reduction. 
+The two main features of this package, speed and time reduction are shown on either sides. The speedometer indicates the speed achieved by the code after optimization. The Sand Clock with a small amount of sand at the bottom indicates the time reduction. 
