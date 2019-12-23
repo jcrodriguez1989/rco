@@ -16,6 +16,18 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_constant_propagation(list(code))$codes[[1]])
+#'
+#'code <- paste(
+#'"i <- 1700",
+#'"x <- -13134",
+#'"y <- x + 1287",
+#'"z <- i - 14098",
+#'"a <- z*y-i-x",
+#'sep = "\n"
+#')
+#'cat(opt_constant_propagation(list(code))$codes[[1]])
+#' @export
+#'
 #' @export
 #'
 opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
