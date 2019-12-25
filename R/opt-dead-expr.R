@@ -14,6 +14,19 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_expr(list(code))$codes[[1]])
+#'
+#' code1 <- paste(
+#'   "function(number) {",
+#'   "  if (number %% 1 == 0 & number > 0 & number < 10) {",
+#'   "    return('You entered a single-digit number.')",
+#'   "    return('This code is unreachable, and will be eliminated...')",
+#'   "  }",
+#'   "  return('You did not enter a single-digit positive integer.')",
+#'   "  return('This code is also unreachable.')",
+#'   "}",
+#'   sep = "\n"
+#' )
+#' cat(opt_dead_code(list(code1))$codes[[1]])
 #' @export
 #'
 opt_dead_expr <- function(texts) {
