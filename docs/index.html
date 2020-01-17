@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>R Code Optimizer • rco</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/journal/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="R Code Optimizer">
 <meta property="og:description" content="Automatically apply different strategies to optimize R code. 
     Rco functions take R code as input, and returns R code as output.">
@@ -19,7 +20,7 @@
 <![endif]-->
 </head>
 <body>
-    <div class="container template-article">
+    <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -98,7 +99,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/jcrodriguez1989/rco">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -111,12 +112,9 @@
 <!--/.navbar -->
 
       
-      </header><div class="row">
-  <div class="col-md-9 contents">
-    
 
-    
-    
+      </header><div class="row">
+  <div class="contents col-md-9">
 <div id="rco---the-r-code-optimizer" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#rco---the-r-code-optimizer" class="anchor"></a>rco - The R Code Optimizer</h1></div>
@@ -129,10 +127,10 @@
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p><code>rco</code> is currently only available as a GitHub package.</p>
 <p>To install it run the following from an R console:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">require</a></span>(<span class="st">"remotes"</span>)) {</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">  <span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/install.packages">install.packages</a></span>(<span class="st">"remotes"</span>)</a>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span>(<span class="st">"remotes"</span>)) {</a>
+<a class="sourceLine" id="cb1-2" data-line-number="2">  <span class="kw"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"remotes"</span>)</a>
 <a class="sourceLine" id="cb1-3" data-line-number="3">}</a>
-<a class="sourceLine" id="cb1-4" data-line-number="4">remotes<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/remotes/topics/install_github">install_github</a></span>(<span class="st">"jcrodriguez1989/rco"</span>, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb1-4" data-line-number="4">remotes<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/remotes/man/install_github.html">install_github</a></span>(<span class="st">"jcrodriguez1989/rco"</span>, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 </div>
 <div id="usage" class="section level2">
 <h2 class="hasAnchor">
@@ -141,37 +139,37 @@
 <ul>
 <li>
 <p>Using the RStudio Addins</p>
-<ol style="list-style-type: decimal">
+<ol>
 <li><p><code>Optimize active file</code>: Optimizes the file currently open in RStudio. It will apply the optimizers present in <code>all_optimizers</code>.</p></li>
 <li><p><code>Optimize selection</code>: Optimizes the code currently highlited in the RStudio Source Pane. It will apply the optimizers present in <code>all_optimizers</code>.</p></li>
 </ol>
 </li>
 <li>
 <p>Using the <code>shiny</code> GUIs</p>
-<ol style="list-style-type: decimal">
+<ol>
 <li><p><code><a href="reference/rco_gui.html">rco_gui("code_optimizer")</a></code> opens a <code>shiny</code> interface in a browser. This GUI allows to easily optimize chunks of code.</p></li>
 <li><p><code><a href="reference/rco_gui.html">rco_gui("pkg_optimizer")</a></code> opens a <code>shiny</code> interface in a browser. This GUI allows to easily optimize R packages that are hosted at CRAN or GitHub.</p></li>
 </ol>
 </li>
 <li>
 <p>Using the R functions</p>
-<ol style="list-style-type: decimal">
+<ol>
 <li>Optimize some <code>.R</code> code files</li>
 </ol>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="reference/optimize_files.html">optimize_files</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"file_to_optimize_1.R"</span>, <span class="st">"file_to_optimize_2.R"</span>))</a></code></pre></div>
-<ol start="2" style="list-style-type: decimal">
+<!-- end list --><div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="reference/optimize_files.html">optimize_files</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"file_to_optimize_1.R"</span>, <span class="st">"file_to_optimize_2.R"</span>))</a></code></pre></div>
+<ol>
 <li>Optimize some code in a character vector</li>
 </ol>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(</a>
+<!-- end list --><div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(</a>
 <a class="sourceLine" id="cb3-2" data-line-number="2">  <span class="st">"code_to_optimize &lt;- 8 ^ 8 * 1918"</span>,</a>
 <a class="sourceLine" id="cb3-3" data-line-number="3">  <span class="st">"cto &lt;- code_to_optimize * 2"</span>,</a>
 <a class="sourceLine" id="cb3-4" data-line-number="4">  <span class="dt">sep =</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span></a>
 <a class="sourceLine" id="cb3-5" data-line-number="5">)</a>
 <a class="sourceLine" id="cb3-6" data-line-number="6"><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(code)</a></code></pre></div>
-<ol start="3" style="list-style-type: decimal">
+<ol>
 <li>Optimize all <code>.R</code> code files into a folder</li>
 </ol>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="reference/optimize_folder.html">optimize_folder</a></span>(<span class="st">"~/myfolder_to_optimize"</span>, <span class="dt">recursive =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<!-- end list --><div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="reference/optimize_folder.html">optimize_folder</a></span>(<span class="st">"~/myfolder_to_optimize"</span>, <span class="dt">recursive =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 </li>
 </ul>
 </div>
@@ -179,7 +177,7 @@
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>Suppose we have the following code:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(</a>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(</a>
 <a class="sourceLine" id="cb5-2" data-line-number="2">  <span class="st">"# I want to know my age in seconds!"</span>,</a>
 <a class="sourceLine" id="cb5-3" data-line-number="3">  <span class="st">"years_old &lt;- 29"</span>,</a>
 <a class="sourceLine" id="cb5-4" data-line-number="4">  <span class="st">"days_old &lt;- 365 * years_old # leap years don't exist"</span>,</a>
@@ -195,70 +193,75 @@
 <a class="sourceLine" id="cb5-14" data-line-number="14">)</a></code></pre></div>
 <p>We can automatically optimize it by doing:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
-<pre><code>## Optimization number 1</code></pre>
-<pre><code>## # I want to know my age in seconds!
-## years_old &lt;- 29
-## days_old &lt;- 365 * 29 # leap years don't exist
-## hours_old &lt;- 24 * days_old
-## seconds_old &lt;- 3600 * hours_old
-## 
-## if (seconds_old &gt; 10e6) {
-##   print("Whoa! More than a million seconds old, what a wise man!")
-## } else {
-##   print("Meh!")
-## }</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="co">## Optimization number 1</span></a>
+<a class="sourceLine" id="cb7-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="co">## # I want to know my age in seconds!</span></a>
+<a class="sourceLine" id="cb7-4" data-line-number="4"><span class="co">## years_old &lt;- 29</span></a>
+<a class="sourceLine" id="cb7-5" data-line-number="5"><span class="co">## days_old &lt;- 365 * 29 # leap years don't exist</span></a>
+<a class="sourceLine" id="cb7-6" data-line-number="6"><span class="co">## hours_old &lt;- 24 * days_old</span></a>
+<a class="sourceLine" id="cb7-7" data-line-number="7"><span class="co">## seconds_old &lt;- 3600 * hours_old</span></a>
+<a class="sourceLine" id="cb7-8" data-line-number="8"><span class="co">## </span></a>
+<a class="sourceLine" id="cb7-9" data-line-number="9"><span class="co">## if (seconds_old &gt; 10e6) {</span></a>
+<a class="sourceLine" id="cb7-10" data-line-number="10"><span class="co">##   print("Whoa! More than a million seconds old, what a wise man!")</span></a>
+<a class="sourceLine" id="cb7-11" data-line-number="11"><span class="co">## } else {</span></a>
+<a class="sourceLine" id="cb7-12" data-line-number="12"><span class="co">##   print("Meh!")</span></a>
+<a class="sourceLine" id="cb7-13" data-line-number="13"><span class="co">## }</span></a></code></pre></div>
 <p>After one optimization pass we can see that it has only propagated the <code>years_old</code> variable. Another pass:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
-<pre><code>## Optimization number 1</code></pre>
-<pre><code>## # I want to know my age in seconds!
-## years_old &lt;- 29
-## days_old &lt;- 10585 # leap years don't exist
-## hours_old &lt;- 24 * 10585
-## seconds_old &lt;- 3600 * hours_old
-## 
-## if (seconds_old &gt; 10e6) {
-##   print("Whoa! More than a million seconds old, what a wise man!")
-## } else {
-##   print("Meh!")
-## }</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="co">## Optimization number 1</span></a>
+<a class="sourceLine" id="cb9-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="co">## # I want to know my age in seconds!</span></a>
+<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="co">## years_old &lt;- 29</span></a>
+<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="co">## days_old &lt;- 10585 # leap years don't exist</span></a>
+<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="co">## hours_old &lt;- 24 * 10585</span></a>
+<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="co">## seconds_old &lt;- 3600 * hours_old</span></a>
+<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="co">## </span></a>
+<a class="sourceLine" id="cb9-9" data-line-number="9"><span class="co">## if (seconds_old &gt; 10e6) {</span></a>
+<a class="sourceLine" id="cb9-10" data-line-number="10"><span class="co">##   print("Whoa! More than a million seconds old, what a wise man!")</span></a>
+<a class="sourceLine" id="cb9-11" data-line-number="11"><span class="co">## } else {</span></a>
+<a class="sourceLine" id="cb9-12" data-line-number="12"><span class="co">##   print("Meh!")</span></a>
+<a class="sourceLine" id="cb9-13" data-line-number="13"><span class="co">## }</span></a></code></pre></div>
 <p>Now, it has folded the <code>days_old</code> variable, and then propagated it. Another pass:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
-<pre><code>## Optimization number 1</code></pre>
-<pre><code>## # I want to know my age in seconds!
-## years_old &lt;- 29
-## days_old &lt;- 10585 # leap years don't exist
-## hours_old &lt;- 254040
-## seconds_old &lt;- 3600 * 254040
-## 
-## if (seconds_old &gt; 10e6) {
-##   print("Whoa! More than a million seconds old, what a wise man!")
-## } else {
-##   print("Meh!")
-## }</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="co">## Optimization number 1</span></a>
+<a class="sourceLine" id="cb11-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb11-3" data-line-number="3"><span class="co">## # I want to know my age in seconds!</span></a>
+<a class="sourceLine" id="cb11-4" data-line-number="4"><span class="co">## years_old &lt;- 29</span></a>
+<a class="sourceLine" id="cb11-5" data-line-number="5"><span class="co">## days_old &lt;- 10585 # leap years don't exist</span></a>
+<a class="sourceLine" id="cb11-6" data-line-number="6"><span class="co">## hours_old &lt;- 254040</span></a>
+<a class="sourceLine" id="cb11-7" data-line-number="7"><span class="co">## seconds_old &lt;- 3600 * 254040</span></a>
+<a class="sourceLine" id="cb11-8" data-line-number="8"><span class="co">## </span></a>
+<a class="sourceLine" id="cb11-9" data-line-number="9"><span class="co">## if (seconds_old &gt; 10e6) {</span></a>
+<a class="sourceLine" id="cb11-10" data-line-number="10"><span class="co">##   print("Whoa! More than a million seconds old, what a wise man!")</span></a>
+<a class="sourceLine" id="cb11-11" data-line-number="11"><span class="co">## } else {</span></a>
+<a class="sourceLine" id="cb11-12" data-line-number="12"><span class="co">##   print("Meh!")</span></a>
+<a class="sourceLine" id="cb11-13" data-line-number="13"><span class="co">## }</span></a></code></pre></div>
 <p>It has folded the <code>hours_old</code> variable, and then propagated it. Another pass:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
-<pre><code>## Optimization number 1</code></pre>
-<pre><code>## # I want to know my age in seconds!
-## years_old &lt;- 29
-## days_old &lt;- 10585 # leap years don't exist
-## hours_old &lt;- 254040
-## seconds_old &lt;- 914544000
-## 
-## if (914544000 &gt; 10e6) {
-##   print("Whoa! More than a million seconds old, what a wise man!")
-## } else {
-##   print("Meh!")
-## }</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="co">## Optimization number 1</span></a>
+<a class="sourceLine" id="cb13-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb13-3" data-line-number="3"><span class="co">## # I want to know my age in seconds!</span></a>
+<a class="sourceLine" id="cb13-4" data-line-number="4"><span class="co">## years_old &lt;- 29</span></a>
+<a class="sourceLine" id="cb13-5" data-line-number="5"><span class="co">## days_old &lt;- 10585 # leap years don't exist</span></a>
+<a class="sourceLine" id="cb13-6" data-line-number="6"><span class="co">## hours_old &lt;- 254040</span></a>
+<a class="sourceLine" id="cb13-7" data-line-number="7"><span class="co">## seconds_old &lt;- 914544000</span></a>
+<a class="sourceLine" id="cb13-8" data-line-number="8"><span class="co">## </span></a>
+<a class="sourceLine" id="cb13-9" data-line-number="9"><span class="co">## if (914544000 &gt; 10e6) {</span></a>
+<a class="sourceLine" id="cb13-10" data-line-number="10"><span class="co">##   print("Whoa! More than a million seconds old, what a wise man!")</span></a>
+<a class="sourceLine" id="cb13-11" data-line-number="11"><span class="co">## } else {</span></a>
+<a class="sourceLine" id="cb13-12" data-line-number="12"><span class="co">##   print("Meh!")</span></a>
+<a class="sourceLine" id="cb13-13" data-line-number="13"><span class="co">## }</span></a></code></pre></div>
 <p>It has folded the <code>seconds_old</code> variable, and then propagated it into the <code>if</code> condition. Another pass:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
-<pre><code>## Optimization number 1</code></pre>
-<pre><code>## # I want to know my age in seconds!
-## years_old &lt;- 29
-## days_old &lt;- 10585 # leap years don't exist
-## hours_old &lt;- 254040
-## seconds_old &lt;- 914544000
-## 
-## print("Whoa! More than a million seconds old, what a wise man!")</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="reference/optimize_text.html">optimize_text</a></span>(opt_code, <span class="dt">iterations =</span> <span class="dv">1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="co">## Optimization number 1</span></a>
+<a class="sourceLine" id="cb15-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb15-3" data-line-number="3"><span class="co">## # I want to know my age in seconds!</span></a>
+<a class="sourceLine" id="cb15-4" data-line-number="4"><span class="co">## years_old &lt;- 29</span></a>
+<a class="sourceLine" id="cb15-5" data-line-number="5"><span class="co">## days_old &lt;- 10585 # leap years don't exist</span></a>
+<a class="sourceLine" id="cb15-6" data-line-number="6"><span class="co">## hours_old &lt;- 254040</span></a>
+<a class="sourceLine" id="cb15-7" data-line-number="7"><span class="co">## seconds_old &lt;- 914544000</span></a>
+<a class="sourceLine" id="cb15-8" data-line-number="8"><span class="co">## </span></a>
+<a class="sourceLine" id="cb15-9" data-line-number="9"><span class="co">## print("Whoa! More than a million seconds old, what a wise man!")</span></a></code></pre></div>
 <p>Now, it has folded the <code>if</code> condition, and as it was <code>TRUE</code> it just kept its body, as testing the condition or the <code>else</code> clause were dead code. So, <code>optimize_text</code> function has automatically detected constant variables, constant foldable operations, and dead code. And returned an optimized R code.</p>
 </div>
 <div id="guidelines-for-contributing" class="section level2">
@@ -291,6 +294,13 @@
 <li><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a></li>
 </ul>
 </div>
+<div class="community">
+<h2>Community</h2>
+<ul class="list-unstyled">
+<li><a href="CONTRIBUTING.html">Contributing guide</a></li>
+<li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
+</ul>
+</div>
 <div class="developers">
 <h2>Developers</h2>
 <ul class="list-unstyled">
@@ -299,8 +309,7 @@
 </ul>
 </div>
 
-
-      <div class="dev-status">
+  <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://www.tidyverse.org/lifecycle/#maturing"><img src="https://img.shields.io/badge/lifecycle-maturing-blue.svg" alt="lifecycle"></a></li>
@@ -310,7 +319,6 @@
 </ul>
 </div>
 </div>
-
 </div>
 
 
@@ -319,12 +327,14 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>

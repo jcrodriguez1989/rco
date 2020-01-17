@@ -26,7 +26,8 @@ optimize_folder <- function(folder, optimizers = all_optimizers,
     stop("The specified folder does not exist.")
   }
   to_opt_files <- list.files(
-    path = folder, pattern = pattern, full.names = TRUE, recursive = recursive)
+    path = folder, pattern = pattern, full.names = TRUE, recursive = recursive
+  )
   if (length(to_opt_files) == 0) {
     return()
   }
@@ -34,7 +35,7 @@ optimize_folder <- function(folder, optimizers = all_optimizers,
   cat(paste(to_opt_files, collapse = "\n"))
   cat("\n")
   optimize_files(
-    files = to_opt_files, optimizers  = optimizers, overwrite = overwrite,
+    files = to_opt_files, optimizers = optimizers, overwrite = overwrite,
     iterations = iterations
   )
 }

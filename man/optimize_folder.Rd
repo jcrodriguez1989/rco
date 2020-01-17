@@ -4,8 +4,14 @@
 \alias{optimize_folder}
 \title{Optimize a folder with `.R` files.}
 \usage{
-optimize_folder(folder, optimizers = all_optimizers, overwrite = FALSE,
-  iterations = Inf, pattern = "\\\\.R$", recursive = TRUE)
+optimize_folder(
+  folder,
+  optimizers = all_optimizers,
+  overwrite = FALSE,
+  iterations = Inf,
+  pattern = "\\\\.R$",
+  recursive = TRUE
+)
 }
 \arguments{
 \item{folder}{Path to a directory with files to optimize.}

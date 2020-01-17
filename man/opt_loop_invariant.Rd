@@ -21,7 +21,7 @@ code <- paste(
   "  a[i] <- 6 * i + x * x",
   "  i <- i + 1",
   "}",
-  sep = "\\n"
+  sep = "\n"
 )
 cat(opt_loop_invariant(list(code))$codes[[1]])
 }

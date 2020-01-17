@@ -60,12 +60,14 @@ li_one_pd <- function(pd) {
   loop_parent_ids <- pd$parent[pd$token %in% c("FOR", "WHILE")] # %in% loops]
 
   # remove loops that have function calls inside
-  loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt)
-    "SYMBOL_FUNCTION_CALL" %in% get_children(pd, act_prnt)$token)]
+  loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt) {
+    "SYMBOL_FUNCTION_CALL" %in% get_children(pd, act_prnt)$token
+  })]
 
   # remove loops that have next or break calls inside
-  loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt)
-    any(c("BREAK", "NEXT") %in% get_children(pd, act_prnt)$token))]
+  loop_parent_ids <- loop_parent_ids[!sapply(loop_parent_ids, function(act_prnt) {
+    any(c("BREAK", "NEXT") %in% get_children(pd, act_prnt)$token)
+  })]
 
   # for each loop do the invariant code motion
   for (loop_parent_id in loop_parent_ids) {

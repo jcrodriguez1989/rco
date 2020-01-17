@@ -64,8 +64,9 @@ remove_after_interruption <- function(fpd) {
   # get nodes that are interruption commands
   # get function def bodies
   fun_def_ids <- fpd$parent[fpd$token == "FUNCTION"]
-  fun_body_ids <- sapply(fun_def_ids, function(act_id)
-    utils::tail(fpd$id[fpd$parent == act_id], 1))
+  fun_body_ids <- sapply(fun_def_ids, function(act_id) {
+    utils::tail(fpd$id[fpd$parent == act_id], 1)
+  })
   # get returns inside fun defs
   ret_ids <- sapply(fun_body_ids, function(act_id) {
     act_fpd <- get_children(fpd, act_id)

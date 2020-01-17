@@ -41,14 +41,17 @@ all_optimizers <- list(
 #' @export
 #'
 max_optimizers <- list(
-  "Constant Folding" = function(texts)
-    opt_constant_folding(texts, fold_floats = TRUE, in_fun_call = TRUE),
-  "Constant Propagation" = function(texts)
-    opt_constant_propagation(texts, in_fun_call = TRUE),
+  "Constant Folding" = function(texts) {
+    opt_constant_folding(texts, fold_floats = TRUE, in_fun_call = TRUE)
+  },
+  "Constant Propagation" = function(texts) {
+    opt_constant_propagation(texts, in_fun_call = TRUE)
+  },
   "Dead Code Elimination" = opt_dead_code,
   "Dead Store Elimination" = opt_dead_store,
   "Dead Expression Elimination" = opt_dead_expr,
-  "Common Subexpression Elimination" = function(texts)
-    opt_common_subexpr(texts, in_fun_call = TRUE),
+  "Common Subexpression Elimination" = function(texts) {
+    opt_common_subexpr(texts, in_fun_call = TRUE)
+  },
   "Loop-invariant Code Motion" = opt_loop_invariant
 )

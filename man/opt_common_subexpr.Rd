@@ -23,7 +23,7 @@ Carefully examine the results after running this function!
 code <- paste(
   "a <- b * c + g",
   "d = b * c * e",
-  sep = "\\n"
+  sep = "\n"
 )
 cat(opt_common_subexpr(list(code))$codes[[1]])
 }

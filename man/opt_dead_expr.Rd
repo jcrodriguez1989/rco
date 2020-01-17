@@ -19,7 +19,7 @@ code <- paste(
   "  x ^ 3",
   "  return(x ^ 3)",
   "}",
-  sep = "\\n"
+  sep = "\n"
 )
 cat(opt_dead_expr(list(code))$codes[[1]])
 }

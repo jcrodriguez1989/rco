@@ -54,12 +54,14 @@ de_one_pd <- function(pd) {
   fun_def_ids <- pd[pd$token == "FUNCTION", "parent"]
 
   # get unassigned expressions
-  dead_exprs_ids <- unlist(lapply(fun_def_ids, function(act_id)
-    get_unassigned_exprs(pd, act_id)))
+  dead_exprs_ids <- unlist(lapply(fun_def_ids, function(act_id) {
+    get_unassigned_exprs(pd, act_id)
+  }))
 
   # remove the ones that are last expression of functions
-  return_ids <- unlist(lapply(fun_def_ids, function(act_id)
-    get_fun_last_exprs(pd, act_id)))
+  return_ids <- unlist(lapply(fun_def_ids, function(act_id) {
+    get_fun_last_exprs(pd, act_id)
+  }))
   dead_exprs_ids <- dead_exprs_ids[!dead_exprs_ids %in% return_ids]
 
   pretty_remove_nodes(res_pd, dead_exprs_ids)
@@ -72,8 +74,9 @@ de_one_pd <- function(pd) {
 #   unassigned expressions.
 #
 get_unassigned_exprs <- function(pd, id) {
-  funs_body_ids <- sapply(id, function(act_id)
-    utils::tail(pd$id[pd$parent == act_id & pd$token == "expr"], 1))
+  funs_body_ids <- sapply(id, function(act_id) {
+    utils::tail(pd$id[pd$parent == act_id & pd$token == "expr"], 1)
+  })
   act_pd <- get_children(pd, funs_body_ids)
 
   # start visiting root nodes

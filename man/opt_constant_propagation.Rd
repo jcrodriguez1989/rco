@@ -22,7 +22,7 @@ code <- paste(
   "x <- -170",
   "y <- x + 124",
   "z <- i - 124",
-  sep = "\\n"
+  sep = "\n"
 )
 cat(opt_constant_propagation(list(code))$codes[[1]])
 }

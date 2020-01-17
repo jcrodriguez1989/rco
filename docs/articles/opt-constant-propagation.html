@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Constant Propagation • rco</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/journal/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/all.min.css" integrity="sha256-nAmazAk6vS34Xqo0BSrTb+abbtFlgsFK7NKSi6o7Y78=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/v4-shims.min.css" integrity="sha256-6qHlizsOWFskGlwVOKuns+D1nB6ssZrHQrNj1wGplHc=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/headroom.min.js" integrity="sha256-DJFC1kqIhelURkuza0AvYal5RxMtpzLjFhsnVIeuk+U=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.9.4/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Constant Propagation">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
@@ -97,7 +98,7 @@
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="https://github.com/jcrodriguez1989/rco">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -110,6 +111,7 @@
 <!--/.navbar -->
 
       
+
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
@@ -144,7 +146,7 @@
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>A simple example would be a code that converts the unit of many temporary samples, from hours to miliseconds <code>miliseconds &lt;- 1000 * 60 * 60 * hours</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste</a></span>(</a>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">code &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(</a>
 <a class="sourceLine" id="cb3-2" data-line-number="2">  <span class="st">"n &lt;- 1000"</span>,</a>
 <a class="sourceLine" id="cb3-3" data-line-number="3">  <span class="st">"hours_vector &lt;- runif(n, 0, 24)"</span>,</a>
 <a class="sourceLine" id="cb3-4" data-line-number="4">  <span class="st">"ms_vector &lt;- numeric(n)"</span>,</a>
@@ -157,7 +159,7 @@
 <a class="sourceLine" id="cb3-11" data-line-number="11">  <span class="st">"}"</span>,</a>
 <a class="sourceLine" id="cb3-12" data-line-number="12">  <span class="dt">sep =</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span></a>
 <a class="sourceLine" id="cb3-13" data-line-number="13">)</a>
-<a class="sourceLine" id="cb3-14" data-line-number="14"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(code)</a></code></pre></div>
+<a class="sourceLine" id="cb3-14" data-line-number="14"><span class="kw"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(code)</a></code></pre></div>
 <pre><code>## n &lt;- 1000
 ## hours_vector &lt;- runif(n, 0, 24)
 ## ms_vector &lt;- numeric(n)
@@ -169,8 +171,8 @@
 ##   ms_vector[i] &lt;- secs_to_ms * mins_to_secs * hs_to_mins * hours_vector[i]
 ## }</code></pre>
 <p>Then, the automatically optimized code would be:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(code))</a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/cat">cat</a></span>(opt_code<span class="op">$</span>codes[[<span class="dv">1</span>]])</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">opt_code &lt;-<span class="st"> </span><span class="kw"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(code))</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(opt_code<span class="op">$</span>codes[[<span class="dv">1</span>]])</a></code></pre></div>
 <pre><code>## n &lt;- 1000
 ## hours_vector &lt;- runif(n, 0, 24)
 ## ms_vector &lt;- numeric(n)
@@ -183,15 +185,15 @@
 ## }</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">bmark_res &lt;-<span class="st"> </span><span class="kw">microbenchmark</span>({</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> code))</a>
+<a class="sourceLine" id="cb7-2" data-line-number="2">  <span class="kw"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="dt">text =</span> code))</a>
 <a class="sourceLine" id="cb7-3" data-line-number="3">}, {</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/eval">eval</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/parse">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
+<a class="sourceLine" id="cb7-4" data-line-number="4">  <span class="kw"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="dt">text =</span> opt_code))</a>
 <a class="sourceLine" id="cb7-5" data-line-number="5">})</a>
 <a class="sourceLine" id="cb7-6" data-line-number="6"><span class="kw">autoplot</span>(bmark_res)</a></code></pre></div>
 <p><img src="opt-constant-propagation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">speed_up</span>(bmark_res)</a></code></pre></div>
-<pre><code>##            Min. 1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 28.09765 27.3338 25.44361 28.71985 25.96017 83.29377</code></pre>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 24.40146 24.19404 23.17889 25.18679 22.36711 88.87312</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -219,8 +221,8 @@
 <h3 class="hasAnchor">
 <a href="#funfun_params" class="anchor"></a><code>FUN({FUN_PARAMS})</code>
 </h3>
-<p>If it is a function call, and <code>opt_constant_propagation</code>’s <code>in_fun_call</code> parameter is set to <code>TRUE</code>: then it will try to constant propagate in <code>{FUN_PARAMS}</code>. Consider the case that the function call is <code><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq_len(x+30)</a></code>, it could be replaced by <code><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq_len(-3+30)</a></code>.</p>
-<p>Then, <strong>it empties the <code>values</code> vector</strong> ( <code>values &lt;- c()</code> ). It should be noted that in R, calling a function can modify the current environment, being the simplest example <code><a href="https://www.rdocumentation.org/packages/base/topics/rm">rm(list = ls())</a></code>, or <code><a href="https://www.rdocumentation.org/packages/base/topics/assign">assign("x", 4)</a></code>.</p>
+<p>If it is a function call, and <code>opt_constant_propagation</code>’s <code>in_fun_call</code> parameter is set to <code>TRUE</code>: then it will try to constant propagate in <code>{FUN_PARAMS}</code>. Consider the case that the function call is <code><a href="https://rdrr.io/r/base/seq.html">seq_len(x+30)</a></code>, it could be replaced by <code><a href="https://rdrr.io/r/base/seq.html">seq_len(-3+30)</a></code>.</p>
+<p>Then, <strong>it empties the <code>values</code> vector</strong> ( <code>values &lt;- c()</code> ). It should be noted that in R, calling a function can modify the current environment, being the simplest example <code><a href="https://rdrr.io/r/base/rm.html">rm(list = ls())</a></code>, or <code><a href="https://rdrr.io/r/base/assign.html">assign("x", 4)</a></code>.</p>
 </div>
 <div id="loop-cond-body" class="section level3">
 <h3 class="hasAnchor">
@@ -276,16 +278,16 @@
 <p>Recognize functions that modify the environment?</p>
 <p>When <code>opt_constant_propagation</code> finds a function call, it deletes the previously found constant-assigned values. This is mainly done to avoid having</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">x &lt;-<span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb12-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/assign">assign</a></span>(<span class="st">"x"</span>, <span class="dv">3</span>)</a>
+<a class="sourceLine" id="cb12-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/assign.html">assign</a></span>(<span class="st">"x"</span>, <span class="dv">3</span>)</a>
 <a class="sourceLine" id="cb12-3" data-line-number="3">y &lt;-<span class="st"> </span>x</a></code></pre></div>
 <p>Propagated to</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1">x &lt;-<span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/assign">assign</a></span>(<span class="st">"x"</span>, <span class="dv">3</span>)</a>
+<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/assign.html">assign</a></span>(<span class="st">"x"</span>, <span class="dv">3</span>)</a>
 <a class="sourceLine" id="cb13-3" data-line-number="3">y &lt;-<span class="st"> </span><span class="dv">1</span></a></code></pre></div>
 <p>In R we can list which <code>base</code> functions modify the environment, for example, <code>assign</code>, <code>rm</code>, etc. However, this would not be a solution, as we can define new functions that wrap the <code>base</code> ones, for instance:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">rm_all &lt;-<span class="st"> </span><span class="cf">function</span>() {</a>
 <a class="sourceLine" id="cb14-2" data-line-number="2">env &lt;-<span class="st"> </span>.GlobalEnv</a>
-<a class="sourceLine" id="cb14-3" data-line-number="3"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/rm">rm</a></span>(<span class="dt">list =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ls">ls</a></span>(<span class="dt">envir =</span> env), <span class="dt">envir =</span> env)</a>
+<a class="sourceLine" id="cb14-3" data-line-number="3"><span class="kw"><a href="https://rdrr.io/r/base/rm.html">rm</a></span>(<span class="dt">list =</span> <span class="kw"><a href="https://rdrr.io/r/base/ls.html">ls</a></span>(<span class="dt">envir =</span> env), <span class="dt">envir =</span> env)</a>
 <a class="sourceLine" id="cb14-4" data-line-number="4">}</a></code></pre></div>
 <p>A possible solution would be to let the user identify which functions edit the environment.</p>
 <ul>
@@ -298,7 +300,7 @@
 </li>
 <li>
 <p>by parameter:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="kw"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(code), <span class="dt">env_edit =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"rm_all"</span>, ...))</a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="kw"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(code), <span class="dt">env_edit =</span> <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"rm_all"</span>, ...))</a></code></pre></div>
 </li>
 </ul>
 </li>
@@ -328,17 +330,20 @@
 </div>
 
 
+
       <footer><div class="copyright">
   <p>Developed by Juan Cruz Rodriguez.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.4.1.</p>
 </div>
+
       </footer>
 </div>
 
   
+
 
   </body>
 </html>

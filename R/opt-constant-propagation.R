@@ -85,8 +85,9 @@ cp_one_fpd <- function(fpd, values, in_fun_call) {
       fun_defs <- act_fpd$parent[act_fpd$token == "FUNCTION"]
       if (length(fun_defs) > 1) {
         # remove if a fun def is child of another
-        fun_defs <- fun_defs[sapply(fun_defs, function(x)
-          sum(get_ancestors(act_fpd, x) %in% fun_defs) == 1)]
+        fun_defs <- fun_defs[sapply(fun_defs, function(x) {
+          sum(get_ancestors(act_fpd, x) %in% fun_defs) == 1
+        })]
       }
 
       fun_call_fpd <- remove_nodes(act_fpd, fun_defs)

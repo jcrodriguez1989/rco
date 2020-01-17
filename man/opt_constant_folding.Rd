@@ -23,7 +23,7 @@ Carefully examine the results after running this function!
 code <- paste(
   "i <- 320 * 200 * 32",
   "x <- i * 20 + 100",
-  sep = "\\n"
+  sep = "\n"
 )
 cat(opt_constant_folding(list(code))$codes[[1]])
 }

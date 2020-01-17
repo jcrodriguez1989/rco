@@ -19,7 +19,7 @@ code <- paste(
   "  x <- 128 ^ 2",
   "  return(TRUE)",
   "}",
-  sep = "\\n"
+  sep = "\n"
 )
 cat(opt_dead_store(list(code))$codes[[1]])
 }

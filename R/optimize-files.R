@@ -31,9 +31,12 @@ optimize_files <- function(files, optimizers = all_optimizers,
     for (i in seq_along(optimizers)) {
       act_optim <- optimizers[[i]]
       act_optim_name <- names(optimizers)[[i]]
-      optim_res <- try({
-        act_optim(optim_codes)
-      }, silent = TRUE)
+      optim_res <- try(
+        {
+          act_optim(optim_codes)
+        },
+        silent = TRUE
+      )
       if (inherits(optim_res, "try-error")) {
         warning(paste("Optimizer", act_optim_name, "had errors:\n", optim_res))
         optim_res <- list(codes = optim_codes)

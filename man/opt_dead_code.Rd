@@ -19,7 +19,7 @@ code <- paste(
   "  break",
   "  dead_code()",
   "}",
-  sep = "\\n"
+  sep = "\n"
 )
 cat(opt_dead_code(list(code))$codes[[1]])
 }

@@ -117,9 +117,12 @@ get_folded_fpd <- function(fpd, fold_floats) {
     return()
   }
 
-  eval_val <- try({
-    eval(parse(text = fpd$text))
-  }, silent = TRUE)
+  eval_val <- try(
+    {
+      eval(parse(text = fpd$text))
+    },
+    silent = TRUE
+  )
   if (inherits(eval_val, "try-error")) {
     return()
   }
