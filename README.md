@@ -218,13 +218,15 @@ optimized R code.
 
 `rco` is an open source package, and the contributions to the
 development of the library are more than welcome. Please see our
-[CONTRIBUTING.md](.github/CONTRIBUTING.md) file and [“Contributing an
+[CONTRIBUTING.md](https://github.com/jcrodriguez1989/rco/blob/master/.github/CONTRIBUTING.md)
+file and [“Contributing an
 Optimizer”](https://jcrodriguez1989.github.io/rco/articles/contributing-an-optimizer.html)
 article for detailed guidelines of how to contribute.
 
 ## Code of Conduct
 
 Please note that the ‘rco’ project is released with a [Contributor Code
-of Conduct](CODE_OF_CONDUCT.md).
+of
+Conduct](https://github.com/jcrodriguez1989/rco/blob/master/CODE_OF_CONDUCT.md).
 
 By contributing to this project, you agree to abide by its terms.
