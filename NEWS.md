@@ -1,3 +1,7 @@
+# rco 1.0.0
+
+  - Version bump to submit to CRAN.
+
 # rco 0.1.008
 
   - Adding Shiny GUIs, called with the `rco_gui` function.
