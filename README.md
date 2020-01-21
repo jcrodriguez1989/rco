@@ -15,7 +15,7 @@ faster.
 
 The `rco` project, from its start to version 1.0.0, was made possible by
 a [Google Summer of Code 2019
-project](https://summerofcode.withgoogle.com/projects/#5337917017292800).
+project](https://summerofcode.withgoogle.com/archive/2019/projects/6300906386096128/).
 
 Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.name/en/)
 and [Dr. Nicolás Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
