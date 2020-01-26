@@ -44,7 +44,7 @@ optimize_files <- function(files, optimizers = all_optimizers,
       optim_codes <- optim_res$codes
     }
     n_iter <- n_iter + 1
-    cat(paste0("Optimization number ", n_iter, "\n"))
+    message(paste0("Optimization number ", n_iter))
   }
 
   # check which codes had been optimized

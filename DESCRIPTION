@@ -1,6 +1,6 @@
 Package: rco
 Type: Package
-Title: R Code Optimizer
+Title: The R Code Optimizer
 Version: 1.0.0
 Authors@R: c(
     person(given = "Juan Cruz", family = "Rodriguez", 
@@ -12,7 +12,7 @@ Authors@R: c(
     )
 Maintainer: Juan Cruz Rodriguez <jcrodriguez@unc.edu.ar>
 Description: Automatically apply different strategies to optimize R code. 
-    `rco` functions take R code as input, and returns R code as output.
+    'rco' functions take R code as input, and returns R code as output.
 Depends: R (>= 3.6.0)
 License: GPL-3
 URL: https://github.com/jcrodriguez1989/rco/

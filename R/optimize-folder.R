@@ -31,9 +31,8 @@ optimize_folder <- function(folder, optimizers = all_optimizers,
   if (length(to_opt_files) == 0) {
     return()
   }
-  cat("Files to optimize:\n")
-  cat(paste(to_opt_files, collapse = "\n"))
-  cat("\n")
+  message("Files to optimize:")
+  message(paste(to_opt_files, collapse = "\n"))
   optimize_files(
     files = to_opt_files, optimizers = optimizers, overwrite = overwrite,
     iterations = iterations
