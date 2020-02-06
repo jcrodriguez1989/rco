@@ -15,7 +15,7 @@ Description: Automatically apply different strategies to optimize R code.
     'rco' functions take R code as input, and returns R code as output.
 Depends: R (>= 3.6.0)
 License: GPL-3
-URL: https://github.com/jcrodriguez1989/rco/
+URL: https://jcrodriguez1989.github.io/rco/
 BugReports: https://github.com/jcrodriguez1989/rco/issues
 Encoding: UTF-8
 LazyData: true
