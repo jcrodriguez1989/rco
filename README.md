@@ -1,13 +1,19 @@
 
 # rco - The R Code Optimizer
 
-[![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+<!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/rco)](https://CRAN.R-project.org/package=rco)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
 [![Travis build
 status](https://travis-ci.org/jcrodriguez1989/rco.svg?branch=master)](https://travis-ci.org/jcrodriguez1989/rco)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/jcrodriguez1989/rco?branch=master&svg=true)](https://ci.appveyor.com/project/jcrodriguez1989/rco)
 [![Coverage
 status](https://codecov.io/gh/jcrodriguez1989/rco/branch/master/graph/badge.svg)](https://codecov.io/github/jcrodriguez1989/rco?branch=master)
+<!-- badges: end -->
 
 Make your R code run faster\! `rco` analyzes your code and applies
 different optimization strategies that return an R code that runs
@@ -22,16 +28,19 @@ and [Dr. Nicolás Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
 
 ## Installation
 
-`rco` is currently only available as a GitHub package.
-
-To install it run the following from an R console:
+Install the current released version of `rco` from
+[CRAN](https://cran.r-project.org/package=rco):
 
 ``` r
-if (!require("remotes")) {
-  install.packages("remotes")
-}
-remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
+install.packages("rco")
 ```
+
+Or install the development version from GitHub:
+
+    if (!require("remotes")) {
+      install.packages("remotes")
+    }
+    remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
 
 ## Usage
 
