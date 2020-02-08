@@ -137,10 +137,9 @@ get_roots <- function(pd) {
 # @param pd A parsed data data.frame.
 #
 eq_assign_to_expr <- function(pd) {
-  # some R versions (e.g. 3.5.2) dont use the token `equal_assign`, so we
-  # create it.
-  # first convert `equal_assign` token to expr
-  pd$token <- sub("^equal_assign$", "expr", pd$token)
+  # different R versions have different tokens for `equal_assign`
+  # first convert `equal_assign` and `expr_or_assign_or_help` token to expr
+  pd$token <- sub("^equal_assign$|^expr_or_assign_or_help$", "expr", pd$token)
   eq_ass_prnts_id <- pd$parent[pd$token == "EQ_ASSIGN"]
   eq_ass_prnts <- pd[pd$id %in% eq_ass_prnts_id, ]
   if (all(eq_ass_prnts_id > 0) && # all of them have a parent

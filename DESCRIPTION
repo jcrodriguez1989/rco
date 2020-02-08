@@ -1,7 +1,7 @@
 Package: rco
 Type: Package
 Title: The R Code Optimizer
-Version: 1.0.001
+Version: 1.0.1
 Authors@R: c(
     person(given = "Juan Cruz", family = "Rodriguez", 
         role = c("aut", "cre"), email = "jcrodriguez@unc.edu.ar"),
