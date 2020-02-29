@@ -34,15 +34,10 @@ Constant propagation is the process of substituting the values of known constant
 
 For example, consider the following code:
 
-```{r Microbenchmark Plots, echo=TRUE}
-library("microbenchmark")
-autoplot(microbenchmark(
-  mtcars[,11],
-  mtcars$carb,
-  mtcars[[c(11)]],
-  mtcars[[11]],
-  .subset2(mtcars, 11)
-))
+```{r eval=FALSE}
+x <- 14
+y <- 7 - x / 2
+z <- y * (28 / x + 2) - x
 ```
 
 Here, `x` is assigned a constant, and thus, can be propagated (three times). Propagating yields:
