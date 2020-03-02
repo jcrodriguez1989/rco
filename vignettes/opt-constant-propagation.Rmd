@@ -28,8 +28,6 @@ speed_up <- function(obj) {
 }
 ```
 
-# Constant Propagation
-
 ## Background
 
 Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.

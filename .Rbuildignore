@@ -11,3 +11,5 @@
 ^CODE_OF_CONDUCT\.md$
 ^\.covrignore$
 ^\.httr-oauth$
+^doc$
+^Meta$
