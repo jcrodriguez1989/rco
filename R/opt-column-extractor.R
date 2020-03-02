@@ -30,7 +30,7 @@ opt_column_extractor <- function(texts) {
 #
 # @param text A character vector with code to optimize.
 #
-ce_one_file <- function(text)# Executes searching operations to find dollar sign.
+ce_one_file <- function(texts)# Executes searching operations to find dollar sign.
 {
   fpd <- parse_text(texts)
   fpd <- flatten_leaves(fpd)
