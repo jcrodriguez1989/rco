@@ -159,7 +159,7 @@ opt_code <- optimize_text(opt_code, iterations = 1)
     ## }
 
 Now, it has folded the `days_old` variable, and then propagated it.
-Another pass:
+Another pass :
 
 ``` r
 opt_code <- optimize_text(opt_code, iterations = 1)
