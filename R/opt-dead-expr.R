@@ -38,7 +38,7 @@ de_one_file <- function(text) {
   if (nrow(res_pd) > 0) {
     res_pd <- res_pd[order(res_pd$pos_id), ]
   }
-
+  
   deparse_data(res_pd)
 }
 
@@ -48,22 +48,35 @@ de_one_file <- function(text) {
 #
 de_one_pd <- function(pd) {
   res_pd <- pd
-
+  fpd <- flatten_leaves(pd)
   # exprs in functions dont have any effect. However, on the global env they
   # print on console, so just analyze function definitions
   fun_def_ids <- pd[pd$token == "FUNCTION", "parent"]
-
+  
+  #check if dead expressions have never assigned vars
+  i <- 1
+  for(i in 1:length(fun_def_ids))
+  {
+    if(is_var_assigned(fpd, fun_def_ids[[i]])[[1]] == TRUE)
+      next
+    else
+    {
+      warning("Please remove the unassigned variable or assign value. It may lead to errors.")
+      print(is_var_assigned(fpd, fun_def_ids[[i]])[[2]])
+    }
+  }
+  
   # get unassigned expressions
   dead_exprs_ids <- unlist(lapply(fun_def_ids, function(act_id) {
     get_unassigned_exprs(pd, act_id)
   }))
-
+  
   # remove the ones that are last expression of functions
   return_ids <- unlist(lapply(fun_def_ids, function(act_id) {
     get_fun_last_exprs(pd, act_id)
   }))
   dead_exprs_ids <- dead_exprs_ids[!dead_exprs_ids %in% return_ids]
-
+  
   pretty_remove_nodes(res_pd, dead_exprs_ids)
 }
 
@@ -78,7 +91,7 @@ get_unassigned_exprs <- function(pd, id) {
     utils::tail(pd$id[pd$parent == act_id & pd$token == "expr"], 1)
   })
   act_pd <- get_children(pd, funs_body_ids)
-
+  
   # start visiting root nodes
   visit_nodes <- get_roots(act_pd)$id
   exprs_ids <- c()
@@ -90,7 +103,7 @@ get_unassigned_exprs <- function(pd, id) {
       if (act_sblngs$token[[1]] == "'{'") {
         new_visit <- c(new_visit, act_sblngs$id[act_sblngs$token == "expr"])
       } else if (all(act_prnt_pd$token %in%
-        c(constants, ops, precedence_ops, "expr", "SYMBOL"))) {
+                     c(constants, ops, precedence_ops, "expr", "SYMBOL"))) {
         # it is an expression
         exprs_ids <- c(exprs_ids, act_parent)
       } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
@@ -99,7 +112,7 @@ get_unassigned_exprs <- function(pd, id) {
         body_ids <- body_ids[seq(
           any(c("')'", "forcond") %in% act_sblngs$token) + 1, length(body_ids)
         )]
-
+        
         for (body_id in body_ids) {
           act_terms <- get_children(act_prnt_pd, body_id)
           act_terms <- act_terms$text[act_terms$terminal]
@@ -114,11 +127,11 @@ get_unassigned_exprs <- function(pd, id) {
     }
     visit_nodes <- new_visit
   }
-
+  
   # remove assigned exprs and others
   exprs_ids[!sapply(exprs_ids, function(act_id) {
     act_sblngs <- act_pd[act_pd$parent ==
-      act_pd$parent[act_pd$id == act_id], ]
+                           act_pd$parent[act_pd$id == act_id], ]
     any(assigns %in% act_sblngs$token) # the expr is being assigned
   })]
 }
@@ -131,7 +144,7 @@ get_unassigned_exprs <- function(pd, id) {
 get_fun_last_exprs <- function(pd, id) {
   fun_body <- pd$id[pd$parent == id & pd$token == "expr"]
   act_pd <- get_children(pd, fun_body)
-
+  
   # start visiting root nodes
   visit_nodes <- get_roots(act_pd)$id
   last_exprs_ids <- c()
@@ -158,7 +171,36 @@ get_fun_last_exprs <- function(pd, id) {
     }
     visit_nodes <- new_visit
   }
-
+  
   # returns last exprs and their children ids
   get_children(pd, last_exprs_ids)$id
 }
+
+# Checks whether some value is being assigned to all var.
+#
+# @param fpd A parsed data data.frame.
+# @param id A numeric indicating the node ID of the function to search for
+#   unassigned expressions.
+#
+is_var_assigned <- function(fpd, id)
+{
+  fun_ids <- sapply(id, function(act_id){
+    utils::tail(fpd$id[fpd$parent == act_id & fpd$token == "expr"], 1)
+  })
+  
+  act_fpd <- get_children(fpd, fun_ids)
+  
+  checklist <- act_fpd[act_fpd$token == "SYMBOL" & act_fpd$next_lines == 1 & act_fpd$parent == fun_ids, ]
+  check_flag <- NULL
+  if(length(checklist$id) > 0)
+  {
+    itr <- NULL
+    check_flag <- FALSE
+    for(itr in 1:length(checklist$id))
+      check_flag <- append(check_flag, sprintf("Function: %s Variable: %s", (fpd[fpd$parent == fpd[fpd$id == act_fpd[1, ]$parent, ]$parent & fpd$token == "SYMBOL", ]$text), (checklist[itr, ]$text)))
+  } 
+  else
+    check_flag <- TRUE
+  return (check_flag)
+}
+
