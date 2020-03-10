@@ -54,15 +54,18 @@ de_one_pd <- function(pd) {
   fun_def_ids <- pd[pd$token == "FUNCTION", "parent"]
   
   #check if dead expressions have never assigned vars
-  i <- 1
-  for(i in 1:length(fun_def_ids))
+  if(length(fun_def_ids) > 0)
   {
-    if(is_var_assigned(fpd, fun_def_ids[[i]])[[1]] == TRUE)
-      next
-    else
+    i <- 1
+    for(i in 1:length(fun_def_ids))
     {
-      warning("Please remove the unassigned variable or assign value. It may lead to errors.")
-      print(is_var_assigned(fpd, fun_def_ids[[i]])[[2]])
+      if(is_var_assigned(fpd, fun_def_ids[[i]])[[1]] == TRUE)
+        next
+      else
+      {
+        warning("Please remove the unassigned variable or assign value. It may lead to errors.")
+        print(is_var_assigned(fpd, fun_def_ids[[i]])[[2]])
+      }
     }
   }
   
