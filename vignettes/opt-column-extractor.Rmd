@@ -2,7 +2,7 @@
 output: rmarkdown::html_vignette
 title: Efficient Column Extraction
 vignette: >
-  %\VignetteIndexEntry{Dead Code Elimination}
+  %\VignetteIndexEntry{Efficient Column Extraction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
