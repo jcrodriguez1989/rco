@@ -44,6 +44,26 @@ dc_one_file <- function(text) {
 # @param fpd A flatten parsed data data.frame.
 #
 dc_one_fpd <- function(fpd) {
+ 
+  Fun_def_ids <- fpd[fpd$token == "FUNCTION", "parent"]
+  
+  #check if function bodies have never assigned vars
+  if(length(Fun_def_ids) > 0)
+  {
+    i <- 1
+    for (i in 1:length(Fun_def_ids)) {
+      Flag <- Is_Var_Assigned(fpd, Fun_def_ids[[i]])
+      if(Flag[1] == TRUE)
+        next
+      else {
+        warning("Please remove the unassigned variable or assign value. It may lead to errors.")
+        k <- 3
+        for(k in 3:(as.numeric(Flag[2])+1)){
+          print(Flag[k])
+        }
+      }
+    }
+  }
   # first remove code that is after (and equally nested) next, break, or return
   new_fpd <- remove_after_interruption(fpd)
 
@@ -287,4 +307,47 @@ unindent_fpd <- function(fpd, parent_spaces) {
   fpd[fpd$id %in% new_line_ids, "prev_spaces"] <-
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
   fpd
+}
+
+
+Is_Var_Assigned <- function(fpd, id)
+{
+  Fun_Ids <- sapply(id, function(act_id){
+    utils::tail(fpd$id[fpd$parent == act_id & fpd$token == "expr"], 1)
+  })
+  
+  act_fpd <- get_children(fpd, Fun_Ids)
+  
+  
+  Checklist_expr <- NULL
+  Checklist <- NULL
+  Checklist_var <- act_fpd[act_fpd$token == "SYMBOL" & act_fpd$next_lines == 1 & act_fpd$parent == Fun_Ids, ]
+  expr_ids <- act_fpd[act_fpd$parent == Fun_Ids, ]$id
+  j <- 1
+  assignment_exprs <- c("LEFT_ASSIGN", "RIGHT_ASSIGN", "EQ_ASSIGN")
+  sys_call <- c("SYMBOL_FUNCTION_CALL")
+  for(j in seq_len(length(expr_ids))){
+    test_id <- expr_ids[j]
+    if(length(act_fpd[act_fpd$parent == test_id, ]$id) > 0)
+    {
+      if(!any(act_fpd[act_fpd$parent == test_id, ]$token %in% assignment_exprs) & !any(act_fpd[act_fpd$parent == test_id, ]$token %in% sys_call)){
+        Checklist_expr <- rbind(Checklist_expr, act_fpd[act_fpd$id == test_id, ])      
+      }
+    }
+  }
+  Checklist <- rbind(Checklist_expr, Checklist_var)
+  Check_Flag <- NULL
+  if(length(Checklist$id) > 0)
+  {
+    itr <- NULL
+    Check_Flag <- FALSE
+    for(itr in 1:length(Checklist$id))
+    {
+      Check_Flag <- append(Check_Flag, sprintf("Function: %s Variable: %s", (fpd[fpd$parent == fpd[fpd$id == act_fpd[1, ]$parent, ]$parent & fpd$token == "SYMBOL", ]$text), (Checklist[itr, ]$text)))
+    }
+    Check_Flag <- append(Check_Flag, length(Check_Flag), 1)
+  } 
+  else
+    Check_Flag <- TRUE
+  return (Check_Flag)
 }
