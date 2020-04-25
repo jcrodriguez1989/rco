@@ -4,7 +4,9 @@
 \name{all_optimizers}
 \alias{all_optimizers}
 \title{All optimizers list.}
-\format{An object of class \code{list} of length 7.}
+\format{
+An object of class \code{list} of length 7.
+}
 \usage{
 all_optimizers
 }

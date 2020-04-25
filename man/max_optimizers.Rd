@@ -4,7 +4,9 @@
 \name{max_optimizers}
 \alias{max_optimizers}
 \title{Max optimizers list.}
-\format{An object of class \code{list} of length 7.}
+\format{
+An object of class \code{list} of length 7.
+}
 \usage{
 max_optimizers
 }
