@@ -1,7 +1,13 @@
 ---
-output: html_document
-title: "Optimization Strategies Ideas"
+output: rmarkdown::html_vignette
+title: Potential Optimizers
+vignette: >
+  %\VignetteIndexEntry{Potential optimizers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
+# Potential optimizers
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
