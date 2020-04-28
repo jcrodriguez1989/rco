@@ -1,6 +1,6 @@
 ---
 output: rmarkdown::html_vignette
-title: Potential Optimizers
+title: "Potential Optimizers"
 vignette: >
   %\VignetteIndexEntry{Potential optimizers}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,9 +13,10 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## 1. Jump Threading
+## Jump Threading
 
 ### Idea
+
 When several conditionals present the same boolean condition, merging their inside actions would avoid computing the condition several times. Also in the cases where a second `if` statement has been used with the exact negation of the condition of the first `if`, the second `if` could then be incorporated in an `else` statement.
 
 ### Code Examples
@@ -66,14 +67,12 @@ n <- 100000
 autoplot(microbenchmark(jump(n), jump_opt(n)))
 ```
 
-### Drawbacks
-
-  **To-Do**
   
-## 2. Inline Expansion
+## Inline Expansion
 
 ### Idea
-Replacing a function call site with the body of the called function is called Inline Expansion. This eliminates the function calling overhead and also the overhead of return call from a function. It also saves the overhead of variables push/pop on the stack while, function calling
+
+Replacing a function call site with the body of the called function is called "Inline Expansion". This eliminates the function calling overhead and also the overhead of return call from a function. It also saves the overhead of variables push/pop on the stack while function calling
 
 ### Code Examples
 
@@ -111,16 +110,14 @@ n <- 1000
 autoplot(microbenchmark(inline(n), inline_opt(n)))
 ```
 
-### Drawbacks
-
-  **To-Do**
   
-## 3. Memory Pre-Allocation
+## Memory Pre-Allocation
 
 ### Idea
 
-### Code Examples
 As a general rule of thumb, in any programming language we should undertake the memory management as much as possible. When we grow a vector inside a loop, the vector asks the processor for extra space in between the running program and then proceeds, once it gets the required memory. This process is repeated for every iteration of the loop. Thus we should pre-allocate the required memory to a vector to avoid such delays.
+
+### Code Examples
 
 #### Unoptimized Code
 
@@ -137,17 +134,10 @@ pre_mem <- function(n) {
 
 ```{r pre_allocation_code_op}
 pre_mem_opt <- function(n) {
-  vec <- vector(mode = "numeric", length = n)
-  for (i in seq_len(n)) {
-    vec[i] <- i
-  }
-}
-
-pre_mem_opt_unknown_type <- function(n) {
   vec <- vector(length = n)
   for (i in seq_len(n)) {
     vec[i] <- i
-  }  
+  }
 }
 
 ```
@@ -161,14 +151,11 @@ n <- 100000
 autoplot(microbenchmark(pre_mem(n), pre_mem_opt(n), pre_mem_opt_unknown_type(n)))
 ```
 
-### Drawbacks
-
-  **To-Do**
-
-## 4. Vectorization
+## Vectorization
 
 ### Idea
-A golden rule in R programming is to access the underlying C/Fortran routines as quickly as possible; the fewer functions calls required to achieve this, the better.Many R functions are therefore vectorised, that is the function’s inputs and/or outputs naturally work with vectors, reducing the number of function calls required.
+
+A golden rule in R programming is to access the underlying C/Fortran routines as quickly as possible; the fewer functions calls required to achieve this, the better. Many R functions are therefore vectorised, that is the function’s inputs and/or outputs naturally work with vectors, reducing the number of function calls required.
 
 ### Code Examples
 
@@ -204,324 +191,11 @@ library("microbenchmark")
 n <- 10000
 autoplot(microbenchmark(non_vectorized(n), vectorized(n)))
 ```
-
-### Drawbacks
-
-  **To-Do**
-
-## 5. Caching
-
-### Idea
-The idea of caching is similar to the concept of dynamic programming where the results of repeating sub-problems of a recursion are stored/cached and simply called every time instead of recomputating.
-
-### Code Examples
-
-#### Unoptimized Code
-
-```{r cache_code_og, echo=TRUE, warning=FALSE}
-
-library("memoise")
-
-fibR <- function(x) {
-  if (x == 0) return(0)
-  if (x == 1) return(1)
-  Recall(x - 1) + Recall(x - 2)
-}
-```
-
-#### Proposed Optimized Code
-
-```{r cache_code_op, echo=TRUE, warning=FALSE}
-mem_fibR <- memoise::memoise(fibR)
-```
-
-### Benchmark
-
-```{r cache_benchmark, warning=FALSE, message=FALSE}
-library("ggplot2")
-library("microbenchmark")
-n <- 20
-autoplot(microbenchmark(fibR(n), mem_fibR(n)))
-```
-
-### Drawbacks
-
-  **To-Do**
-
-## 6. Reversing elements
-
-### Idea
-Instead of nesting a function inside another function, it is generally faster to use a single more specific function. The `rev()` function provides a reversed version of its argument. If you wish to sort in decreasing order, `sort(x, decreasing = TRUE)` is around 10% faster than `rev(sort(x))`.
-
-### Code Examples
-
-#### Unoptimized Code
-
-```{r rev_code_og, echo = TRUE, warning = FALSE}
-reverse_fun <- function(n) {
-  vec <- sample(seq_len(100000), n)
-  rev(sort(vec))
-}
-```
-
-#### Proposed Optimized Code
-
-```{r rev_code_op, echo = TRUE, warning = FALSE}
-reverse_fun_opt <- function(n) {
-  vec <- sample(seq_len(100000), n)
-  sort(vec, decreasing = TRUE)
-}
-```
-
-### Benchmark
-
-```{r rev_benchmark, warning = FALSE, echo = TRUE, message = FALSE}
-library("ggplot2")
-library("microbenchmark")
-n <- 1000
-autoplot(microbenchmark(reverse_fun(n), reverse_fun_opt(n), times = 10))
-```
-
-### Drawbacks
-
-  **To-Do**
   
-## 7. Efficient Sorting
-
-### Idea
-There are currently three sorting algorithms, `c("shell", "quick", "radix")` that can be specified in the `sort()` function; with `radix` being a new addition to `R 3.3`. Typically the `radix` **(the non-default option)** is the most computationally efficient option for most situations (it is around 20% faster when sorting a large vector of doubles)
-
-### Code Examples
-
-#### Unoptimized Code
-
-```{r sort_code_og, echo = TRUE, warning = FALSE}
-sort_fun <- function(n) {
-  vec <- sample(seq_len(1000000000), n)
-  sort(vec)
-}
-```
-
-#### Proposed Optimized Code
-
-```{r sort_code_op, echo = TRUE, warning = FALSE}
-
-sort_fun_opt <- function(n) {
-  vec <- sample(seq_len(100000000), n)
-  sort(vec, method = "radix")
-}
-```
-
-### Benchmark
-
-```{r sort_benchmark, warning = FALSE, echo = TRUE, message = FALSE}
-library("ggplot2")
-library("microbenchmark")
-n <- 100000
-autoplot(microbenchmark(sort_fun(n), sort_fun_opt(n)))
-```
-
-### Drawbacks
-
-  **To-Do**
-  
-## 8. min/max using which function
-
-### Idea
-Instead of nesting a function inside another function, it is generally faster to use a single more specific function. Below is a similar analogy for finding minimum and maximum values in a vector values.
-
-### Code Examples
-
-#### Unoptimized Code
-
-```{r which_code_og, echo = TRUE, warning = FALSE}
-which_fun <- function(n) {
-  vec <- sample(seq_len(100000), n)
-  which(vec == min(vec))
-  which(vec == max(vec))
-}
-```
-
-#### Proposed Optimized Code
-
-```{r which_code_op, echo = TRUE, warning = FALSE}
-which_fun_opt <- function (n) {
-  vec <- sample(seq_len(100000), n)
-  which.min(vec)
-  which.max(vec)
-}
-```
-
-### Benchmark
-
-```{r which_benchmark, warning = FALSE, message = FALSE}
-library("ggplot2")
-library("microbenchmark")
-n <- 1000
-autoplot(microbenchmark(which_fun(n), which_fun_opt(n)))
-```
-
-### Drawbacks
-
-  **To-Do**
-  
-## 9. Row and Column Operations
+## Efficient Column Extraction
 
 ### Idea
 
-### Code Example
-Instead of using apply family of functions on rows and columns of a matrix/dataframe for simple/trivial operations, it is often more efficient to use a single specialized function for the same. Below is a similar analogy for calculating `mean` and `sum` of a row and column of a matrix respectively.
-
-#### Unoptimized Code
-
-```{r rowCol_code_og, echo = TRUE, warning = FALSE}
-rowCol_fun <- function () {
-  mat <- matrix(c(1:81), nrow = 9, ncol = 9)
-  apply(mat, 1, mean)
-  apply(mat, 2, sum)
-}
-```
-
-#### Proposed Optimized Code
-
-```{r rowCol_code_op, echo = TRUE, warning = FALSE}
-rowCol_fun_opt <- function (n) {
-  mat <- matrix(c(1:81), nrow = 9, ncol = 9)
-  rowMeans(mat)
-  colSums(mat)
-}
-```
-
-For more row and column operations look up the **matrixStats** package.
-
-### Benchmark
-
-```{r rowCol_benchmark, warning = FALSE, message = FALSE}
-library("ggplot2")
-library("microbenchmark")
-autoplot(microbenchmark(rowCol_fun(), rowCol_fun_opt()))
-```
-
-### Drawbacks
- 
-  **To-Do**
-  
-## 10. Detect NA values
-
-### Idea
-Instead of nesting a function inside another function, it is generally faster to use a single more specific function. Below is a similar analogy for detecting NA values.
-
-### Code Examples
-
-#### Unoptimized Code
-```{r detectNA_code_og}
-detectNA <- function(n) {
-  val <- sample(seq_len(100000), n)
-  val <- append(val, NA, as.integer(n/2))
-  any(is.na(val))
-}
-```
-
-#### Proposed Optimized Code
-```{r detectNA_code_op}
-
-detectNA_opt <- function(n) {
-  val <- sample(seq_len(100000), n)
-  val <- append(val, NA, as.integer(n/2))
-  anyNA(val)  
-}
-```
-
-### Benchmark
-
-```{r detectNA_benchmark, warning = FALSE, message = FALSE}
-library("ggplot2")
-library("microbenchmark")
-n <- 10000
-autoplot(microbenchmark(detectNA(n), detectNA_opt(n)))
-```
-
-### Drawbacks
-  
-  **To-Do**
-  
-## 11. Matrix v/s Data Frames(Lists)
-
-### Idea
-This optimization is based on the idea that, it takes more time to process/read a vectsor with different data types than a vector with homogeneous data type. Since matrix consists of a homogeneous data type and lists could accomodate varying data types, lists should be converted to matrices whenever possible.
-
-### Code Examples
-
-#### Unoptimized Code
-```{r mat_df_code_og}
-df_fun <- function(){
-  mtcars[4, ]
-}
-```
-
-#### Proposed Optimized Code
-```{r mat_df_code_op}
-
-mat_fun <- function(){
-  mat <- matrix(1:352, nrow = 32, ncol = 11)
-  mat[4, ]
-}
-```
-
-### Benchmark
-
-```{r mat_df_benchmark, warning = FALSE, message = FALSE}
-library("ggplot2")
-library("microbenchmark")
-autoplot(microbenchmark(df_fun(), mat_fun()))
-```
-
-### Drawbacks
-
-  **To-Do**
-  
-## 12. Use of Native Binary Formats for I/O
-
-### Idea
-Using a data type that is native to R should intuitively result in faster reading/loading times. As an added example, when the file are stored in native file formats, such as `.rds`, they are also quite heavily compressed, resulting in efficient usage of resources.
-
-### Code Examples
-
-#### Unoptimized Code
-
-```{r io_fun_code_og}
-mtcars$cyl <- as.factor(mtcars$cyl)
-
-io_fun <- function() {
-  write.csv(mtcars, file = "mtcars.csv")
-  read.csv("mtcars.csv")
-}
-```
-
-#### Proposed Optimized Code
-
-```{r io_fun_code_op}
-io_opt_fun <- function() {
-  saveRDS(mtcars, file = "mtcars.rds")  
-  readRDS("mtcars.rds")
-}
-```
-
-### Benchmark
-
-```{r io_fun_benchmark, warning = FALSE, message = FALSE}
-library("ggplot2")
-library("microbenchmark")
-autoplot(microbenchmark(io_fun(), io_opt_fun()))
-```
-
-### Drawbacks
-
-  **To-Do**
-  
-## 13. Efficient Column Extraction
-
-### Idea
 The idea would be to replace the different one-column extraction alternatives by the .subset2 function.
 
 ### Code Examples
@@ -564,11 +238,15 @@ autoplot(microbenchmark(
 
 ### Drawbacks
 
-  **To-Do**
 
-## 14. Efficient Value Extraction
+1. For some R classes, the `[[ ]]` operator and `.subset` work differently. For instance, they seem to be equivalent for `data.frame` but are not the same for `matrix` class.
+
+2. Moreover, both [[ ]] and .subset2  are functions and in R, any function can be overwritten. Thus the above optimization can be made to fail just by redefining, say, the the `.subset2` function.
+
+## Efficient Value Extraction
 
 ### Idea
+
 The idea would be to replace the different one-value extraction alternatives by the .subset2 function
 
 ### Code Examples
@@ -608,62 +286,66 @@ autoplot(microbenchmark(
 ))
 ```
 
-### Drawbacks
+### Drawback
 
-  **To-Do**
+1. For some R classes, the `[[ ]]` operator and `.subset` work differently. For instance, they seem to be equivalent for `data.frame` but are not the same for `matrix` class.
 
-## External packages that can be explored for further speed-ups
+2. Moreover, both [[ ]] and .subset2  are functions and in R, any function can be overwritten. Thus the above optimization can be made to fail just by redefining, say, the the `.subset2` function.
 
-### For efficient programming
-* **compiler**
 
-* **memoise**
 
-### For Efficient Data Carpentry
-* **tibble**
-  
-* **tidyr**
-  
-* **stringr**
-  
-* **readr**
-  
-* **dplyr**
-  
-* **data.table**  
-  
-### For efficient input/output
-* **rio**
+<!-- ## External packages that can be explored for further speed-ups -->
 
-* **readr**
-  
-* **data.table**
-  
-* **feather**
+<!-- ### For efficient programming -->
+<!-- * **compiler** -->
 
-### For efficient Optimization
-* **profvis**
+<!-- * **memoise** -->
 
-* **Rcpp**
+<!-- ### For Efficient Data Carpentry -->
+<!-- * **tibble** -->
 
-### For efficient set-up and hardware
-* **benchmarkme**
+<!-- * **tidyr** -->
 
-### For efficient collaboration
-* **lubridate**
+<!-- * **stringr** -->
 
-### For efficient workflow
-* **DiagrammeR**
+<!-- * **readr** -->
 
-### Some additional comments
+<!-- * **dplyr** -->
 
-* `if` is faster than `ifelse`, but the speed boost of `if` isn't particularly interesting since it isn't something that can easily be harnessed through vectorization. That is to say, `if` is only advantageous over `ifelse` when the *cond/test argument is of length 1*.
+<!-- * **data.table**   -->
 
-* A factor is just a vector of integers with associated levels. Occasionally we want to convert a factor into its numerical equivalent. The most efficient way of doing this (especially for long factors) is:
+<!-- ### For efficient input/output -->
+<!-- * **rio** -->
 
-  `as.numeric(levels(f))[f]`
-  
-* The non-vectorised version of R logical vectors, `&&` and `||`, only executes the second component if needed. This is efficient and leads to neater. Care must be taken not to use `&&` or `||` on vectors since it only evaluates the first element of the vector, giving the incorrect answer.
+<!-- * **readr** -->
+
+<!-- * **data.table** -->
+
+<!-- * **feather** -->
+
+<!-- ### For efficient Optimization -->
+<!-- * **profvis** -->
+
+<!-- * **Rcpp** -->
+
+<!-- ### For efficient set-up and hardware -->
+<!-- * **benchmarkme** -->
+
+<!-- ### For efficient collaboration -->
+<!-- * **lubridate** -->
+
+<!-- ### For efficient workflow -->
+<!-- * **DiagrammeR** -->
+
+<!-- ### Some additional comments -->
+
+<!-- * `if` is faster than `ifelse`, but the speed boost of `if` isn't particularly interesting since it isn't something that can easily be harnessed through vectorization. That is to say, `if` is only advantageous over `ifelse` when the *cond/test argument is of length 1*. -->
+
+<!-- * A factor is just a vector of integers with associated levels. Occasionally we want to convert a factor into its numerical equivalent. The most efficient way of doing this (especially for long factors) is: -->
+
+<!--   `as.numeric(levels(f))[f]` -->
+
+<!-- * The non-vectorised version of R logical vectors, `&&` and `||`, only executes the second component if needed. This is efficient and leads to neater. Care must be taken not to use `&&` or `||` on vectors since it only evaluates the first element of the vector, giving the incorrect answer. -->
 
   
 
