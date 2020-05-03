@@ -11,8 +11,8 @@
 #'
 #' @examples
 #' ## Start the GUI
-#' \donttest{
-#' rco_gui("")
+#' \dontrun{
+#' rco_gui("code_optimizer")
 #' }
 #' @export
 #'

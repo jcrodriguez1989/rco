@@ -2,3 +2,8 @@
 .RData
 .Rproj.user
 .httr-oauth
+hex-stickers
+.R-version
+renv.lock
+.Rprofile
+renv/
