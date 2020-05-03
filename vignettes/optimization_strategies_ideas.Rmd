@@ -1,0 +1,352 @@
+---
+output: rmarkdown::html_vignette
+title: "Potential Optimizers"
+vignette: >
+  %\VignetteIndexEntry{Potential optimizers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Potential optimizers
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Jump Threading
+
+### Idea
+
+When several conditionals present the same boolean condition, merging their inside actions would avoid computing the condition several times. Also in the cases where a second `if` statement has been used with the exact negation of the condition of the first `if`, the second `if` could then be incorporated in an `else` statement.
+
+### Code Examples
+
+#### Unoptimized Code
+```{r jump_thread_code_og, echo=TRUE, warning=FALSE}
+jump <- function(n){
+  evens <- 0
+  evens2 <- 0
+  odds <- 0
+  for (i in seq_len(n)) {
+    if (i %% 2 == 0) { # same logical as next if condition (can be merged)
+      evens <- evens + 1
+    }
+    if (i %% 2 == 0) {
+      evens2 <- evens2 + 1
+    }
+    if (!(i %% 2 == 0)) { # exact negation as previous if (can be an else)
+      odds <- odds + 1
+    }
+  }
+}
+```
+
+#### Proposed Optimized Code
+```{r jump_thread_code_op, echo=TRUE, warning=FALSE}
+jump_opt <- function(n) {
+  evens <- 0
+  evens2 <- 0
+  odds <- 0
+  for (i in seq_len(n)) {
+    if( i %% 2 == 0) { # merged
+      evens <- evens + 1
+      evens2 <- evens2 + 1
+    } else { # converted to else
+      odds <- odds + 1
+    }
+  }
+}
+```
+
+### Benchmark
+
+```{r jump_thread_benchmark, warning=FALSE, message=FALSE}
+library("ggplot2")
+library("microbenchmark")
+n <- 100000
+autoplot(microbenchmark(jump(n), jump_opt(n)))
+```
+
+  
+## Inline Expansion
+
+### Idea
+
+Replacing a function call site with the body of the called function is called "Inline Expansion". This eliminates the function calling overhead and also the overhead of return call from a function. It also saves the overhead of variables push/pop on the stack while function calling
+
+### Code Examples
+
+#### Unoptimized Code
+```{r inline_expansion_code_og, echo = TRUE, warning = TRUE}
+cubed <- function(x){
+  x*x*x
+}
+
+inline <- function(n) {
+  to_cubes <- 0
+  for(i in seq_len(n)) {
+    to_cubes <- to_cubes +  cubed(i)
+  }
+}
+```
+
+#### Proposed Optimized Code
+
+```{r inline_expansion_code_op, echo = TRUE, warning = TRUE}
+inline_opt <- function(n) {
+  to_cubes <- 0
+  for (i in seq_len(n)){
+   to_cubes <- to_cubes + (i * i * i) #function inlined 
+  }
+}
+```
+
+### Benchmark
+
+```{r inline_expansion_benchmark, echo = TRUE, warning = FALSE, message= FALSE}
+library("ggplot2")
+library("microbenchmark")
+n <- 1000
+autoplot(microbenchmark(inline(n), inline_opt(n)))
+```
+
+  
+## Memory Pre-Allocation
+
+### Idea
+
+As a general rule of thumb, in any programming language we should undertake the memory management as much as possible. When we grow a vector inside a loop, the vector asks the processor for extra space in between the running program and then proceeds, once it gets the required memory. This process is repeated for every iteration of the loop. Thus we should pre-allocate the required memory to a vector to avoid such delays.
+
+### Code Examples
+
+#### Unoptimized Code
+
+```{r pre_allocation_code_og}
+pre_mem <- function(n) {
+  vec <- NULL
+  for (i in seq_len(n)) {
+    vec[i] <- i
+  }
+}
+```
+
+#### Proposed Optimized Code
+
+```{r pre_allocation_code_op}
+pre_mem_opt <- function(n) {
+  vec <- vector(length = n)
+  for (i in seq_len(n)) {
+    vec[i] <- i
+  }
+}
+
+```
+
+### Benchmark
+
+```{r pre_allocate_benchmark, echo = TRUE, warning = FALSE, message= FALSE}
+library("ggplot2")
+library("microbenchmark")
+n <- 100000
+autoplot(microbenchmark(pre_mem(n), pre_mem_opt(n), pre_mem_opt_unknown_type(n)))
+```
+
+## Vectorization
+
+### Idea
+
+A golden rule in R programming is to access the underlying C/Fortran routines as quickly as possible; the fewer functions calls required to achieve this, the better. Many R functions are therefore vectorised, that is the function’s inputs and/or outputs naturally work with vectors, reducing the number of function calls required.
+
+### Code Examples
+
+#### Unoptimized Code
+
+```{r vectorization_code_og}
+non_vectorized <- function(n) {
+  v1 <- seq_len(n)
+  v2 <- length(seq.int(n+2, n+1000, 2))
+  res <- vector(length = length(v1))
+  for (i in seq_len(n)) {
+    res[i] <- v1[i] + v2[i]
+  }
+}
+```
+
+#### Proposed Optimized Code
+
+```{r vectorization_code_op}
+vectorized <- function(n) {
+  v1 <- seq_len(n)
+  v2 <- length(seq.int(n+2, n+1000, 2))
+  res <- v1 + v2
+}
+
+```
+
+### Benchmark
+
+```{r vectorized_benchmark, echo = TRUE, warning = FALSE, message= FALSE}
+library("ggplot2")
+library("microbenchmark")
+n <- 10000
+autoplot(microbenchmark(non_vectorized(n), vectorized(n)))
+```
+  
+## Efficient Column Extraction
+
+### Idea
+
+The idea would be to replace the different one-column extraction alternatives by the .subset2 function.
+
+### Code Examples
+
+#### Unoptimized Code
+
+```{r col_ext_og}
+col_ext_fun <- function(){
+  mtcars[, 11]
+  mtcars$carb
+  mtcars[[c(11)]]
+  mtcars[[11]]  
+}
+```
+
+#### Proposed Optimized Code
+
+```{r col_ext_op}
+col_ext_op_fun <- function(){
+  .subset2(mtcars, 11)
+  .subset2(mtcars, 11)
+  .subset2(mtcars, 11)
+  .subset2(mtcars, 11)
+}
+```
+
+### Benchmark
+
+```{r col_ext_benchmark, warning = FALSE, message = FALSE}
+library("ggplot2")
+library("microbenchmark")
+autoplot(microbenchmark(
+  mtcars[, 11],
+  mtcars$carb,
+  mtcars[[c(11)]],
+  mtcars[[11]],
+  .subset2(mtcars, 11)
+))
+```
+
+### Drawbacks
+
+
+1. For some R classes, the `[[ ]]` operator and `.subset` work differently. For instance, they seem to be equivalent for `data.frame` but are not the same for `matrix` class.
+
+2. Moreover, both [[ ]] and .subset2  are functions and in R, any function can be overwritten. Thus the above optimization can be made to fail just by redefining, say, the the `.subset2` function.
+
+## Efficient Value Extraction
+
+### Idea
+
+The idea would be to replace the different one-value extraction alternatives by the .subset2 function
+
+### Code Examples
+
+#### Unoptimized Code
+```{r val_ext_og}
+val_ext_fun <- function(){
+  mtcars[32, 11]
+  mtcars$carb[32]
+  mtcars[[c(11, 32)]]
+  mtcars[[11]][32]
+}
+```
+
+#### Proposed Optimized Code
+
+```{r val_ext_op}
+val_ext_op_fun <- function(){
+ .subset2(mtcars, 11)[32] 
+  .subset2(mtcars, 11)[32]
+  .subset2(mtcars, 11)[32]
+  .subset2(mtcars, 11)[32]
+}
+```
+### Benchmark
+
+```{r val_ext_benchmark, warning = FALSE, message = FALSE}
+library("ggplot2")
+library("microbenchmark")
+autoplot(microbenchmark(
+  mtcars[32, 11],
+  mtcars$carb[32],
+  mtcars[[c(11, 32)]],
+  mtcars[[11]][32],
+  .subset2(mtcars, 11)[32],
+  times = 1000L
+))
+```
+
+### Drawback
+
+1. For some R classes, the `[[ ]]` operator and `.subset` work differently. For instance, they seem to be equivalent for `data.frame` but are not the same for `matrix` class.
+
+2. Moreover, both [[ ]] and .subset2  are functions and in R, any function can be overwritten. Thus the above optimization can be made to fail just by redefining, say, the the `.subset2` function.
+
+
+
+<!-- ## External packages that can be explored for further speed-ups -->
+
+<!-- ### For efficient programming -->
+<!-- * **compiler** -->
+
+<!-- * **memoise** -->
+
+<!-- ### For Efficient Data Carpentry -->
+<!-- * **tibble** -->
+
+<!-- * **tidyr** -->
+
+<!-- * **stringr** -->
+
+<!-- * **readr** -->
+
+<!-- * **dplyr** -->
+
+<!-- * **data.table**   -->
+
+<!-- ### For efficient input/output -->
+<!-- * **rio** -->
+
+<!-- * **readr** -->
+
+<!-- * **data.table** -->
+
+<!-- * **feather** -->
+
+<!-- ### For efficient Optimization -->
+<!-- * **profvis** -->
+
+<!-- * **Rcpp** -->
+
+<!-- ### For efficient set-up and hardware -->
+<!-- * **benchmarkme** -->
+
+<!-- ### For efficient collaboration -->
+<!-- * **lubridate** -->
+
+<!-- ### For efficient workflow -->
+<!-- * **DiagrammeR** -->
+
+<!-- ### Some additional comments -->
+
+<!-- * `if` is faster than `ifelse`, but the speed boost of `if` isn't particularly interesting since it isn't something that can easily be harnessed through vectorization. That is to say, `if` is only advantageous over `ifelse` when the *cond/test argument is of length 1*. -->
+
+<!-- * A factor is just a vector of integers with associated levels. Occasionally we want to convert a factor into its numerical equivalent. The most efficient way of doing this (especially for long factors) is: -->
+
+<!--   `as.numeric(levels(f))[f]` -->
+
+<!-- * The non-vectorised version of R logical vectors, `&&` and `||`, only executes the second component if needed. This is efficient and leads to neater. Care must be taken not to use `&&` or `||` on vectors since it only evaluates the first element of the vector, giving the incorrect answer. -->
+
+  
+
+
