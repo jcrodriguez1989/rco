@@ -1,3 +1,7 @@
+# rco 1.0.1
+
+  - Bug fixing.
+
 # rco 1.0.0
 
   - Version bump to submit to CRAN.
