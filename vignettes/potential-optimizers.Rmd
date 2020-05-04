@@ -233,7 +233,7 @@ autoplot(microbenchmark(
 
 1. For some R classes, the `[[ ]]` operator and `.subset` work differently. For instance, they seem to be equivalent for `data.frame` but are not the same for `matrix` class.
 
-2. Moreover, both `[[ ]]` and `.subset2`  are functions and in R, any function can be overwritten. Thus the above optimization can be made to fail just by redefining, say, the the `.subset2` function.
+2. Moreover, both `[[ ]]` and `.subset2`  are functions and in R, any function can be overwritten. Thus the above optimization can be made to fail just by redefining, say, the `.subset2` function.
 
 <!-- ## External packages that can be explored for further speed-ups -->
 
