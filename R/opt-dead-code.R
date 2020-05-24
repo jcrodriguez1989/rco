@@ -15,62 +15,15 @@
 #' )
 #' cat(opt_dead_code(list(code))$codes[[1]])
 #' 
-#' verify <- paste(
-#'  "function(age){",
-#'  "  if (age>13 & age<17){",
-#'  "    result  <- c('Wow! You can participate in GCI')",              
-#'  "  }",
-#'  "  else", {
-#'  "    result <- c('Sorry! You cannot participate in GCI')",
-#'  "  }",
-#'  "  return (result)", 
-#'  "  dead <- c('This is dead code!')",
-#'  "  return (dead)",
-#'  "}",
-#'  sep = "\n"
+#' @examples 
+#' code1 <- paste( 
+#'      "function(num){"
+#'      "return (num + 4)"
+#'      "print(num)"
+#'    "}"
 #' )
-#' cat(opt_dead_code(list(verify))$codes[[1]])
-#' 
-#' @export
-#'
-# example (unoptimized)
-# This code is unoptimized as the variable x is never used
-#x <- 1
-#y <- 2
-#z <- y + 1
-
-# example (optimised):
-# The x variable can be deleted
-#y <- 2
-#z <- y + 1
-#
-#
-# example (unoptimized)
-# Unoptimized because the "print()" statement will never run as 
-# return will exit this bit of code
-#f <- function(num){
-#    return (num + 4)
-#    print(num)
-#}
-#
-# example (optimised):
-# The "print()" function can be deleted
-#f <- function(num){
-#    return(num + 4)
-#}
-#
-#
-# example (unoptimized)
-# The expression "10 > 5" will always be true so the code
-# is doing a calculation making it less effiecient
-#if (10 > 5){
-#    print("Ten is bigger than five")
-#}
-#
-# example (optimised):
-# The if ststement can be deleted
-#print("Ten is bigger than five")
-#'                                               
+#' cat(opt_dead_code(list(code1))$codes[[1]])
+#' @export                                              
 
 opt_dead_code <- function(texts) {
   res <- list()
