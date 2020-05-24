@@ -16,6 +16,46 @@
 #' cat(opt_dead_code(list(code))$codes[[1]])
 #' @export
 #'
+# example (unoptimized)
+# This code is unoptimized as the variable x is never used
+#x <- 1
+#y <- 2
+#z <- y + 1
+
+# example (optimised):
+# The x variable can be deleted
+#y <- 2
+#z <- y + 1
+#
+#
+# example (unoptimized)
+# Unoptimized because the "print()" statement will never run as 
+# return will exit this bit of code
+#f <- function(num){
+#    return (num + 4)
+#    print(num)
+#}
+#
+# example (optimised):
+# The "print()" function can be deleted
+#f <- function(num){
+#    return(num + 4)
+#}
+#
+#
+# example (unoptimized)
+# The expression "10 > 5" will always be true so the code
+# is doing a calculation making it less effiecient
+#if (10 > 5){
+#    print("Ten is bigger than five")
+#}
+#
+# example (optimised):
+# The if ststement can be deleted
+#print("Ten is bigger than five")
+
+
+
 opt_dead_code <- function(texts) {
   res <- list()
   res$codes <- lapply(texts, dc_one_file)
