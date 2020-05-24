@@ -14,15 +14,7 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_code(list(code))$codes[[1]])
-#' 
-#' @examples 
-#' code1 <- paste( 
-#'      "function(num){"
-#'      "return (num + 4)"
-#'      "print(num)"
-#'    "}"
-#' )
-#' cat(opt_dead_code(list(code1))$codes[[1]])
+#'
 #' @export                                              
 
 opt_dead_code <- function(texts) {
