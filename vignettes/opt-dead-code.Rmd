@@ -32,10 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-Dead codes are the instructions or codes in the program which are executed but their result is never used in the program.
-Dead code elimination removes such useless codes which reduces the space taken by the program in the memory and the execution time.The elimination of Dead code does not affects the result of the program.
-Dead code refers to code that will not affect the output of code, this code has no purpose so we can remove it and reduce the file size making programs smaller and therefore more efficient. This optimization can be useful as old code that is modified might contain code that will never run, examples might be a line of code after a return statement or an if statement that always returns TRUE.
-
+Dead code elimination (also known as DCE, dead code removal, dead code stripping, or dead code strip) is an optimization to remove code which does not affect the program results. Removing such code has several benefits: it shrinks program size, an important consideration in some contexts, and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure. Dead code includes code that can never be executed (unreachable code), and code that only affects dead variables (written to, but never read again), that is, irrelevant to the program. 
 
 ## Background
 
