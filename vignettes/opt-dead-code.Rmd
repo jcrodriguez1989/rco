@@ -36,6 +36,7 @@ Dead codes are the instructions or codes in the program which are executed but t
 Dead code elimination removes such useless codes which reduces the space taken by the program in the memory and the execution time.The elimination of Dead code does not affects the result of the program.
 Dead code refers to code that will not affect the output of code, this code has no purpose so we can remove it and reduce the file size making programs smaller and therefore more efficient. This optimization can be useful as old code that is modified might contain code that will never run, examples might be a line of code after a return statement or an if statement that always returns TRUE.
 
+
 ## Background
 
 Dead Code Elimination is an optimization that removes code which does not affect the program results. You might wonder why someone would write this type of source code, but it can easily creep into large, long-lived programs even at the source code level. Removing such code has several benefits: it shrinks program size and it allows the running program to avoid executing irrelevant operations, which reduces its running time. It can also enable further optimizations by simplifying program structure.
