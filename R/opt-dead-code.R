@@ -15,7 +15,7 @@
 #' )
 #' cat(opt_dead_code(list(code))$codes[[1]])
 #' @export                                              
-
+#'
 opt_dead_code <- function(texts) {
   res <- list()
   res$codes <- lapply(texts, dc_one_file)
