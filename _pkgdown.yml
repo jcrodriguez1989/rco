@@ -28,6 +28,8 @@ navbar:
       menu:
         - text: "Contributing an Optimizer"
           href: articles/contributing-an-optimizer.html
+        - text: "Potential Optimizers"
+          href: articles/potential-optimizers.html
         - text: "Docker Image"
           href: articles/docker-readme.html
     - text: "News"
