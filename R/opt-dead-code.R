@@ -288,6 +288,3 @@ unindent_fpd <- function(fpd, parent_spaces) {
     fpd[fpd$id %in% new_line_ids, "prev_spaces"] - prnt_diff
   fpd
 }
-
-
-
