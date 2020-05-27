@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-Dead code are pieces of code that do not affect the output of a program. The removal of these unnecessary code lines can be defined as Dead Code Elimination. These code lines do not serve any purpose in the main program flow because these codes will never be executed mainly because the condition for their execution is logically impossible/infeasible. This removal results in perfomance enhancements. 
+Dead code are pieces of code that do not affect the output of a program. The removal of these unnecessary code lines can be defined as Dead Code Elimination. These code lines do not serve any purpose in the main program flow because these codes will never be executed mainly because the condition for their execution is logically impossible/infeasible. This removal results in performance enhancements. 
 
 ## Background
 
