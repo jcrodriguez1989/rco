@@ -14,7 +14,7 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_code(list(code))$codes[[1]])
-#' @export
+#' @export                                              
 #'
 opt_dead_code <- function(texts) {
   res <- list()
