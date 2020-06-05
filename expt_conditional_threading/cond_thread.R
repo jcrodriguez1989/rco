@@ -5,11 +5,14 @@ text1 <- paste(list(
   "if(num %% 2) {",
   "odd_sum <- odd_sum + num",
   "}",
-  " ",
-  " ",
-  " ",
   "if(!(num %% 2)) {",
   "even_sum <- even_sum + num",
+  "}",
+  "if(num <= 5) {",
+  "print(num %% 5)",
+  "}",
+  "if(num > 5) {",
+  "print(num)",
   "}",
   sep = "\n"
 ))
@@ -122,9 +125,83 @@ first_if_expr <- function(fpd, node_id) {
 ## whether the expression of the second IF statement is an exact negation of the expr of the first IF statement or not.
 
 check_negation <- function(fpd, node_id) {
-  
+  first_expr <- fpd[fpd$id == first_if_expr(fpd, node_id), "text"]
+  second_expr <- fpd[fpd$id == check_consecutive_if(fpd, node_id), "text"]
+  check_expr1 <- gsub(" ", "", paste("!", first_expr, sep = ""), fixed = TRUE)
+  check_expr2 <- gsub(" ", "", paste("!","(", first_expr, ")", sep = ""), fixed = TRUE)
+  second_expr_no_whitespace <- gsub(" ", "", second_expr, fixed = TRUE)
+  if(check_expr1 == second_expr_no_whitespace) {
+    return (check_consecutive_if(fpd, node_id))
+  } 
+  else if(check_expr2 == second_expr_no_whitespace) {
+    return (check_consecutive_if(fpd, node_id))
+  } 
+  else 
+    return (FALSE)
 }
 
+## This function will help us to compare the expressions obtained from inside the two IF statements and it will determine
+## whether the expression of the second IF statement is the only other logical possibilty of first IF statement or not.
+
+check_comparsion_logic_ge <- function(fpd, node_id) {
+  first_expr <- fpd[fpd$id == first_if_expr(fpd, node_id), "text"]
+  second_expr <- fpd[fpd$id == check_consecutive_if(fpd, node_id), "text"]
+  if(length(grep(">=", first_expr)) > 0) {
+    first_expr <- gsub(" ", "", first_expr, fixed = T)
+    first_expr <- gsub(">=", "<", first_expr)
+    second_expr <- gsub(" ", "", second_expr, fixed = TRUE)
+    if(first_expr == second_expr) {
+      return (check_consecutive_if(fpd, node_id))
+    } else {
+      return (FALSE)
+    }
+  } 
+  else if(length(grep(">=", second_expr)) > 0) {
+    second_expr <- gsub(" ", "", second_expr, fixed = TRUE)
+    first_expr <- gsub(" ", "", first_expr, fixed = TRUE)
+    second_expr <- gsub(">=", "<", second_expr)
+    if(first_expr == second_expr) {
+      return (first_if_expr(fpd, node_id))
+    } else{
+      return (FALSE)
+    }
+  }
+  else{
+    return (FALSE)
+  }
+}
+
+
+## This function will help us to compare the expressions obtained from inside the two IF statements and it will determine
+## whether the expression of the second IF statement is the only other logical possibilty of first IF statement or not.
+
+check_comparsion_logic_le <- function(fpd, node_id) {
+  first_expr <- fpd[fpd$id == first_if_expr(fpd, node_id), "text"]
+  second_expr <- fpd[fpd$id == check_consecutive_if(fpd, node_id), "text"]
+  if(length(grep("<=", first_expr)) > 0) {
+    first_expr <- gsub(" ", "", first_expr, fixed = T)
+    first_expr <- gsub("<=", ">", first_expr)
+    second_expr <- gsub(" ", "", second_expr, fixed = TRUE)
+    if(first_expr == second_expr) {
+      return (check_consecutive_if(fpd, node_id))
+    } else {
+      return (FALSE)
+    }
+  } 
+  else if(length(grep("<=", second_expr)) > 0) {
+    second_expr <- gsub(" ", "", second_expr, fixed = TRUE)
+    first_expr <- gsub(" ", "", first_expr, fixed = TRUE)
+    second_expr <- gsub("<=", ">", second_expr)
+    if(first_expr == second_expr) {
+      return (first_if_expr(fpd, node_id))
+    } else{
+      return (FALSE)
+    }
+  }
+  else{
+    return (FALSE)
+  }
+}
 
 
 # exam_nodes
