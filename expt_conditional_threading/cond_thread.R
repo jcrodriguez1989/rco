@@ -58,7 +58,36 @@ text4 <- paste(list(
   sep = "\n"
 ))
 
-pd <- parse_text(text1)
+text5 <- paste(list(
+  "num <- sample(1:100, 1)",
+  "even_sum_a <- 0",
+  "even_sum_b <- 0",
+  "odd_sum_a <- 0",
+  "odd_sum_b <- 0",
+  "if(num %% 2) {",
+  "odd_sum_a <- odd_sum_a + num",
+  "}",
+  "if(num %% 2) ",
+  "  odd_sum_b <- odd_sum_b + num",
+  "if(!(num %% 2)) {",
+  "even_sum_a <- even_sum_a + num",
+  "}",
+  "if(!(num %% 2)) {even_sum_b <- even_sum_b + num}",
+  sep = "\n"
+))
+
+text6 <- paste(list(
+  "num <- sample(1:100, 1)",
+  "even_sum <- 0",
+  "odd_sum <- 0",
+  "if(num %% 2)",
+  "  odd_sum <- odd_sum + num",
+  "if(num %% 2)",
+  "  even_sum <- even_sum + num",
+  sep = "\n"
+))
+
+pd <- parse_text(text5)
 ## pd
 fpd <- flatten_leaves(pd)
 ## fpd
@@ -236,6 +265,21 @@ has_func_calls <- function(fpd, node1, node2) {
             "SYMBOL_FUNCTION_CALL" %in% get_children(fpd, node2))  
 }
 
+## This function returns the id of the `IF` statement from the expression
+
+get_if_block_expr <- function(fpd, node_id) {
+  expr_id <- exam_nodes[which(exam_nodes$id %in% get_ancestors(fpd, node_id), arr.ind = T), "id"][1]
+  if_pos <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$token == "IF", "pos_id"]
+  start_bracket <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$pos_id > if_pos & 
+                                                 get_children(fpd, expr_id)$token == "'('", "pos_id"][1]
+  start_bracket_parent <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$pos_id > if_pos & 
+                                                        get_children(fpd, expr_id)$token == "'('", "parent"][1]
+  end_bracket <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$pos_id > start_bracket & 
+                                               get_children(fpd, expr_id)$token == "')'"& 
+                                               get_children(fpd, expr_id)$parent == start_bracket_parent, "pos_id"]
+  return (fpd[fpd$pos_id == (end_bracket+1) & fpd$token == "expr", "text"])
+}
+
 ##########################################################################################################################################################################
 # exam_nodes
 # check_if(fpd, 149)
@@ -251,6 +295,7 @@ merge_from <- NULL
 merge_to <- NULL
 convert_to_else <- NULL
 not_to_edit <- NULL
+final_exam_nodes <- NULL
 
 for(i in exam_nodes$id) {
   if(check_if(fpd, i)) {
@@ -260,16 +305,20 @@ for(i in exam_nodes$id) {
       if(!has_func_calls(fpd, node1, node2)) {
         if(check_negation(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
         } 
         else if(check_comparsion_logic_ge(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
         } 
         else if(check_comparsion_logic_le(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
         } 
         else if(check_duplicate_expr(fpd, node1, node2)) {
           merge_to <- append(merge_to, node1)
           merge_from <- append(merge_from, node2)
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
         } 
         else {
           not_to_edit <- rbind(not_to_edit, exam_nodes[exam_nodes$id == i, ])
@@ -280,7 +329,49 @@ for(i in exam_nodes$id) {
       }
     }
   }
+  else {
+    not_to_edit <- rbind(not_to_edit, exam_nodes[exam_nodes$id == i, ])
+  }
 }
 
-###########################################################################################################################################################################
+########################################################################################################################################################################
+
+# merge_from
+# merge_to
+# convert_to_else
+# not_to_edit
+
+########################################################################################################################################################################
+
+to_expr <- NULL
+from_expr <- NULL
+
+for(i in 1:length(merge_from)) {
+  to_expr[i] <- get_if_block_expr(fpd, merge_to[i])
+  if(grepl("{\n", to_expr[i], fixed = TRUE)) {
+    to_expr[i] <- gsub("{\n", "", to_expr[i], fixed = TRUE)
+    to_expr[i] <- gsub("\n}", "", to_expr[i], fixed = TRUE)
+  } 
+  else if(grepl("{", to_expr[i], fixed = TRUE)) {
+    to_expr[i] <- gsub("{", "", to_expr[i], fixed = TRUE)
+    to_expr[i] <- gsub("}", "", to_expr[i], fixed = TRUE)
+  }
+    
+  from_expr[i] <- get_if_block_expr(fpd, merge_from[i]) 
+  if(grepl("{\n", from_expr[i], fixed = TRUE)) {
+    from_expr[i] <- gsub("{\n", "", from_expr[i], fixed = TRUE)
+    from_expr[i] <- gsub("\n}", "", from_expr[i], fixed = TRUE)
+  } 
+  else if(grepl("{", from_expr[i], fixed = TRUE)) {
+    from_expr[i] <- gsub("{", "", from_expr[i], fixed = TRUE)
+    from_expr[i] <- gsub("}", "", from_expr[i], fixed = TRUE)
+  }
+}
+
+for(i in 1:length(merge_from)) {
+  print(to_expr[i])
+  print(from_expr[i])
+}
+
+final_exam_nodes
 
