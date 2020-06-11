@@ -8,10 +8,10 @@ text1 <- paste(list(
   "if(!(num %% 2)) {",
   "even_sum <- even_sum + num",
   "}",
-  "if(rnorm(1) > 5) {",
+  "if(num > 5) {",
   "print(num %% 5)",
   "}",
-  "if(rnorm(1) > 5) {",
+  "if(num > 5) {",
   "print(num)",
   "}",
   sep = "\n"
@@ -280,6 +280,10 @@ get_if_block_expr <- function(fpd, node_id) {
   return (fpd[fpd$pos_id == (end_bracket+1) & fpd$token == "expr", "text"])
 }
 
+get_og_id <- function(fpd, node_id) {
+  return ( expr_id <- exam_nodes[which(exam_nodes$id %in% get_ancestors(fpd, node_id), arr.ind = T), "id"][1])
+}
+
 ##########################################################################################################################################################################
 # exam_nodes
 # check_if(fpd, 149)
@@ -349,11 +353,14 @@ for(itr in seq_len(length(exam_nodes$id))) {
 
 ########################################################################################################################################################################
 
+## These loops are used to form the content from inside the IF statements that have to be merged.
+
 to_expr <- NULL
 from_expr <- NULL
 
 for(i in seq_len(length(merge_from))) {
   to_expr[i] <- get_if_block_expr(fpd, merge_to[i])
+  to_expr[i + length(merge_from)] <- get_og_id(fpd, merge_to[i])
   if(grepl("{\n", to_expr[i], fixed = TRUE)) {
     to_expr[i] <- gsub("{\n", "", to_expr[i], fixed = TRUE)
     to_expr[i] <- gsub("\n}", "", to_expr[i], fixed = TRUE)
@@ -363,7 +370,8 @@ for(i in seq_len(length(merge_from))) {
     to_expr[i] <- gsub("}", "", to_expr[i], fixed = TRUE)
   }
     
-  from_expr[i] <- get_if_block_expr(fpd, merge_from[i]) 
+  from_expr[i] <- get_if_block_expr(fpd, merge_from[i])
+  from_expr[i + length(merge_from)] <- get_og_id(fpd, merge_from[i])
   if(grepl("{\n", from_expr[i], fixed = TRUE)) {
     from_expr[i] <- gsub("{\n", "", from_expr[i], fixed = TRUE)
     from_expr[i] <- gsub("\n}", "", from_expr[i], fixed = TRUE)
@@ -387,7 +395,6 @@ for(i in seq_len(length(convert_to_else))) {
   }
 }
 
-
 # for(i in seq_len(length(merge_from))) {
 #   print(to_expr[i])
 #   print(from_expr[i])
@@ -397,14 +404,29 @@ for(i in seq_len(length(convert_to_else))) {
 #   print(else_expr[i])
 # }
 
-can_convert_to_else <- function(final_exam_nodes, itr) {
-  cond1 <- (method_used[itr] == 2)
-  node_id <- final_exam_nodes
+can_convert_to_else <- function(itr) {
+  flag <- TRUE
+  for(i in seq_len(length(final_exam_nodes$id))){
+    if(method_used[i] == 2) {
+      node_id <- final_exam_nodes[i, "id"]
+      for(node in seq_len(length(final_exam_nodes$id))) {
+        if(final_exam_nodes[node, "id"] == node_id & method_used[node] == 1) {
+          flag <- FALSE
+        }
+      }
+    } else {
+      flag <- FALSE
+    }
+    return (flag)
+  }
 }
+
+## This loop will take care of merging apart from the case where else statements have to be merged.
 
 # merge_to = 1, convert_to_else = 2
 j <- 1
 k <- 1
+check_new_else_nodes <- NULL
 for(i in seq_len(length(final_exam_nodes$id))) {
   if(method_used[i] == 1) {
     node_id <- final_exam_nodes[i, "id"]
@@ -418,10 +440,29 @@ for(i in seq_len(length(final_exam_nodes$id))) {
     final_exam_nodes[i, "text"] <- paste("else", "{\n", else_expr[k], " \n}")
     k <- k + 1
   }
-}
- 
-for(i in seq_len(length(final_exam_nodes$id))) {
-  print(final_exam_nodes[i, ])
+  else {
+    check_new_else_nodes <- append(check_new_else_nodes, i)
+  }
 }
 
-# final_exam_nodes <- final_exam_nodes[-2, ]
+## This loop is used to convert to ELSE statement after all the merging(of IF statements) has been done.
+
+for(i in check_new_else_nodes) {
+  new_else_id <- final_exam_nodes[i, "id"]
+  id_index <- which(to_expr == new_else_id, arr.ind = T)
+  id_index <- id_index - length(merge_to)
+  final_exam_nodes[i, "text"] <- paste("else", "{\n", to_expr[id_index], "\n", from_expr[id_index], "\n}", sep = " ")
+}
+
+## This loop will remove the "extra" entry of merged IF statements that should essentially be ab ELSE statement.
+## And, we know it was converted to ELSE in the last loop.
+
+for(i in check_new_else_nodes) {
+  to_remove_id <- final_exam_nodes[i, "id"]
+  for(itr in seq_len(length(final_exam_nodes$id))) {
+    if(to_remove_id == final_exam_nodes[itr, "id"] & method_used[itr] == 1)
+      final_exam_nodes <- final_exam_nodes[-itr, ]
+  }
+}
+
+final_exam_nodes #This is the final version
