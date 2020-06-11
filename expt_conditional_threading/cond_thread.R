@@ -296,8 +296,10 @@ merge_to <- NULL
 convert_to_else <- NULL
 not_to_edit <- NULL
 final_exam_nodes <- NULL
+method_used <- NULL
 
-for(i in exam_nodes$id) {
+for(itr in seq_len(length(exam_nodes$id))) {
+  i <- exam_nodes[itr, "id"]
   if(check_if(fpd, i)) {
     if(check_if_next(fpd, i)) {
       node1 <- first_if_expr(fpd, i)
@@ -305,20 +307,24 @@ for(i in exam_nodes$id) {
       if(!has_func_calls(fpd, node1, node2)) {
         if(check_negation(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
-          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
+          method_used <- append(method_used, 2)
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[itr + 1, ])
         } 
         else if(check_comparsion_logic_ge(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
-          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
+          method_used <- append(method_used, 2)
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[itr + 1, ])
         } 
         else if(check_comparsion_logic_le(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
-          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
+          method_used <- append(method_used, 2)
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[itr + 1, ])
         } 
         else if(check_duplicate_expr(fpd, node1, node2)) {
           merge_to <- append(merge_to, node1)
           merge_from <- append(merge_from, node2)
           final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
+          method_used <- append(method_used, 1)
         } 
         else {
           not_to_edit <- rbind(not_to_edit, exam_nodes[exam_nodes$id == i, ])
@@ -346,7 +352,7 @@ for(i in exam_nodes$id) {
 to_expr <- NULL
 from_expr <- NULL
 
-for(i in 1:length(merge_from)) {
+for(i in seq_len(length(merge_from))) {
   to_expr[i] <- get_if_block_expr(fpd, merge_to[i])
   if(grepl("{\n", to_expr[i], fixed = TRUE)) {
     to_expr[i] <- gsub("{\n", "", to_expr[i], fixed = TRUE)
@@ -368,10 +374,54 @@ for(i in 1:length(merge_from)) {
   }
 }
 
-for(i in 1:length(merge_from)) {
-  print(to_expr[i])
-  print(from_expr[i])
+else_expr <- NULL
+for(i in seq_len(length(convert_to_else))) {
+  else_expr[i] <- get_if_block_expr(fpd, convert_to_else[i])
+  if(grepl("{\n", else_expr[i], fixed = TRUE)) {
+    else_expr[i] <- gsub("{\n", "", else_expr[i], fixed = TRUE)
+    else_expr[i] <- gsub("\n}", "", else_expr[i], fixed = TRUE)
+  } 
+  else if(grepl("{", else_expr[i], fixed = TRUE)) {
+    else_expr[i] <- gsub("{", "", else_expr[i], fixed = TRUE)
+    else_expr[i] <- gsub("}", "", else_expr[i], fixed = TRUE)
+  }
 }
 
-final_exam_nodes
 
+# for(i in seq_len(length(merge_from))) {
+#   print(to_expr[i])
+#   print(from_expr[i])
+# }
+# 
+# for(i in seq_len(length(convert_to_else))) {
+#   print(else_expr[i])
+# }
+
+can_convert_to_else <- function(final_exam_nodes, itr) {
+  cond1 <- (method_used[itr] == 2)
+  node_id <- final_exam_nodes
+}
+
+# merge_to = 1, convert_to_else = 2
+j <- 1
+k <- 1
+for(i in seq_len(length(final_exam_nodes$id))) {
+  if(method_used[i] == 1) {
+    node_id <- final_exam_nodes[i, "id"]
+    if_cond <- fpd[fpd$id == first_if_expr(fpd, node_id), "text"]
+    string1 <- paste("if", "(", if_cond, ") ", "{\n", sep = "")
+    string2 <- paste(to_expr[j], "\n", from_expr[j], "\n}", sep = " ")
+    final_exam_nodes[i, "text"] <- paste(string1, string2)
+    j <- j + 1
+  }  
+  else if(can_convert_to_else(i)) {
+    final_exam_nodes[i, "text"] <- paste("else", "{\n", else_expr[k], " \n}")
+    k <- k + 1
+  }
+}
+ 
+for(i in seq_len(length(final_exam_nodes$id))) {
+  print(final_exam_nodes[i, ])
+}
+
+# final_exam_nodes <- final_exam_nodes[-2, ]
