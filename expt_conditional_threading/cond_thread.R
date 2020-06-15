@@ -82,19 +82,33 @@ text6 <- paste(list(
   "odd_sum <- 0",
   "if(num %% 2)",
   "  odd_sum <- odd_sum + num",
-  "if(num %% 2)",
+  "else {",
   "  even_sum <- even_sum + num",
+  "}",
   sep = "\n"
 ))
 
-pd <- parse_text(text5)
+pd <- parse_text(text6)
 ## pd
 fpd <- flatten_leaves(pd)
 ## fpd
 
+## Taking care of expressions from functions
+fun_ids <- fpd$id[fpd$token == "FUNCTION"]      
+fun_prnt_ids <- fpd$parent[fpd$id %in% fun_ids] 
+
+
+fun_exam_nodes <- NULL
+for(i in fun_prnt_ids){
+  fun_exam_nodes <- rbind(fun_exam_nodes, get_children(fpd, i, FALSE)[get_children(fpd, i, FALSE)$token == "expr", ])
+}
 
 exam_nodes <- get_roots(pd)
+exam_nodes <- rbind(exam_nodes, fun_exam_nodes)
+
 exam_nodes_alt <- get_roots(fpd)
+exam_nodes_alt <- rbind(exam_nodes_alt, fun_exam_nodes)
+
 
 ## exam_nodes
 ## exam_nodes_alt
@@ -346,10 +360,10 @@ for(itr in seq_len(length(exam_nodes$id))) {
 
 ########################################################################################################################################################################
 
-# merge_from
-# merge_to
-# convert_to_else
-# not_to_edit
+ merge_from
+ merge_to
+ convert_to_else
+ not_to_edit
 
 ########################################################################################################################################################################
 
@@ -395,14 +409,18 @@ for(i in seq_len(length(convert_to_else))) {
   }
 }
 
-# for(i in seq_len(length(merge_from))) {
-#   print(to_expr[i])
-#   print(from_expr[i])
-# }
-# 
-# for(i in seq_len(length(convert_to_else))) {
-#   print(else_expr[i])
-# }
+########################################################################################################################################################################
+
+for(i in seq_len(length(merge_from))) {
+  print(to_expr[i])
+  print(from_expr[i])
+}
+
+for(i in seq_len(length(convert_to_else))) {
+  print(else_expr[i])
+}
+
+########################################################################################################################################################################
 
 can_convert_to_else <- function(itr) {
   flag <- TRUE
@@ -421,12 +439,16 @@ can_convert_to_else <- function(itr) {
   }
 }
 
-## This loop will take care of merging apart from the case where else statements have to be merged.
+## This loop will take care of merging apart from the case where else statements have to be merged. Have a look at text5 as an example 
+##(There the last two `IF` statements have to merged.)
+
+## The `check_new_else_nodes` contains the indices from the `final_exam_nodes` that have to be converted to `else`
 
 # merge_to = 1, convert_to_else = 2
 j <- 1
 k <- 1
-check_new_else_nodes <- NULL
+check_new_else_nodes <- NULL 
+merged_else <- FALSE
 for(i in seq_len(length(final_exam_nodes$id))) {
   if(method_used[i] == 1) {
     node_id <- final_exam_nodes[i, "id"]
@@ -437,32 +459,109 @@ for(i in seq_len(length(final_exam_nodes$id))) {
     j <- j + 1
   }  
   else if(can_convert_to_else(i)) {
-    final_exam_nodes[i, "text"] <- paste("else", "{\n", else_expr[k], " \n}")
+    final_exam_nodes[i, "text"] <- paste("`", "else", "{\n", else_expr[k], " \n}", "`", sep = " ")
     k <- k + 1
   }
   else {
     check_new_else_nodes <- append(check_new_else_nodes, i)
+    merged_else <- TRUE
   }
 }
 
-## This loop is used to convert to ELSE statement after all the merging(of IF statements) has been done.
 
-for(i in check_new_else_nodes) {
-  new_else_id <- final_exam_nodes[i, "id"]
-  id_index <- which(to_expr == new_else_id, arr.ind = T)
-  id_index <- id_index - length(merge_to)
-  final_exam_nodes[i, "text"] <- paste("else", "{\n", to_expr[id_index], "\n", from_expr[id_index], "\n}", sep = " ")
-}
-
-## This loop will remove the "extra" entry of merged IF statements that should essentially be ab ELSE statement.
-## And, we know it was converted to ELSE in the last loop.
-
-for(i in check_new_else_nodes) {
-  to_remove_id <- final_exam_nodes[i, "id"]
-  for(itr in seq_len(length(final_exam_nodes$id))) {
-    if(to_remove_id == final_exam_nodes[itr, "id"] & method_used[itr] == 1)
-      final_exam_nodes <- final_exam_nodes[-itr, ]
+if(merged_else) {
+  ## This loop is used to convert to ELSE statement after all the merging(of IF statements) has been done.
+  ## using the vector called `check_new_else_nodes`.
+  for(i in check_new_else_nodes) {
+    new_else_id <- final_exam_nodes[i, "id"]
+    id_index <- which(to_expr == new_else_id, arr.ind = T)
+    id_index <- id_index - length(merge_to)
+    final_exam_nodes[i, "text"] <- paste("`", "else", "{\n", to_expr[id_index], "\n", from_expr[id_index], "\n}", "`", sep = " ")
+  }
+  
+  ## This loop will remove the "extra" entry of merged IF statements that should essentially be ab ELSE statement.
+  ## And, we know it was converted to ELSE in the last loop.
+  for(i in check_new_else_nodes) {
+    to_remove_id <- final_exam_nodes[i, "id"]
+    for(itr in seq_len(length(final_exam_nodes$id))) {
+      if(to_remove_id == final_exam_nodes[itr, "id"] & method_used[itr] == 1)
+        final_exam_nodes <- final_exam_nodes[-itr, ]
+    }
   }
 }
 
+#############################################################################################################################################################################
 final_exam_nodes #This is the final version
+##########################################################################################################################################################################
+
+## Here, we are trying to convert the exam_nodes back to a parsed_code form starting from not_to_edit
+for(i in seq_len(nrow(not_to_edit))) {
+  not_to_edit <- rbind(not_to_edit, get_children(pd, not_to_edit[i, "id"]))
+}
+
+## Arranging the not_to_edit by the `pos_id` parameter.
+not_to_edit <- not_to_edit[order(not_to_edit$pos_id), ]
+
+not_to_edit_final <- NULL
+for(i in unique(not_to_edit$id)) {
+  not_to_edit_final <- rbind(not_to_edit_final, unique(not_to_edit[not_to_edit$id == i, ]))
+}
+
+final_exam_nodes_ids <- final_exam_nodes$id
+
+new_fpd <- NULL
+for(itr in seq_len(nrow(final_exam_nodes)))
+{
+  act_fpd <- final_exam_nodes[itr, ]
+  
+  new_act_fpd <- parse_text(act_fpd$text)
+  
+  #Setting new ids for the newly edited and parsed codes
+  new_act_fpd$id <- paste0(act_fpd$id, "_", new_act_fpd$id)
+  
+  #Keeping old parents for new fpd
+  new_act_fpd$parent[new_act_fpd$parent != 0] <- paste0(act_fpd$id, "_", new_act_fpd$parent[new_act_fpd$parent != 0])
+  new_act_fpd$parent[new_act_fpd$parent == 0] <- act_fpd$parent
+  
+  #Calling a pre-wriiten rco::function....
+  new_act_fpd$pos_id <- create_new_pos_id(act_fpd, nrow(new_act_fpd), act_fpd$id)
+  
+  #Fixing the next_spaces section of new_fpd
+  new_act_fpd$next_spaces[nrow(new_act_fpd)] <- act_fpd$next_spaces
+  
+  #Fixing the next_lines section of new_fpd
+  new_act_fpd$next_lines[nrow(new_act_fpd)] <- act_fpd$next_lines
+  
+  #Fixing the prev_spaces section of new_fpd
+  new_act_fpd$prev_spaces[which(new_act_fpd$terminal)[[1]]] <- act_fpd$prev_spaces
+  
+  #Merging the new_fpd and the act_fpd(obtained upon iteration)
+  new_fpd <- rbind(new_fpd, new_act_fpd)
+  
+  #Ordering the new_fpd according to the pos_id
+  new_fpd <- new_fpd[order(new_fpd$pos_id), ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
