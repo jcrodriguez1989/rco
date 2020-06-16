@@ -89,7 +89,7 @@ text6 <- paste(list(
   sep = "\n"
 ))
 
-pd <- parse_text(text5)
+pd <- parse_text(text6)
 ## pd
 fpd <- flatten_leaves(pd)
 ## fpd
@@ -110,9 +110,10 @@ exam_nodes <- rbind(exam_nodes, fun_exam_nodes)
 exam_nodes_alt <- get_roots(fpd)
 exam_nodes_alt <- rbind(exam_nodes_alt, fun_exam_nodes)
 
-
-## exam_nodes
-## exam_nodes_alt
+###########################################################################################################################################################################
+ exam_nodes
+ exam_nodes_alt
+###########################################################################################################################################################################
 
 ## This function checks for IF Statement in the given node id of the code snippet
 
@@ -190,10 +191,10 @@ consecutive_if_expr <- function(fpd, node_id) {
 check_negation <- function(fpd, node1, node2) {
   first_expr_a <- fpd[fpd$id == node1, "text"]
   second_expr_a <- fpd[fpd$id == node2, "text"]
-
+  
   first_expr_b <- fpd[fpd$id == node2, "text"]
   second_expr_b <- fpd[fpd$id == node1, "text"]
-
+  
   check_first1a <- gsub(" ", "", paste("!", "(", first_expr_a, ")", sep = ""), fixed = TRUE) 
   check_first2a <- gsub(" ", "", paste("!", first_expr_a,sep = ""), fixed = TRUE)
   check_second_a <- gsub(" ", "", second_expr_a, fixed = TRUE)
@@ -286,12 +287,12 @@ get_if_block_expr <- function(fpd, node_id) {
   expr_id <- exam_nodes[which(exam_nodes$id %in% get_ancestors(fpd, node_id), arr.ind = T), "id"][1]
   if_pos <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$token == "IF", "pos_id"]
   start_bracket <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$pos_id > if_pos & 
-                                                 get_children(fpd, expr_id)$token == "'('", "pos_id"][1]
+                                                get_children(fpd, expr_id)$token == "'('", "pos_id"][1]
   start_bracket_parent <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$pos_id > if_pos & 
-                                                        get_children(fpd, expr_id)$token == "'('", "parent"][1]
+                                                       get_children(fpd, expr_id)$token == "'('", "parent"][1]
   end_bracket <- get_children(fpd, expr_id)[get_children(fpd, expr_id)$pos_id > start_bracket & 
-                                               get_children(fpd, expr_id)$token == "')'"& 
-                                               get_children(fpd, expr_id)$parent == start_bracket_parent, "pos_id"]
+                                              get_children(fpd, expr_id)$token == "')'"& 
+                                              get_children(fpd, expr_id)$parent == start_bracket_parent, "pos_id"]
   return (fpd[fpd$pos_id == (end_bracket+1) & fpd$token == "expr", "text"])
 }
 
@@ -300,7 +301,7 @@ get_og_id <- function(fpd, node_id) {
 }
 
 ##########################################################################################################################################################################
-# exam_nodes
+ exam_nodes
 # check_if(fpd, 149)
 # check_if_next(fpd, 149)
 # first_if_expr(fpd, 149)
@@ -326,24 +327,24 @@ for(itr in seq_len(length(exam_nodes$id))) {
       if(!has_func_calls(fpd, node1, node2)) {
         if(check_negation(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
-          method_used <- append(method_used, 2)
-          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[itr + 1, ])
+          method_used <- append(method_used, itr)                            # The method used would consist of itr that would be the `IF` statement to the following `ELSE`
+          final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[itr + 1, ]) # The final_exam_nodes would consist of the `IF` statement that has to be converted to `else`
         } 
         else if(check_comparsion_logic_ge(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
-          method_used <- append(method_used, 2)
+          method_used <- append(method_used, itr)
           final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[itr + 1, ])
         } 
         else if(check_comparsion_logic_le(fpd, node1, node2)) {
           convert_to_else <- append(convert_to_else, node2)
-          method_used <- append(method_used, 2)
+          method_used <- append(method_used, itr)
           final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[itr + 1, ])
         } 
         else if(check_duplicate_expr(fpd, node1, node2)) {
           merge_to <- append(merge_to, node1)
           merge_from <- append(merge_from, node2)
           final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[exam_nodes$id == i, ])
-          method_used <- append(method_used, 1)
+          method_used <- append(method_used, "duplicate")
         } 
         else {
           not_to_edit <- rbind(not_to_edit, exam_nodes[exam_nodes$id == i, ])
@@ -361,10 +362,11 @@ for(itr in seq_len(length(exam_nodes$id))) {
 
 ########################################################################################################################################################################
 
- merge_from
- merge_to
- convert_to_else
- not_to_edit
+merge_from
+merge_to
+convert_to_else
+not_to_edit
+method_used
 
 ########################################################################################################################################################################
 
@@ -384,7 +386,7 @@ for(i in seq_len(length(merge_from))) {
     to_expr[i] <- gsub("{", "", to_expr[i], fixed = TRUE)
     to_expr[i] <- gsub("}", "", to_expr[i], fixed = TRUE)
   }
-    
+  
   from_expr[i] <- get_if_block_expr(fpd, merge_from[i])
   from_expr[i + length(merge_from)] <- get_og_id(fpd, merge_from[i])
   if(grepl("{\n", from_expr[i], fixed = TRUE)) {
@@ -425,19 +427,17 @@ for(i in seq_len(length(convert_to_else))) {
 
 can_convert_to_else <- function(itr) {
   flag <- TRUE
-  for(i in seq_len(length(final_exam_nodes$id))){
-    if(method_used[i] == 2) {
-      node_id <- final_exam_nodes[i, "id"]
-      for(node in seq_len(length(final_exam_nodes$id))) {
-        if(final_exam_nodes[node, "id"] == node_id & method_used[node] == 1) {
-          flag <- FALSE
-        }
+  if(method_used[itr] != "duplicate") {
+    node_id <- final_exam_nodes[itr, "id"]
+    for(node in seq_len(length(final_exam_nodes$id))) {
+      if(final_exam_nodes[node, "id"] == node_id & method_used[node] == "duplicate") {
+        flag <- FALSE
       }
-    } else {
-      flag <- FALSE
     }
-    return (flag)
+  } else {
+    flag <- FALSE
   }
+  return (flag)
 }
 
 ## This loop will take care of merging apart from the case where else statements have to be merged. Have a look at text5 as an example 
@@ -450,8 +450,9 @@ j <- 1
 k <- 1
 check_new_else_nodes <- NULL 
 merged_else <- FALSE
+else_nodes <- NULL
 for(i in seq_len(length(final_exam_nodes$id))) {
-  if(method_used[i] == 1) {
+  if(method_used[i] == "duplicate") {
     node_id <- final_exam_nodes[i, "id"]
     if_cond <- fpd[fpd$id == first_if_expr(fpd, node_id), "text"]
     string1 <- paste("if", "(", if_cond, ") ", "{\n", sep = "")
@@ -460,7 +461,7 @@ for(i in seq_len(length(final_exam_nodes$id))) {
     j <- j + 1
   }  
   else if(can_convert_to_else(i)) {
-    final_exam_nodes[i, "text"] <- paste("else", "{\n", else_expr[k], " \n}", sep = " ")
+    final_exam_nodes[i, "text"] <- paste0(exam_nodes[method_used[i], "text"], paste("else", "{\n", else_expr[k], " \n}", sep = " "))
     k <- k + 1
   }
   else {
@@ -474,9 +475,11 @@ if(merged_else) {
   ## using the vector called `check_new_else_nodes`.
   for(i in check_new_else_nodes) {
     new_else_id <- final_exam_nodes[i, "id"]
+    attach_text_to_node <- method_used[i]
     id_index <- which(to_expr == new_else_id, arr.ind = T)
     id_index <- id_index - length(merge_to)
-    final_exam_nodes[i, "text"] <- paste("else", "{\n", to_expr[id_index], "\n", from_expr[id_index], "\n}", sep = " ")
+    final_exam_nodes[i, "text"] <- paste0(exam_nodes)
+      paste("else", "{\n", to_expr[id_index], "\n", from_expr[id_index], "\n}", sep = " ")
   }
   
   ## This loop will remove the "extra" entry of merged IF statements that should essentially be ab ELSE statement.
