@@ -1,0 +1,90 @@
+---
+output: rmarkdown::html_vignette
+title: Conditional Threading Optimizer
+vignette: >
+  %\VignetteIndexEntry{Potential optimizers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Dead Store Elimination
+
+```{r echo=FALSE, message=FALSE}
+library("rco")
+library("ggplot2")
+library("microbenchmark")
+
+is_even_fun <- function(a) {
+  if(a %% 2) {
+    return (FALSE)
+  }
+  if(!(a %% 2)) {
+    return (TRUE)
+  }
+  if(!(a %% 2)) {
+    print("Yaay")
+  }
+}
+
+is_even_fun_opt <- function(a) {
+  if(a %% 2) {
+    return (FALSE)
+  } else {
+    return (TRUE)
+    print("Yaay")
+  }
+}
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+Conditional Threading is an optimization that searches for separate blocks of `IF` statements but with exactly the same conditions. When several conditionals present the same boolean condition, merging their inside actions would avoid computing the condition several times. Also, in the cases where a second `IF` statement has been used with the exact negation or logical negation of the condition of the first `IF`, the second `IF` could then be incorporated in an `ELSE` statement.
+
+## Example
+
+Consider the following example:
+
+```{r}
+code <- paste(
+    "is_even <- function(a) {",
+    "if(a %% 2) {",
+    "  return (FALSE)",
+    "}",
+    "if(!(a %% 2)) {",
+    "  return (TRUE)",
+    "}",
+    "if(!(a %% 2)) {",
+    "  print(\"Yaay\")",
+    "}",
+    "}",
+    "is_even(150)",
+    sep = "\n"
+)
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_cond_thread(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and then plot them:
+
+```{r message=FALSE}
+num <- sample(1:1000, 1)
+microbenchmark(is_even_fun(num), is_even_fun_opt(num), times = 1000L)
+```
+
+Plotting the results, we get:
+```{r message=FALSE}
+num <- sample(1:1000, 1)
+autoplot(microbenchmark(is_even_fun(num), is_even_fun_opt(num), times = 1000L))
+```
+## Implementation
+
+The `opt-cond-thread` optimizer simply looks for `IF` statements in the code snippet given as the input and if it finds an `IF` statement, it checks the immediate next block of code. If it is another `IF` statement, the optimizer merges the two `IF`blocks if the `IF` conditions were same or converts the second `IF` statement to `ELSE` if the conditions were negation of each other.
+
