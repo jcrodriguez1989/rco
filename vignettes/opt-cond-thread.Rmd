@@ -2,12 +2,12 @@
 output: rmarkdown::html_vignette
 title: Conditional Threading Optimizer
 vignette: >
-  %\VignetteIndexEntry{Potential optimizers}
+  %\VignetteIndexEntry{Conditional Threading Optimizer}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-# Conditional Threading Optimization
+# Conditional Threading Optimizer
 
 ```{r echo=FALSE, message=FALSE}
 library("rco")
