@@ -7,8 +7,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Conditional Threading Optimizer
-
 ```{r echo=FALSE, message=FALSE}
 library("rco")
 library("ggplot2")
@@ -37,6 +35,7 @@ is_even_fun_opt <- function(a) {
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Conditional Threading Optimizer
 
 ## Background
 
