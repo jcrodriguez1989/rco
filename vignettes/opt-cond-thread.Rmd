@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Dead Store Elimination
+# Conditional Threading Optimization
 
 ```{r echo=FALSE, message=FALSE}
 library("rco")
