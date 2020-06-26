@@ -5,44 +5,44 @@
 parse_text <- function(text) {
   parsed_text <- base::parse(text = text, keep.source = TRUE)
   pd <- utils::getParseData(parsed_text, includeText = TRUE)
-
+  
   # bug related to styler bug #216
   if (any(grepl("^\\[[[:digit:]]+ chars quoted with '.']$", pd$text))) {
     stop("Bug #22 : Your code has a really long string.", call. = FALSE)
   }
-
+  
   if (nrow(pd) == 0) {
     return(pd)
   }
-
+  
   # pos_id to reorder code text
   pd$pos_id <- seq(1L, nrow(pd))
-
+  
   # next_spaces and lines after each text
   pd$next_spaces[pd$terminal] <- 0
   pd$next_lines[pd$terminal] <- 0
   pd$prev_spaces[pd$terminal] <- 0
-
+  
   pd_terms <- pd[pd$terminal, ]
-
+  
   # next_spaces will be the difference between the column next text starts, and
   # the column this text ends
   pd_terms$next_spaces[-nrow(pd_terms)] <-
     pd_terms$col1[-1] - pd_terms$col2[-nrow(pd_terms)] - 1
   pd[pd$terminal, "next_spaces"] <- pmax(0, pd_terms$next_spaces)
-
+  
   # next_lines will be the difference between the line next text starts, and
   # the line this text ends
   pd_terms$next_lines[-nrow(pd_terms)] <-
     pd_terms$line1[-1] - pd_terms$line2[-nrow(pd_terms)]
   pd[pd$terminal, "next_lines"] <- pmax(0, pd_terms$next_lines)
-
+  
   # prev_spaces will be the column where each text starts, if the previous text
   # had a new line
   pd_terms$prev_spaces[which(pd_terms$next_lines > 0) + 1] <-
     pd_terms[which(pd_terms$next_lines > 0) + 1, "col1"] - 1
   pd[pd$terminal, "prev_spaces"] <- pd_terms$prev_spaces
-
+  
   pd
 }
 
@@ -52,10 +52,10 @@ parse_text <- function(text) {
 #
 deparse_data <- function(pd) {
   pd_terms <- pd[pd$terminal, ]
-
+  
   # adding trailing new lines
   prev_lines <- ifelse(nrow(pd_terms) > 0, pd_terms$line1[[1]] - 1, 0)
-
+  
   res <- ifelse(prev_lines > 0, paste(rep("\n", prev_lines), collapse = ""), "")
   for (i in seq_len(nrow(pd_terms))) {
     act_pd <- pd_terms[i, ]
@@ -85,11 +85,11 @@ get_children <- function(pd, ids, include_father = TRUE) {
     act_pd <- rbind(act_pd, pd[pd$id %in% act_childs, ])
     act_childs <- pd$id[pd$parent %in% pd$id[pd$id %in% act_childs]]
   }
-
+  
   if (nrow(act_pd) > 0) {
     act_pd <- act_pd[order(act_pd$pos_id), ]
   }
-
+  
   act_pd
 }
 
@@ -115,7 +115,7 @@ flatten_leaves <- function(pd) {
   parent_ids <- pd$parent
   one_child_parents <- parent_ids[ # parents with unique child
     !(duplicated(parent_ids) | duplicated(parent_ids, fromLast = TRUE))
-  ]
+    ]
   fpd <- pd[!pd$id %in% one_child_parents, ] # remove one-child-parents
   one_child_parents <- one_child_parents[one_child_parents > 0]
   for (ocp in one_child_parents) { # new parent will be the grandpa
@@ -143,8 +143,8 @@ eq_assign_to_expr <- function(pd) {
   eq_ass_prnts_id <- pd$parent[pd$token == "EQ_ASSIGN"]
   eq_ass_prnts <- pd[pd$id %in% eq_ass_prnts_id, ]
   if (all(eq_ass_prnts_id > 0) && # all of them have a parent
-    all(eq_ass_prnts$token == "expr") && # all parents are expressions
-    all(sapply(eq_ass_prnts$id, function(id) sum(pd$parent == id) == 3))) {
+      all(eq_ass_prnts$token == "expr") && # all parents are expressions
+      all(sapply(eq_ass_prnts$id, function(id) sum(pd$parent == id) == 3))) {
     # all EQ_ASSIGN have 2 siblings ( expr EQ_ASSIGN expr_or_assign )
     return(pd)
   }
@@ -180,31 +180,31 @@ replace_pd <- function(pd_from, pd_replace) {
   from_root <- get_roots(pd_from) # it must be one row
   replace_root <- get_roots(pd_replace) # it must be one row
   new_pd <- pd_replace
-
+  
   # from old pd parent, copy to new parent: id, parent, and pos
   new_pd[pd_replace$id == replace_root$id, c("id", "parent", "pos_id")] <-
     from_root[, c("id", "parent", "pos_id")]
-
+  
   # new pd first childs have to point to new parent id
   new_pd$parent[pd_replace$parent == replace_root$id] <- from_root$id
-
+  
   # create a fake ids to every node except parent
   new_pd[pd_replace$id != replace_root$id, "id"] <-
     paste0(from_root$id, "_", new_pd$id[pd_replace$id != replace_root$id])
-
+  
   # fix parents for new pd (not parent, nor first childs)
   new_pd$parent[
     pd_replace$id != replace_root$id & pd_replace$parent != replace_root$id
-  ] <-
+    ] <-
     paste0(
       from_root$id, "_",
       new_pd$parent[pd_replace$id != replace_root$id &
-        pd_replace$parent != replace_root$id]
+                      pd_replace$parent != replace_root$id]
     )
-
+  
   # fix pos_ids
   new_pd$pos_id <- create_new_pos_id(pd_from, nrow(new_pd), from_root$id)
-
+  
   # copy first prev_spaces, and last next_spaces and lines
   from_terms <- pd_from[pd_from$terminal, ]
   fst_term <- from_terms[which.min(from_terms$pos_id), ]
@@ -223,7 +223,7 @@ replace_pd <- function(pd_from, pd_replace) {
     new_pd$next_lines[new_pd$id == new_terms[[length(new_terms)]]] <-
       last_term$next_lines
   }
-
+  
   new_pd
 }
 
@@ -240,7 +240,7 @@ create_new_pos_id <- function(pd, n, from_id = "", to_id = "") {
   to_pos <- which(pd$id == to_id)
   from_pos_id <- utils::head(c(pd$pos_id[from_pos], pd$pos_id[to_pos - 1]), 1)
   to_pos_id <- utils::head(c(pd$pos_id[to_pos], pd$pos_id[from_pos + 1]), 1)
-
+  
   if (from_id != "" && length(from_pos_id) > 0) {
     from_pos_id + (10e-4 * seq_len(n))
   } else if (to_id != "" && length(to_pos_id) > 0) {
@@ -267,30 +267,30 @@ remove_nodes <- function(pd, ids) {
 pretty_remove_nodes <- function(pd, ids) {
   to_remove_pd <- get_children(pd, ids)
   new_pd <- pd[!pd$id %in% to_remove_pd$id, ]
-
+  
   for (act_id in ids) {
     act_rm_pd <- get_children(to_remove_pd, act_id)
-
+    
     # check if parent is loop or if, and doesnt have '{ }'
     rm_sblngs <- new_pd[new_pd$parent ==
-      act_rm_pd$parent[act_rm_pd$id == act_id], ]
+                          act_rm_pd$parent[act_rm_pd$id == act_id], ]
     if (any(c("IF", "ELSE", loops) %in% rm_sblngs$token) &&
-      !"'{'" %in% rm_sblngs$token) {
+        !"'{'" %in% rm_sblngs$token) {
       # add an {} after loop or if
       new_pd <- rbind(new_pd, replace_pd(act_rm_pd, parse_text("{}")))
       next
     }
-
+    
     rm_last_term_id <- utils::tail(act_rm_pd$id[act_rm_pd$terminal], 1)
     rm_last_term <- act_rm_pd[act_rm_pd$id == rm_last_term_id, ]
     kp_last_term_id <- utils::tail(new_pd$id[new_pd$terminal &
-      new_pd$pos_id < rm_last_term$pos_id], 1)
+                                               new_pd$pos_id < rm_last_term$pos_id], 1)
     kp_last_term <- new_pd[new_pd$id == kp_last_term_id, ]
     new_pd$next_lines[new_pd$id == kp_last_term_id] <-
       max(rm_last_term$next_lines, kp_last_term$next_lines)
     new_pd$next_spaces[new_pd$id == kp_last_term_id] <-
       max(rm_last_term$next_spaces, kp_last_term$next_spaces)
   }
-
+  
   new_pd
 }
