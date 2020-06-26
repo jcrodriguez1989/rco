@@ -6,7 +6,7 @@
 #' @param code A list of character vectors with the code to optimize.
 #'  
 #' @examples 
-#' code <- paste(list(
+#' code <- paste(
 #' "num <- sample(1:100, 1)",
 #' "even_sum <- 0",
 #' "odd_sum_a <- 0",
@@ -18,10 +18,10 @@
 #' "odd_num_b <- odd_num_b + num",
 #' "}",
 #' "if(!(num %% 2)) {",
-#' "even_sum <- even_sum + num"
+#' "even_sum <- even_sum + num",
 #' "}",
 #' sep = "\n"
-#' ))
+#' )
 #' 
 #' cat(opt_cond_thread(list(code))$codes[[1]])
 #' @export  
