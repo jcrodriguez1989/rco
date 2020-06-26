@@ -212,21 +212,13 @@ check_comparsion_logic_ge <- function(fpd, node1, node2) {
     first_expr <- gsub(" ", "", first_expr, fixed = T)
     first_expr <- gsub(">=", "<", first_expr)
     second_expr <- gsub(" ", "", second_expr, fixed = TRUE)
-    if(first_expr == second_expr) {
-      return (check_consecutive_if(fpd, node_id))
-    } else {
-      return (FALSE)
-    }
+    return (first_expr == second_expr)
   } 
   else if(length(grep(">=", second_expr)) > 0) {
     second_expr <- gsub(" ", "", second_expr, fixed = TRUE)
     first_expr <- gsub(" ", "", first_expr, fixed = TRUE)
     second_expr <- gsub(">=", "<", second_expr)
-    if(first_expr == second_expr) {
-      return (first_if_expr(fpd, node_id))
-    } else{
-      return (FALSE)
-    }
+    return (first_expr == second_expr)
   }
   else{
     return (FALSE)
