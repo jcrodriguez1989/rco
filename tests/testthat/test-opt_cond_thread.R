@@ -118,3 +118,41 @@ test_that("Code Block containing a nested IF-ELSE block", {
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
   expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum <- 0\ncount <- 0\nif(even_sum + odd_sum < 10) {\nif(num %% 2) {\n  odd_sum <- odd_sum + num\n}else {\n   even_sum <- even_sum + num\n}count <- count + 1\n}"))
 })
+
+test_that("Conversion to else due to Greater than equal to logic", {
+  code <- paste(
+    "num <- sample(1:100, 1)",
+    "big <- 0",
+    "small <- 0",
+    "if(num >= 50) {",
+    "  big <- big + 1",
+    "}",
+    "if(num < 50) {",
+    "  small <- small + 1",
+    "}",
+    "print(big)",
+    "print(small)",
+    sep = "\n"
+  )
+  opt_code <- opt_cond_thread(list(code))$codes[[1]]
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\nbig <- 0\nsmall <- 0\nif(num >= 50) {\n  big <- big + 1\n}else {\n   small <- small + 1\n}\nprint(big)\nprint(small)"))
+})
+
+test_that("Conversion to else due to Lesser than equal to logic", {
+  code <- paste(
+    "num <- sample(1:100, 1)",
+    "big <- 0",
+    "small <- 0",
+    "if(num <= 50) {",
+    "  small <- small + 1",
+    "}",
+    "if(num > 50) {",
+    "  big <- big + 1",
+    "}",
+    "print(big)",
+    "print(small)",
+    sep = "\n"
+  )
+  opt_code <- opt_cond_thread(list(code))$codes[[1]]
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\nbig <- 0\nsmall <- 0\nif(num <= 50) {\n  small <- small + 1\n}else {\n   big <- big + 1\n}\nprint(big)\nprint(small)"))
+})
