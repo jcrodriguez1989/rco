@@ -20,7 +20,6 @@ optimize_files <- function(files, optimizers = all_optimizers,
   # read files content
   codes <- lapply(files, read_code_file)
   names(codes) <- files
-  
   n_iter <- 0
   optim_codes <- codes
   act_codes <- NA
@@ -46,7 +45,6 @@ optimize_files <- function(files, optimizers = all_optimizers,
     n_iter <- n_iter + 1
     message(paste0("Optimization number ", n_iter))
   }
-  
   # check which codes had been optimized
   # do not consider whitespaces changes
   changed <- sapply(seq_along(codes), function(i) {
@@ -55,7 +53,6 @@ optimize_files <- function(files, optimizers = all_optimizers,
       gsub("[[:space:]]", "", optim_codes[[i]])
     ))
   })
-  
   # save optimized files
   changed_codes <- optim_codes[changed]
   if (!overwrite && length(changed_codes) > 0) {
@@ -67,6 +64,5 @@ optimize_files <- function(files, optimizers = all_optimizers,
   invisible(lapply(names(changed_codes), function(act_file) {
     write_code_file(changed_codes[[act_file]], act_file)
   }))
-  
   invisible(changed)
 }
