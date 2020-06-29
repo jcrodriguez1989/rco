@@ -21,6 +21,27 @@ test_that("General Case without comments", {
   expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2) {\nodd_sum_a <- odd_sum_a + num\n odd_sum_b <- odd_sum_b + num\n}else {\n even_sum <- even_sum + num\n}"))
 })
 
+test_that("General Case without comments(Alternative)", {
+  code <- paste(
+    "num <- sample(1:100, 1)",
+    "even_sum_a <- 0",
+    "odd_sum <- 0",
+    "even_sum_b <- 0",
+    "if(!(num %% 2)) {",
+    "even_sum_a <- even_sum_a + num",
+    "}",
+    "if(!(num %% 2)) {",
+    "even_sum_b <- even_sum_b + num",
+    "}",
+    "if(num %% 2) {",
+    "odd_sum <- odd_sum + num",
+    "}",
+    sep = "\n"
+  )
+  opt_code <- opt_cond_thread(list(code))$codes[[1]]
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\nodd_sum <- 0\neven_sum_b <- 0\nif(!(num %% 2)) {\neven_sum_a <- even_sum_a + num\n even_sum_b <- even_sum_b + num\n}else {\n odd_sum <- odd_sum + num\n}"))
+})
+
 test_that("General Case with comments", {
   code <- paste(
     "num <- sample(1:100, 1)",
