@@ -25,8 +25,8 @@ opt_constant_folding <- function(texts, fold_floats = FALSE,
   # todo: try constant fold known-functions with constants?
   res <- list()
   res$codes <- lapply(texts, cf_one_file,
-                      fold_floats = fold_floats,
-                      in_fun_call = in_fun_call
+    fold_floats = fold_floats,
+    in_fun_call = in_fun_call
   )
   res
 }
@@ -60,7 +60,7 @@ cf_one_fpd <- function(fpd, fold_floats, in_fun_call) {
   # keep but dont fold comments ( < 0 )
   new_fpd <- fpd[fpd$parent < 0, ]
   fpd <- fpd[fpd$parent >= 0, ]
-  
+
   in_fun_call_ids <- c()
   if (!in_fun_call) {
     # get ids of exprs in fun calls
@@ -68,7 +68,7 @@ cf_one_fpd <- function(fpd, fold_floats, in_fun_call) {
       fpd, fpd$parent[fpd$token == "SYMBOL_FUNCTION_CALL"]
     )$id
   }
-  
+
   # start visiting root nodes
   visit_nodes <- get_roots(fpd)$id
   while (length(visit_nodes) > 0) {
@@ -76,8 +76,8 @@ cf_one_fpd <- function(fpd, fold_floats, in_fun_call) {
     for (act_parent in visit_nodes) {
       act_fpd <- get_children(fpd, act_parent)
       if (all(act_fpd$token %in% c(constants, ops, precedence_ops, "expr")) &&
-          !is_minus_constant(act_fpd, act_parent) &&
-          !act_parent %in% in_fun_call_ids) {
+        !is_minus_constant(act_fpd, act_parent) &&
+        !act_parent %in% in_fun_call_ids) {
         # all the children are terminals or ops. try to evaluate it
         # And it is not just -constant
         act_code_fpd <- fpd[fpd$id == act_parent, ]
@@ -101,7 +101,7 @@ cf_one_fpd <- function(fpd, fold_floats, in_fun_call) {
     }
     visit_nodes <- new_visit_nodes
   }
-  
+
   new_fpd[order(new_fpd$pos_id), ]
 }
 
@@ -116,7 +116,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
   if (fpd$token %in% constants) {
     return()
   }
-  
+
   eval_val <- try(
     {
       eval(parse(text = fpd$text))
@@ -126,7 +126,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
   if (inherits(eval_val, "try-error")) {
     return()
   }
-  
+
   # it was correctly evaluated then create the fpd of the eval val
   eval_val_str <- eval_val
   if (is.null(eval_val)) {
@@ -149,7 +149,7 @@ get_folded_fpd <- function(fpd, fold_floats) {
     # put parentheses to negative numbers
     eval_val_str <- paste0("(", eval_val_str, ")")
   }
-  
+
   res <- parse_text(eval_val_str)
   res <- flatten_leaves(res)
   if (grepl("^\\{.+\\}$", fpd$text)) {
@@ -160,14 +160,14 @@ get_folded_fpd <- function(fpd, fold_floats) {
     res[res$terminal, ][n_terms, "next_spaces"] <- 1
   }
   if (!all(res$token %in%
-           c("expr", "'-'", "'('", "')'", constants, "SYMBOL_FUNCTION_CALL"))) {
+    c("expr", "'-'", "'('", "')'", constants, "SYMBOL_FUNCTION_CALL"))) {
     # SYMBOL_FUNCTION_CALL for logical(0)
     return()
   }
-  
+
   # it is a constant or -constant
   if (!fold_floats && "NUM_CONST" %in% res$token && length(eval_val) != 0 &&
-      !is.na(eval_val) && floor(eval_val) != eval_val) {
+    !is.na(eval_val) && floor(eval_val) != eval_val) {
     return()
   }
   res
@@ -183,11 +183,11 @@ na_to_correct_str <- function(na) {
     return(na)
   }
   switch(class(na),
-         "character" = "NA_character_",
-         "complex" = "NA_complex_",
-         "integer" = "NA_integer_",
-         "numeric" = "NA_real_",
-         "logical" = "NA"
+    "character" = "NA_character_",
+    "complex" = "NA_complex_",
+    "integer" = "NA_integer_",
+    "numeric" = "NA_real_",
+    "logical" = "NA"
   )
 }
 
