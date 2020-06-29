@@ -138,6 +138,25 @@ test_that("Conversion to else due to Greater than equal to logic", {
   expect_equal(opt_code, paste("num <- sample(1:100, 1)\nbig <- 0\nsmall <- 0\nif(num >= 50) {\n  big <- big + 1\n}else {\n   small <- small + 1\n}\nprint(big)\nprint(small)"))
 })
 
+test_that("Conversion to else due to Greater than equal to logic(alternative)", {
+  code <- paste(
+    "num <- sample(1:100, 1)",
+    "big <- 0",
+    "small <- 0",
+    "if(num < 50) {",
+    "  small <- small + 1",
+    "}",
+    "if(num >= 50) {",
+    "  big <- big + 1",
+    "}",
+    "print(big)",
+    "print(small)",
+    sep = "\n"
+  )
+  opt_code <- opt_cond_thread(list(code))$codes[[1]]
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\nbig <- 0\nsmall <- 0\nif(num < 50) {\n  small <- small + 1\n}else {\n   big <- big + 1\n}\nprint(big)\nprint(small)"))
+})
+
 test_that("Conversion to else due to Lesser than equal to logic", {
   code <- paste(
     "num <- sample(1:100, 1)",
@@ -155,6 +174,25 @@ test_that("Conversion to else due to Lesser than equal to logic", {
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
   expect_equal(opt_code, paste("num <- sample(1:100, 1)\nbig <- 0\nsmall <- 0\nif(num <= 50) {\n  small <- small + 1\n}else {\n   big <- big + 1\n}\nprint(big)\nprint(small)"))
+})
+
+test_that("Conversion to else due to Lesser than equal to logic (Alternative)", {
+  code <- paste(
+    "num <- sample(1:100, 1)",
+    "big <- 0",
+    "small <- 0",
+    "if(num > 50) {",
+    "  big <- big + 1",
+    "}",
+    "if(num <= 50) {",
+    "  small <- small + 1",
+    "}",
+    "print(big)",
+    "print(small)",
+    sep = "\n"
+  )
+  opt_code <- opt_cond_thread(list(code))$codes[[1]]
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\nbig <- 0\nsmall <- 0\nif(num > 50) {\n  big <- big + 1\n}else {\n   small <- small + 1\n}\nprint(big)\nprint(small)"))
 })
 
 test_that("Conversion to else due to inequality", {
@@ -194,3 +232,4 @@ test_that("Case when the IF condtions have function calls", {
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
   expect_equal(opt_code, paste("a <- 0\nb <- 0\nif(rnorm(1) > 0) {\n  a <- a + 1\n}\nif(rnorm(1) > 0) {\n  print(\"Yayy\")\n}\nif(!(rnorm(1) > 0)) {\n  b <- b + 1\n}\nprint(a)\nprint(b)"))
 })
+
