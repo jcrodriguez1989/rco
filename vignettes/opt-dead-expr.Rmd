@@ -30,10 +30,6 @@ speed_up <- function(obj) {
 
 # Dead Expression Elimination
 
-## Idea
-
-Simply put, dead expressions are useless variable declarations that were not used at all in the method. As these declarations take up memory, they must be deleted to speed up the code.
-
 ## Background
 
 Dead Expression Elimination intends to remove those expressions that do not modify the environment.
@@ -120,14 +116,14 @@ An expression will be considered a dead expression if:
   
   is not equivalent to
   
-```{r eval=FALSE}
+  ```{r eval=FALSE}
   foo <- function() {
     return(8818)
   }
-```
+  ```
   Both functions will return the same value, however, the first one will give an error similar to:
   
-```{r eval=FALSE}
+  ```{r eval=FALSE}
   foo()
   ## Error in foo() : object 'x' not found
-```
+  ```
