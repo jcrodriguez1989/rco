@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE} 
 library("rco")
 library("microbenchmark")
 library("ggplot2")
@@ -29,6 +29,10 @@ speed_up <- function(obj) {
 ```
 
 # Loop-invariant Code Motion
+
+## Idea
+
+Pieces of code that could be run outside of a loop are referred to as loop-invariants. These may come in the form of variables that are not modified after going through the loop and as such are called "invariants" or non-changing. If these pieces of code were not included in the loop, this would greatly speed up the program.
 
 ## Background
 
