@@ -16,6 +16,16 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_loop_invariant(list(code))$codes[[1]])
+#' code1 <- paste(
+#'   "for(i in 1:10 ){",
+#'   "pi <- 3.14",
+#'  "g <- pi*pi",
+#'  "m[i] <- f[i]/a[i]",
+#'  "w[i] <- m[i] *g",
+#'  "}",
+#'  sep = '\n'
+#')
+#'cat(opt_loop_invariant(list(code1))$codes[[1]])
 #' @export
 #'
 opt_loop_invariant <- function(texts) {
