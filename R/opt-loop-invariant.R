@@ -16,6 +16,20 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_loop_invariant(list(code))$codes[[1]])
+#'
+#'code <- paste(
+#'    "x <- 5",
+#'    "i <- 0",
+#'    "while (i < 50) {",
+#'    "  a <- i * i",
+#'   "  b <- a + x * x",  
+#'   "  c <- b ∗ ( x + 5 )",
+#'   "  d <- a + b ∗ c",
+#'  "}",
+#'  sep = "\n"
+#')
+#'cat(opt_loop_invariant(list(code))$codes[[1]])
+
 #' @export
 #'
 opt_loop_invariant <- function(texts) {
