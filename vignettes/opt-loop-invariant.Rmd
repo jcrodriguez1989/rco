@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r echo=FALSE, message=FALSE} 
+```{r echo=FALSE, message=FALSE}
 library("rco")
 library("microbenchmark")
 library("ggplot2")
