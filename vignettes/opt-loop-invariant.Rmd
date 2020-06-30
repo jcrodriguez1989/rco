@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Loop-invariant Code Motion
 
+## Idea
+
+Invariant code is a piece of code that could be run outside of a loop without affecting the actual outcome of a program. This may come in the form of variables that are not modified after going through the loop and as such are called "invariants" or non-changing. If these pieces of code were removed from the loops, this would speed up the script being run.
+
 ## Background
 
 Loop-invariant code consists of statements or expressions which can be moved outside the body of a loop without affecting the semantics of the program. Loop-invariant code motion is a compiler optimization which performs this movement automatically. 
