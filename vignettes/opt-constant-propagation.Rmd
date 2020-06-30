@@ -30,10 +30,6 @@ speed_up <- function(obj) {
 
 # Constant Propagation
 
-## Idea
-
-Constant propagation can be used when a previously-defined variable with a constant (integer, double, or boolean) is used in an expression. It is the process of substituting the variable with its constant when the variable is used in an expression. Constant propagation reduces run-time as it eliminates time spent during execution assigning the variable's constant to the variable.
-
 ## Background
 
 Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.
