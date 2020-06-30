@@ -16,6 +16,7 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_loop_invariant(list(code))$codes[[1]])
+<<<<<<< HEAD
 #'
 #'code <- paste(
 #'    "x <- 5",
@@ -30,6 +31,27 @@
 #')
 #'cat(opt_loop_invariant(list(code))$codes[[1]])
 
+=======
+#' 
+#' 
+#' verify <- paste(
+#'   "function(){
+#'    "i <- 1"
+#'    "count <- 0"
+#'    "age = list(12,13,14,15,16,17,18)"
+#'    "while i < length(age){",
+#'    "  if (age[i]>13 & age[i]<17){",
+#'    "    count <- count + 1",
+#'    "  }              
+#'    "  joy <- c('Open Source is fun')",
+#'    "  i <- i + 1",
+#'    "}",
+#'  sep = "\n"
+#' )
+#' cat(opt_loop_invariant(list(verify))$codes[[1]])
+#'
+#' 
+>>>>>>> wizard/loop-invariant
 #' @export
 #'
 opt_loop_invariant <- function(texts) {
