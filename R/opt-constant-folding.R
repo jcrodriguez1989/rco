@@ -16,22 +16,6 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_constant_folding(list(code))$codes[[1]])
-#'
-#' code1 <- paste(
-#'   "speed_of_light <- function() {",
-#'   "  cms <- 2.99792458 * 10^8",
-#'   "  ckh <- 2.99792458 * 10^8 * 18/5",
-#'   "  paste(",
-#'   "    'The speed of light is',",
-#'   "    cms,",
-#'   "    'metres per second, or',",
-#'   "    ckh,",
-#'   "    'kilometres per hour.'",
-#'   "  )",
-#'   "}",
-#'   sep = "\n"
-#' )
-#' cat(opt_constant_folding(list(code1))$codes[[1]])
 #' @export
 #'
 opt_constant_folding <- function(texts, fold_floats = FALSE,
@@ -219,7 +203,3 @@ is_minus_constant <- function(pd, id) {
     sum(act_pd$token %in% constants) == 1 &&
     sum(act_pd$token == "'-'") == 1
 }
-#x <- 34/12 + 14*600
-#y <- 111+23+1-77
-#z <- x+y
-#z
