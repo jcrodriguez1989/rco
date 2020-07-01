@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Constant Folding
 
+## Idea
+
+The basic idea behind this optimizer is to reduce as many calculations as possible. This implies that any expression that can be calculated before running the script, must be calculated and *reduced* or *folded* to a single constant value.
+
 ## Background
 
 Constant folding is an optimization technique that eliminates expressions that calculate a value that can already be determined before code execution. These are typically calculations that only reference constant values or expressions that reference variables whose values are constant.
