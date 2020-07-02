@@ -16,6 +16,17 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
+#' 
+#' 
+#' example <- paste(
+#'  sum_A = A1 + A2 + A3
+#'  avg_A = (A1 + A2 + A3)/ 3
+#'  sep = "\n"
+#')
+#'  
+#'cat(opt_common_subexpr(list(example))$codes[[1]])
+#' 
+#' 
 #' @export
 #'
 opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
