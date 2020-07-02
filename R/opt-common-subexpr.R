@@ -16,17 +16,6 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
-#'
-#' code <- paste(
-#'  "if(c > d){",
-#'    "a = (c * d - c) + a * 2",
-#'  "} else {",
-#'    "b = (c * d - c) + b * 2",
-#'  "}",
-#'  sep = "\n"
-#' )
-#' cat(opt_common_subexpr(list(code))$codes[[1]])
-#'
 #' @export
 #'
 opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {
