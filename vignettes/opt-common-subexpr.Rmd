@@ -30,6 +30,9 @@ speed_up <- function(obj) {
 
 # Common Subexpression Elimination
 
+## Idea
+This technique will search for places where an expresion evaluates to a single value and is assigned multiple times in different places. It is much more efficient to store the output in a variable and references it each time rather than to repeat the calculation over and over 
+
 ## Background
 
 Common Subexpression Elimination is an optimization that searches for instances of identical expressions, and replaces them with a single variable holding the computed value.
