@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Constant Propagation
 
+## Idea
+
+The basic idea behind the constant propogation optimizer is to replace as many variables with their corresponding constant values, as possible. When we replace a variable with its corresponding constant value or **propogate the constant**, the computation time of the script decreases and we get a speed-up. 
+
 ## Background
 
 Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.
