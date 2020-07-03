@@ -29,6 +29,8 @@ speed_up <- function(obj) {
 ```
 
 # Constant Propagation
+##Idea
+
 
 ## Idea
 
