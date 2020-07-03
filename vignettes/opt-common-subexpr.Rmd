@@ -30,6 +30,10 @@ speed_up <- function(obj) {
 
 # Common Subexpression Elimination
 
+## Idea
+
+The main idea behind the common subexpression elimination optimizer is to separate/isolate those parts of an expression (sub-expressions) that are being calculated again and again. By isolating a common sub-expression and replacing it with a varialbe, we can limit the number of computations. Thus improving the performance of our script 
+
 ## Background
 
 Common Subexpression Elimination is an optimization that searches for instances of identical expressions, and replaces them with a single variable holding the computed value.
