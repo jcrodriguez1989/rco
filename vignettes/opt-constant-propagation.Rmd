@@ -29,12 +29,6 @@ speed_up <- function(obj) {
 ```
 
 # Constant Propagation
-##Idea
-
-
-## Idea
-
-Constant propagation is the process of optimizing the code by replacing the known constant values of a variable in the expression as long as no intervening assignment has changed the value of the variable, at the compile time. This reduces the execution time as well as yields better performance of the code. 
 
 ## Background
 
