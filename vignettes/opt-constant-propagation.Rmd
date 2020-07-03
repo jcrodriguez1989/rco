@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-The basic idea behind the constant propogation optimizer is to replace as many variables with their corresponding constant values, as possible. When we replace a variable with its corresponding constant value or **propogate the constant**, the computation time of the script decreases and we get a speed-up. 
+The basic idea behind the constant propogation optimizer is to replace as many variables with their corresponding constant values, as possible. When we replace a variable with its corresponding constant value or *propogate the constant*, the computation time of the script decreases and we get a speed-up. 
 
 ## Background
 
