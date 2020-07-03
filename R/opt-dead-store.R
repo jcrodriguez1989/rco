@@ -16,14 +16,14 @@
 #' cat(opt_dead_store(list(code))$codes[[1]])
 #'
 #' code1 <- paste(
-#'     "sinpi <- function() {",
-#'     "pi <- 3.1415",
-#'     "e <- 2.718",
-#'     "phi <- 1.618",
-#'     "sin(pi)",
-#'     "}",
-#'     sep = "\n"
-#'   )
+#'   "sinpi <- function() {",
+#'   "  pi <- 3.1415",
+#'   "  e <- 2.718",
+#'   "  phi <- 1.618",
+#'   "  sin(pi)",
+#'   "}",
+#'   sep = "\n"
+#' )
 #'cat(opt_dead_store(list(code1))$codes[[1]])
 #' @export
 #'
