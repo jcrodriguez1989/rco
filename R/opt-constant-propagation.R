@@ -16,14 +16,6 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_constant_propagation(list(code))$codes[[1]])
-#' code1<- paste(
-#'   "pi <- 3.1415;",
-#'   "e <- 2.7181;",
-#'   "phi <- 1.618;",
-#'   "xy <- phi *e * pi;",
-#'   sep = '\n'
-#' )
-#' cat(opt_constant_propagation(list(code1))$codes[[1]])
 #' @export
 #'
 opt_constant_propagation <- function(texts, in_fun_call = FALSE) {
