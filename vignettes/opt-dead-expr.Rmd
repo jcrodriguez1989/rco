@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea
 
-
+The basic idea behind the dead expression elimination optimizer is to remove all those expressions whose result is neither used in the program nor the removal of which affects the result of the code. Therefore this *dead expression elimination* frees up memory, saves computation time and provides a speed boost.
 
 ## Background
 
