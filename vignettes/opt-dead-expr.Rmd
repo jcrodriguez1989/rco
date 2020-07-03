@@ -120,14 +120,14 @@ An expression will be considered a dead expression if:
   
   is not equivalent to
   
-```{r eval=FALSE}
+  ```{r eval=FALSE}
   foo <- function() {
     return(8818)
   }
-```
+  ```
   Both functions will return the same value, however, the first one will give an error similar to:
   
-```{r eval=FALSE}
+  ```{r eval=FALSE}
   foo()
   ## Error in foo() : object 'x' not found
-```
+  ```
