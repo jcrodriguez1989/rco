@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea 
 
-Dead Store refers to a piece of code or value that is assigned to a variable which is executed but not used or read by any other subsequent instruction. Dead store elimination is a technique of optimizing code by removing the Dead Stores present in the program. This reduces the size of the code which will obviously reduce the execution time.
+The removal of a value allocated to a variable when it is not being read by any following instuction is called Dead Store Elimination. This Optimization is neccessary as it saves processor time and memory which ultimately results in the faster execution of program.
 
 ## Background
 
