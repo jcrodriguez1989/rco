@@ -20,6 +20,25 @@ opt_dead_expr <- function(texts) {
   # todo: check if dead expressions have never assigned vars.
   # foo() { x; return(8818) } is not equivalent to foo() { return(8818) }
   # as the first one might have an error.
+  
+  #removes semicolons and executes the file.=
+  textschar = as.character(texts);
+  textschar = strsplit(textschar, '\n', fixed = TRUE)[[1]];
+  for(i in 1:length(textschar))
+  {
+    trimws(textschar[i]);
+    if(substr(textschar[i], nchar(textschar[i]), nchar(textschar[i])) ==';')
+    {
+      textschar[i] = substr(textschar[i], 1, nchar(textschar[i])-1);
+    }
+  }
+  textsmerge = '';
+  for(i in textschar)
+  {
+    textsmerge <- paste(textsmerge,i,sep='\n');
+  }
+  texts = list(textsmerge);
+  
   res <- list()
   res$codes <- lapply(texts, de_one_file)
   res
