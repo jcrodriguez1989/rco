@@ -14,6 +14,7 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_store(list(code))$codes[[1]])
+#'
 #' code1 <- paste(
 #'     "sinpi <- function() {",
 #'     "pi <- 3.1415",
@@ -24,7 +25,6 @@
 #'     sep = "\n"
 #'   )
 #'cat(opt_dead_store(list(code1))$codes[[1]])
-
 #' @export
 #'
 opt_dead_store <- function(texts) {
