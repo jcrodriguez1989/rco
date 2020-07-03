@@ -1,8 +1,8 @@
 ---
 output: rmarkdown::html_vignette
-title: Constant Propagation
+title: Common Subexpression Elimination
 vignette: >
-  %\VignetteIndexEntry{Constant Propagation}
+  %\VignetteIndexEntry{Common Subexpression Elimination}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -28,49 +28,38 @@ speed_up <- function(obj) {
 }
 ```
 
-# Constant Propagation
-
-## Idea
-
-The basic idea behind the constant propogation optimizer is to replace as many variables with their corresponding constant values, as possible. When we replace a variable with its corresponding constant value or *propogate the constant*, the computation time of the script decreases and we get a speed-up. 
+# Common Subexpression Elimination
 
 ## Background
 
-Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.
+Common Subexpression Elimination is an optimization that searches for instances of identical expressions, and replaces them with a single variable holding the computed value.
 
-For example, consider the following code:
-
-```{r eval=FALSE}
-x <- 14
-y <- 7 - x / 2
-z <- y * (28 / x + 2) - x
-```
-
-Here, `x` is assigned a constant, and thus, can be propagated (three times). Propagating yields:
+For instance, consider the following code:
 
 ```{r eval=FALSE}
-x <- 14
-y <- 7 - 14 / 2
-z <- y * (28 / 14 + 2) - 14
+a <- 1 / (8 + 8 + 1 + 9 * 1 ^ 8)
+b <- (8 + 8 + 1 + 9 * 1 ^ 8) * 2
 ```
 
-Constant propagation enables the code to assign static values, which is faster than looking up and copying the value of a variable, and also saves time by eliminating assigning a value to a variable that is itself subsequently used only to propagate that value throughout the code. In some cases, copy propagation itself may not provide direct optimizations, but simply facilitates other transformations, such as [constant folding](opt-constant-folding.html), code motion, and [dead code elimination](opt-dead-code.html).
+This code computes twice `8 + 8 + 1 + 9 * 1 ^ 8`, this could be evaluated once, assigned to a new variable, and used twice. Like, for example:
+
+```{r eval=FALSE}
+cs_1 <- (8 + 8 + 1 + 9 * 1 ^ 8)
+a <-  1 / cs_1
+b <- cs_1 * 2
+```
 
 ## Example
 
-A simple example would be a code that converts the unit of many temporary samples, from hours to miliseconds `miliseconds <- 1000 * 60 * 60 * hours`.
+Consider the following example:
 
 ```{r}
 code <- paste(
-  "n <- 1000",
-  "hours_vector <- runif(n, 0, 24)",
-  "ms_vector <- numeric(n)",
-  "hs_to_mins <- 60",
-  "mins_to_secs <- 60",
-  "secs_to_ms <- 1000",
-  "# of course it would be much efficient to do vectorized operations xP",
-  "for (i in 1:n) {",
-  "  ms_vector[i] <- secs_to_ms * mins_to_secs * hs_to_mins * hours_vector[i]",
+  "a <- b <- c <- 1",
+  "for (i in 1:1000) {",
+  "  a <- a ^ i ^ c",
+  "  b <- b * i ^ c",
+  "  c <- c + i ^ c",
   "}",
   sep = "\n"
 )
@@ -80,7 +69,7 @@ cat(code)
 Then, the automatically optimized code would be:
 
 ```{r}
-opt_code <- opt_constant_propagation(list(code))
+opt_code <- opt_common_subexpr(list(code))
 cat(opt_code$codes[[1]])
 ```
 
@@ -98,120 +87,30 @@ speed_up(bmark_res)
 
 ## Implementation
 
-The `opt_constant_propagation` optimizer analyzes the code from top to bottom. As it goes through the code, it performs two tasks:
-
-* Saves, in the `values` vector, those variables that are assigned a constant value. I.e., if `x <- -3`, then `values$x <- -3`.
-
-* Each variable that is assigned an expression that includes a variable present in `values` is given the corresponding constant value. I.e., `y <- 7 * x + z` is transformed to `y <- 7 * -3 + z`.
-
-Depending on what expression it finds, it applies one of the following criteria:
-
-### `VAR <- CONST`
-
-If it is an assignment of a constant value: then it keeps the same expression, and saves `VAR = CONST` in `values`.
-
-This criteria also includes, multi-assign ( `VAR <- VAR <- CONST` ).
-
-### `VAR * CONST + VAR`
-
-If it is only operators, variables, constants, and precedence operators: then it will check if any of the variables is stored in `values` vector, and would replace them in the expression. It will return the modified expression.
-
-### `FUN({FUN_PARAMS})`
-
-If it is a function call, and `opt_constant_propagation`'s `in_fun_call` parameter is set to `TRUE`: then it will try to constant propagate in `{FUN_PARAMS}`. Consider the case that the function call is `seq_len(x+30)`, it could be replaced by `seq_len(-3+30)`.
-
-Then, **it empties the `values` vector** ( `values <- c()` ). It should be noted that in R, calling a function can modify the current environment, being the simplest example `rm(list = ls())`, or `assign("x", 4)`.
-
-### `LOOP (COND) { BODY }`
-
-If it is a loop ( `repeat`, `while`, or `for` ): it will get which variables are being assigned in the loop and remove them from `values`, and then propagate in `COND` and `BODY`.
-
-In-loop assigned variables are removed from `values` as, if not, it would try to propagate them, and these variables might change in next execution of `BODY`. For instance:
-
-```{r eval=FALSE}
-x <- 3
-y <- 1 + 1
-while (y < 5) {
-  y <- x
-  x <- x + 1
-}
-```
-
-Would try to propagate to:
-
-```{r eval=FALSE}
-x <- 3
-y <- 1 + 1
-while (y < 5) {
-  y <- 3
-  x <- 3 + 1
-}
-```
-
-which is not equivalent.
-
-### `IF (COND) { BODY } ELSE { BODY }`
-
-If it is an `if`: it will propagate `values` in `COND` and `BODY`, then it will get which variables are being assigned in the if/else `BODY` and remove them from `values`.
-
-In-loop assigned variables are removed from `values`, as it is possible that the `BODY` is never executed (`FALSE` condition), and thus, these variables would not be updated or assigned.
-
-### `VAR <- EXPR`
-
-If it is an assignment (of a non constant value): it will keep `VAR <-` and try to propagate on `EXPR`. Moreover, it will remove `VAR` from `values` as it is assigned a non-constant value.
-
-### `FUN ({FUN_PARAMS}) { BODY }`
-
-If it is a function definition: it will propagate on the `BODY` but with a new empty `values` vector (the global `values` vector would not be changed). Note that in R, a function definition will have another environment, and thus it should not use the current `values`.
-
-### Other cases
-
-In any other case, it should keep propagating on sub-expressions.
+The `opt_common_subexpr` will first detect different "environments", i.e., separate between function definitions and parent environment. Then, for each environment it will detect all those subexpressions in common between at least two expressions. If between two occurrences of the same subexpression, a variable involved in the subexpression is reassigned or a function is called (it can change the environment), then for these two occurrences the optimization is not performed. For all those remaining common subexpressions, the first common parent expression will be detected, a new variable called `cs_#` will be created in the parent expression, and replaced in each call to the subexpression.
 
 ## To-Do
 
-* Recognize functions that modify the environment?
+* Consider functions as common subexpressions?
+  
+  This can have an issue if the common function call returns random values.
+  
+  For example:
+  
+  ```{r eval=FALSE}
+  a <-rnorm(1) * 8
+  b <-rnorm(1) * 18
+  ```
+  
+  Will be wrongly optimized to:
+  
+  ```{r eval=FALSE}
+  cs_1 <- rnorm(1)
+  a <-cs_1 * 8
+  b <-cs_1 * 18
+  ```
 
-  When `opt_constant_propagation` finds a function call, it deletes the previously found constant-assigned values. This is mainly done to avoid having
+* Use information about which functions modify their parent env?
   
-  ```{r eval=FALSE}
-x <- 1
-assign("x", 3)
-y <- x
-  ```
-  
-  Propagated to 
-  
-  ```{r eval=FALSE}
-x <- 1
-assign("x", 3)
-y <- 1
-  ```
-  
-  In R we can list which `base` functions modify the environment, for example, `assign`, `rm`, etc. However, this would not be a solution, as we can define new functions that wrap the `base` ones, for instance:
-  
-  ```{r eval=FALSE}
-rm_all <- function() {
-  env <- .GlobalEnv
-  rm(list = ls(envir = env), envir = env)
-}
-  ```
-  
-  A possible solution would be to let the user identify which functions edit the environment.
-  
-  * in a `roxygen2` way:
-    
-    ```{r eval=FALSE}
-# o @edits_env rm_all
-...
-    ```
-    or
-    ```{r eval=FALSE}
-rm_all() # o @edits_env
-    ```
-  
-  * by parameter:
-  
-    ```{r eval=FALSE}
-opt_constant_propagation(list(code), env_edit = c("rm_all", ...))
-    ```
+  If the optimizer knows which functions modify their parent env, then function
+  calls won't stop optimization
