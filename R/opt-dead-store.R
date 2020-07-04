@@ -24,7 +24,6 @@
 #'   "}",
 #'   sep = "\n"
 #' )
-#'
 #' cat(opt_dead_store(list(code))$codes[[1]])
 #' @export
 #'
