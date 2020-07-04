@@ -32,7 +32,7 @@ speed_up <- function(obj) {
 
 ## Idea 
 
-The removal of a value allocated to a variable when it is not being read by any following instuction is called Dead Store Elimination. This Optimization is neccessary as it saves processor time and memory which ultimately results in the faster execution of program.
+The removal of a value allocated to a variable when it is not being read by any following instruction is called Dead Store Elimination. This Optimization is necessary as it saves processor time and memory which ultimately results in the faster execution of the program.
 
 ## Background
 
