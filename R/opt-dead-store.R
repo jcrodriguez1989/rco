@@ -25,6 +25,7 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_dead_store(list(code))$codes[[1]])
+#'
 #' @export
 #'
 opt_dead_store <- function(texts) {
