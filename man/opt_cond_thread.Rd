@@ -15,20 +15,20 @@ Carefully examine the results after running this function!
 }
 \examples{
 code <- paste(
-"num <- sample(1:100, 1)",
-"even_sum <- 0",
-"odd_sum_a <- 0",
-"odd_sum_b <- 0",
-"if(num \%\% 2) {",
-"odd_sum_a <- odd_sum_a + num",
-"}",
-"if(num \%\% 2) {",
-"odd_num_b <- odd_num_b + num",
-"}",
-"if(!(num \%\% 2)) {",
-"even_sum <- even_sum + num",
-"}",
-sep = "\n"
+  "num <- sample(1:100, 1)",
+  "even_sum <- 0",
+  "odd_sum_a <- 0",
+  "odd_sum_b <- 0",
+  "if(num \%\% 2 == 0) {",
+  "odd_sum_a <- odd_sum_a + num",
+  "",
+  "if(num \%\% 2 == 0) {",
+  "odd_num_b <- odd_num_b + num",
+  "",
+  "if(!(num \%\% 2 == 0)) {",
+  "even_sum <- even_sum + num",
+  "",
+  sep = "\n"
 )
 
 cat(opt_cond_thread(list(code))$codes[[1]])
