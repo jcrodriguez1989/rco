@@ -18,7 +18,7 @@ test_that("General Case without comments", {
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 1) {\nodd_sum_a <- odd_sum_a + num\n odd_sum_b <- odd_sum_b + num\n}else {\n even_sum <- even_sum + num\n}"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 1) {\n  odd_sum_a <- odd_sum_a + num\n   odd_sum_b <- odd_sum_b + num\n}else {\n   even_sum <- even_sum + num\n}"))
 })
 
 test_that("General Case without comments(Alternative)", {
@@ -39,7 +39,7 @@ test_that("General Case without comments(Alternative)", {
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\nodd_sum <- 0\neven_sum_b <- 0\nif(!(num %% 2 == 1)) {\neven_sum_a <- even_sum_a + num\n even_sum_b <- even_sum_b + num\n}else {\n odd_sum <- odd_sum + num\n}"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\nodd_sum <- 0\neven_sum_b <- 0\nif(!(num %% 2 == 1)) {\n  even_sum_a <- even_sum_a + num\n   even_sum_b <- even_sum_b + num\n}else {\n   odd_sum <- odd_sum + num\n}"))
 })
 
 test_that("General Case with comments", {
@@ -66,7 +66,7 @@ test_that("General Case with comments", {
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\neven_sum_b <- 0\n#Hello, I am a comment.\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 1) {\n # I'm another comment, and I won't go easily\nodd_sum_a <- odd_sum_a + num\n\n odd_sum_b <- odd_sum_b + num\n}else {\n even_sum_a <- even_sum_a + num\n even_sum_b <- even_sum_b + num\n}\n#This is another comment\n"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\neven_sum_b <- 0\n#Hello, I am a comment.\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 1) {\n # I'm another comment, and I won't go easily\n  odd_sum_a <- odd_sum_a + num\n\n   odd_sum_b <- odd_sum_b + num\n}else {\n   even_sum_a <- even_sum_a + num\n   even_sum_b <- even_sum_b + num\n}\n#This is another comment\n"))
 })
 
 test_that("Code snippet without any IF-ELSE blocks", {
@@ -126,18 +126,18 @@ test_that("Code Block containing a nested IF-ELSE block", {
     "odd_sum <- 0",
     "count <- 0",
     "if(even_sum + odd_sum < 10) {",
-    "  if(num %% 2 == 1) {",
-    "    odd_sum <- odd_sum + num",
-    "  }",
-    "  if(!(num %% 2 == 1)) {",
-    "    even_sum <- even_sum + num",
-    "  }",
-    "  count <- count + 1",
+    "if(num %% 2 == 1) {",
+    " odd_sum <- odd_sum + num",
+    "}",
+    "if(!(num %% 2 == 1)) {",
+    " even_sum <- even_sum + num",
+    "}",
+    "count <- count + 1",
     "}",
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum <- 0\ncount <- 0\nif(even_sum + odd_sum < 10) {\nif(num %% 2 == 1) {\n  odd_sum <- odd_sum + num\n}else {\n   even_sum <- even_sum + num\n}count <- count + 1\n}"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum <- 0\ncount <- 0\nif(even_sum + odd_sum < 10) {\nif(num %% 2 == 1) {\n odd_sum <- odd_sum + num\n}else {\n  even_sum <- even_sum + num\n}count <- count + 1\n}"))
 })
 
 test_that("Conversion to else due to Greater than equal to logic", {
@@ -230,7 +230,7 @@ test_that("Conversion to else due to inequality", {
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:10, 1)\nlottery <- FALSE\nif(num == 5) {\nlottery <- TRUE\n}else {\n lottery <- FALSE\n}\nprint(lottery)"))
+  expect_equal(opt_code, paste("num <- sample(1:10, 1)\nlottery <- FALSE\nif(num == 5) {\n  lottery <- TRUE\n}else {\n   lottery <- FALSE\n}\nprint(lottery)"))
 })
 
 test_that("Case when the IF condtions have function calls", {
