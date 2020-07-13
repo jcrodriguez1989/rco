@@ -1,3 +1,4 @@
+Sys.setenv("R_TESTS" = "")
 context("opt_cond_thread")
 
 test_that("General Case without comments", {
