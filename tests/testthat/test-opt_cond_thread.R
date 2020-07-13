@@ -6,19 +6,19 @@ test_that("General Case without comments", {
     "even_sum <- 0",
     "odd_sum_a <- 0",
     "odd_sum_b <- 0",
-    "if(num %% 2 == 0) {",
-    "odd_sum_a <- odd_sum_a + num",
+    "if(num %% 2 == 1) {",
+    "  odd_sum_a <- odd_sum_a + num",
     "}",
-    "if(num %% 2 == 0) {",
-    "odd_sum_b <- odd_sum_b + num",
+    "if(num %% 2 == 1) {",
+    "  odd_sum_b <- odd_sum_b + num",
     "}",
-    "if(!(num %% 2 == 0)) {",
-    "even_sum <- even_sum + num",
+    "if(!(num %% 2 == 1)) {",
+    "  even_sum <- even_sum + num",
     "}",
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 0) {\nodd_sum_a <- odd_sum_a + num\n odd_sum_b <- odd_sum_b + num\n}else {\n even_sum <- even_sum + num\n}"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 1) {\nodd_sum_a <- odd_sum_a + num\n odd_sum_b <- odd_sum_b + num\n}else {\n even_sum <- even_sum + num\n}"))
 })
 
 test_that("General Case without comments(Alternative)", {
@@ -27,19 +27,19 @@ test_that("General Case without comments(Alternative)", {
     "even_sum_a <- 0",
     "odd_sum <- 0",
     "even_sum_b <- 0",
-    "if(!(num %% 2 == 0)) {",
-    "even_sum_a <- even_sum_a + num",
+    "if(!(num %% 2 == 1)) {",
+    "  even_sum_a <- even_sum_a + num",
     "}",
-    "if(!(num %% 2 == 0)) {",
-    "even_sum_b <- even_sum_b + num",
+    "if(!(num %% 2 == 1)) {",
+    "  even_sum_b <- even_sum_b + num",
     "}",
-    "if(num %% 2 == 0) {",
-    "odd_sum <- odd_sum + num",
+    "if(num %% 2 == 1) {",
+    "  odd_sum <- odd_sum + num",
     "}",
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\nodd_sum <- 0\neven_sum_b <- 0\nif(!(num %% 2 == 0)) {\neven_sum_a <- even_sum_a + num\n even_sum_b <- even_sum_b + num\n}else {\n odd_sum <- odd_sum + num\n}"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\nodd_sum <- 0\neven_sum_b <- 0\nif(!(num %% 2 == 1)) {\neven_sum_a <- even_sum_a + num\n even_sum_b <- even_sum_b + num\n}else {\n odd_sum <- odd_sum + num\n}"))
 })
 
 test_that("General Case with comments", {
@@ -50,23 +50,23 @@ test_that("General Case with comments", {
     "#Hello, I am a comment.",
     "odd_sum_a <- 0",
     "odd_sum_b <- 0",
-    "if(num %% 2 == 0) { # I'm another comment, and I won't go easily",
-    "odd_sum_a <- odd_sum_a + num",
+    "if(num %% 2 == 1) { # I'm another comment, and I won't go easily",
+    "  odd_sum_a <- odd_sum_a + num",
     "}",
     "#This is another comment",
-    "if(num %% 2 == 0) {",
-    "odd_sum_b <- odd_sum_b + num",
+    "if(num %% 2 == 1) {",
+    "  odd_sum_b <- odd_sum_b + num",
     "}",
-    "if(!(num %% 2 == 0)) {",
-    "even_sum_a <- even_sum_a + num",
+    "if(!(num %% 2 == 1)) {",
+    "  even_sum_a <- even_sum_a + num",
     "}",
-    "if(!(num %% 2 == 0)) {",
-    "even_sum_b <- even_sum_b + num",
+    "if(!(num %% 2 == 1)) {",
+    "  even_sum_b <- even_sum_b + num",
     "}",
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\neven_sum_b <- 0\n#Hello, I am a comment.\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 0) {\n # I'm another comment, and I won't go easily\nodd_sum_a <- odd_sum_a + num\n\n odd_sum_b <- odd_sum_b + num\n}else {\n even_sum_a <- even_sum_a + num\n even_sum_b <- even_sum_b + num\n}\n#This is another comment\n"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum_a <- 0\neven_sum_b <- 0\n#Hello, I am a comment.\nodd_sum_a <- 0\nodd_sum_b <- 0\nif(num %% 2 == 1) {\n # I'm another comment, and I won't go easily\nodd_sum_a <- odd_sum_a + num\n\n odd_sum_b <- odd_sum_b + num\n}else {\n even_sum_a <- even_sum_a + num\n even_sum_b <- even_sum_b + num\n}\n#This is another comment\n"))
 })
 
 test_that("Code snippet without any IF-ELSE blocks", {
@@ -102,13 +102,13 @@ test_that("Code Blocks containing IF-ELSE blocks within loops", {
 test_that("Code block containing IF-ELSE blocks inside a function", {
   code <- paste(
     "is_even <- function(a) {",
-    "if(a %% 2 == 0) {",
+    "if(a %% 2 == 1) {",
     "  return (FALSE)",
     "}",
-    "if(!(a %% 2 == 0)) {",
+    "if(!(a %% 2 == 1)) {",
     "  return (TRUE)",
     "}",
-    "if(!(a %% 2 == 0)) {",
+    "if(!(a %% 2 == 1)) {",
     "  print(\"Yaay\")",
     "}",
     "}",
@@ -116,7 +116,7 @@ test_that("Code block containing IF-ELSE blocks inside a function", {
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("is_even <- function(a) {\nif(a %% 2 == 0) {\n  return (FALSE)\n}else {\n   return (TRUE)\n   print(\"Yaay\")\n}}\nis_even(150)"))
+  expect_equal(opt_code, paste("is_even <- function(a) {\nif(a %% 2 == 1) {\n  return (FALSE)\n}else {\n   return (TRUE)\n   print(\"Yaay\")\n}}\nis_even(150)"))
 })
 
 test_that("Code Block containing a nested IF-ELSE block", {
@@ -126,18 +126,18 @@ test_that("Code Block containing a nested IF-ELSE block", {
     "odd_sum <- 0",
     "count <- 0",
     "if(even_sum + odd_sum < 10) {",
-    "if(num %% 2 == 0) {",
-    "  odd_sum <- odd_sum + num",
-    "}",
-    "if(!(num %% 2 == 0)) {",
-    "  even_sum <- even_sum + num",
-    "}",
-    "count <- count + 1",
+    "  if(num %% 2 == 1) {",
+    "    odd_sum <- odd_sum + num",
+    "  }",
+    "  if(!(num %% 2 == 1)) {",
+    "    even_sum <- even_sum + num",
+    "  }",
+    "  count <- count + 1",
     "}",
     sep = "\n"
   )
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
-  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum <- 0\ncount <- 0\nif(even_sum + odd_sum < 10) {\nif(num %% 2 == 0) {\n  odd_sum <- odd_sum + num\n}else {\n   even_sum <- even_sum + num\n}count <- count + 1\n}"))
+  expect_equal(opt_code, paste("num <- sample(1:100, 1)\neven_sum <- 0\nodd_sum <- 0\ncount <- 0\nif(even_sum + odd_sum < 10) {\nif(num %% 2 == 1) {\n  odd_sum <- odd_sum + num\n}else {\n   even_sum <- even_sum + num\n}count <- count + 1\n}"))
 })
 
 test_that("Conversion to else due to Greater than equal to logic", {
@@ -221,10 +221,10 @@ test_that("Conversion to else due to inequality", {
     "num <- sample(1:10, 1)",
     "lottery <- FALSE",
     "if(num == 5) {",
-    "lottery <- TRUE",
+    "  lottery <- TRUE",
     "}" ,
     "if(num != 5) {",
-    "lottery <- FALSE",
+    "  lottery <- FALSE",
     "}",
     "print(lottery)",
     sep = "\n"
