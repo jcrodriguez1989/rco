@@ -223,7 +223,7 @@ test_that("Conversion to else due to inequality", {
     "lottery <- FALSE",
     "if(num == 5) {",
     "  lottery <- TRUE",
-    "}" ,
+    "}",
     "if(num != 5) {",
     "  lottery <- FALSE",
     "}",
@@ -254,4 +254,3 @@ test_that("Case when the IF condtions have function calls", {
   opt_code <- opt_cond_thread(list(code))$codes[[1]]
   expect_equal(opt_code, paste("a <- 0\nb <- 0\nif(rnorm(1) > 0) {\n  a <- a + 1\n}\nif(rnorm(1) > 0) {\n  print(\"Yayy\")\n}\nif(!(rnorm(1) > 0)) {\n  b <- b + 1\n}\nprint(a)\nprint(b)"))
 })
-

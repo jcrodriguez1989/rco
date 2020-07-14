@@ -1,7 +1,7 @@
 Package: rco
 Type: Package
 Title: The R Code Optimizer
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
     person(given = "Juan Cruz", family = "Rodriguez", 
         role = c("aut", "cre"), email = "jcrodriguez@unc.edu.ar"),
@@ -20,7 +20,7 @@ BugReports: https://github.com/jcrodriguez1989/rco/issues
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.0
 Suggests: 
     covr,
     diffr,
