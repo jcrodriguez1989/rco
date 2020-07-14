@@ -39,7 +39,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Background
 
-Conditional Threading is an optimization that searches for separate blocks of `IF` statements but with exactly the same conditions. When several conditionals present the same boolean condition, merging their inside actions would avoid computing the condition several times. Also, in the cases where a second `IF` statement has been used with the exact negation or logical negation of the condition of the first `IF`, the second `IF` could then be incorporated in an `ELSE` statement.
+Conditional Threading is an optimization that searches for separate blocks of `IF` statements but with exactly the same conditions. When several conditionals present the same boolean condition, merging their inside actions would avoid computing the condition several times. Also, in the cases where a second `IF` statement has been used with the exact negation of the condition of the first `IF`, the second `IF` could then be incorporated in an `ELSE` statement.
 
 ## Example
 
@@ -47,19 +47,19 @@ Consider the following example:
 
 ```{r}
 code <- paste(
-    "is_even <- function(a) {",
-    "if(a %% 2) {",
-    "  return (FALSE)",
-    "}",
-    "if(!(a %% 2)) {",
-    "  return (TRUE)",
-    "}",
-    "if(!(a %% 2)) {",
-    "  print(\"Yaay\")",
-    "}",
-    "}",
-    "is_even(150)",
-    sep = "\n"
+  "is_even <- function(a) {",
+  "  if (a %% 2 == 1) {",
+  "    return(FALSE)",
+  "  }",
+  "  if (!(a %% 2 == 1)) {",
+  "    return(TRUE)",
+  "  }",
+  "  if (!(a %% 2 == 1)) {",
+  "    print('Yaay')",
+  "  }",
+  "}",
+  "is_even(150)",
+  sep = "\n"
 )
 cat(code)
 ```
