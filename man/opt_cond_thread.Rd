@@ -15,7 +15,7 @@ Carefully examine the results after running this function!
 }
 \examples{
 code <- paste(
-  "num <- sample(1:100, 1)",
+  "num <- sample(100, 1)",
   "even_sum <- 0",
   "odd_sum_a <- 0",
   "odd_sum_b <- 0",
@@ -30,6 +30,5 @@ code <- paste(
   "",
   sep = "\n"
 )
-
 cat(opt_cond_thread(list(code))$codes[[1]])
 }

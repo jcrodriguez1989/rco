@@ -7,7 +7,7 @@
 #'
 #' @examples
 #' code <- paste(
-#'   "num <- sample(1:100, 1)",
+#'   "num <- sample(100, 1)",
 #'   "even_sum <- 0",
 #'   "odd_sum_a <- 0",
 #'   "odd_sum_b <- 0",
@@ -22,7 +22,6 @@
 #'   "",
 #'   sep = "\n"
 #' )
-#'
 #' cat(opt_cond_thread(list(code))$codes[[1]])
 #' @export
 
@@ -470,25 +469,25 @@ ct_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
   # to_expr refers to where the merging will take place and from_expr represents from where the code-block for merging will come
   to_expr <- from_expr <- NULL
 
-  for(i in seq_len(length(merge_from))) {
+  for (i in seq_len(length(merge_from))) {
     to_expr[i] <- get_if_block_expr(fpd, exam_nodes, merge_to[i])
-    
-    if(grepl("{", to_expr[i], fixed = TRUE)) {
+
+    if (grepl("{", to_expr[i], fixed = TRUE)) {
       to_expr[i] <- gsub("{", "", to_expr[i], fixed = TRUE)
       to_expr[i] <- gsub("}", "", to_expr[i], fixed = TRUE)
       to_expr[i] <- trimws(to_expr[i])
     }
-    
+
     from_expr[i] <- get_if_block_expr(fpd, exam_nodes, merge_from[i])
-    
-    #Case where the IF code block starts from the same line
-    if(grepl("{", from_expr[i], fixed = TRUE)) {
+
+    # Case where the IF code block starts from the same line
+    if (grepl("{", from_expr[i], fixed = TRUE)) {
       from_expr[i] <- gsub("{", "", from_expr[i], fixed = TRUE)
       from_expr[i] <- gsub("}", "", from_expr[i], fixed = TRUE)
       from_expr[i] <- trimws(from_expr[i])
     }
   }
-  
+
   # Merging takes place here
   for (i in seq_len(length(to_change_node))) {
     if_cond <- fpd[fpd$id == first_if_expr(fpd, exam_nodes[to_change_node[i], "id"]), "text"]
@@ -536,12 +535,12 @@ ct_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
   }
 
   else_expr <- NULL
-  
-  for(i in seq_len(length(convert_to_else))) {
+
+  for (i in seq_len(length(convert_to_else))) {
     else_expr[i] <- get_modified_if_expr(fpd, exam_nodes, convert_to_else[i])
-    
-    if(grepl("{", else_expr[i], fixed = TRUE)) {
-      #For cases in which the statement starts from the same line
+
+    if (grepl("{", else_expr[i], fixed = TRUE)) {
+      # For cases in which the statement starts from the same line
       else_expr[i] <- gsub("{", "", else_expr[i], fixed = TRUE)
       else_expr[i] <- gsub("}", "", else_expr[i], fixed = TRUE)
       else_expr[i] <- trimws(else_expr[i])
