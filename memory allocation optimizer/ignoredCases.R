@@ -69,9 +69,11 @@ v
 
 ## Therefore, I will attempt to 
 
+
+## Here we verify that even if we initialize a vector without the exact number of entries, it still is quite faster than just initializing it with NULL
 library("microbenchmark")
 a <- function() {
-  v <- vector(length = 80)
+  v <- vector(length = 500)
   for(i in 1:100) {
     v[i] <- i
   }
@@ -84,9 +86,14 @@ b <- function() {
   }
 }
 
-microbenchmark(a, b, times = 1000L)
+microbenchmark(a(), b(), times = 1000L)
 
+## I've avoided the case of list. For example:
 
+v <- list()
+for(i in 1:10) {
+  v[[i]] <- i*i
+}
 
 
 
