@@ -1,6 +1,33 @@
+#### To-Do ####
+ 
+# Check for the cases where v = c() and c() -> v >> Done
+# Remove the optimization for the case when c() or seq_len() is used in the condition. >> Done
+# Include v <- NA , v <- numeric(), etc. >> Done
+
+
 #############################################################################################################################################################################################
 #### Example texts ####
 #############################################################################################################################################################################################
+
+testText <- paste(
+  "v = numeric()",
+  "for(i in 1:5) {",
+  "  v[i] <- i^2",
+  "}",
+  "logical() -> w",
+  "for(j in 1:10) {",
+  "  w[j] <- FALSE",
+  "}",
+  "c() -> x",
+  "for(k in 1:6) {",
+  "  x[k] <- k*2",
+  "}",
+  "y = c()",
+  "for(l in seq_len(5)) {",
+  "  y[l] <- l*2",
+  "}",
+  sep = "\n"
+)
 
 text1 <- paste(
   "v <- NULL",
@@ -69,11 +96,31 @@ text4 <- paste(
   sep = "\n"
 )
 
+text5 <- paste(
+  "v <- NULL",
+  "for(i in 1:10) {",
+  "  v[i] <- i",
+  "}",
+  "w = NULL",
+  "for(i in 1:20) {",
+  "  w[i] <- i",
+  "}",
+  "NULL -> x",
+  "for(i in 1:30) {",
+  "  x[i] <- i",
+  "}",
+  "y <- c()",
+  "for(i in 1:40) {",
+  "  y[i] <- i",
+  "}",
+  sep = "\n"
+)
+
 #############################################################################################################################################################################################
 #### Preparing pd, fpd, exam_nodes and custom_exam_nodes ####
 #############################################################################################################################################################################################
 
-pd <- parse_text(text4)
+pd <- parse_text(testText)
 
 fpd <- flatten_leaves(pd)
 fpd <- eq_assign_to_expr(fpd) ## eq_assign_to_expr helps to convert the `EQ_ASSIGN` token to `expr`
@@ -84,8 +131,19 @@ exam_nodes <- fpd[fpd$token == "expr", ]
 ## custom_exam_nodes
 ## custom_exam_nodes will contain only loops and the assignment nodes from the entire exam_nodes
 null_parents <- fpd[fpd$token == "NULL_CONST", "parent"]
-null_parents_alt <- fpd[fpd$token == "expr" & fpd$text == "c()", "parent"]
-null_parents <- c(null_parents, null_parents_alt)
+na_parents <- fpd[fpd$token == "NUM_CONST" & fpd$text == "NA", "parent"]
+init_list <- c("c()", "numeric()", "logical()", "double()", "factor()", "integer()")
+alternate_initialization_parents <- fpd[fpd$token == "expr" & fpd$text %in% init_list, "parent"]
+
+null_parents <- c(null_parents, c(alternate_initialization_parents, na_parents))
+
+edit_nodes_list <- NULL
+for(i in seq_len(length(alternate_initialization_parents))) {
+  alt_init_pd <- get_children(fpd, alternate_initialization_parents[i], FALSE)
+  expr_nodes <- alt_init_pd[alt_init_pd$token == "expr", "id"]
+  edit_nodes_list <- c(edit_nodes_list, expr_nodes)
+}
+
 custom_exam_nodes <- NULL
 for(i in null_parents) {
   custom_exam_nodes <- rbind(custom_exam_nodes, fpd[fpd$id == i, ])
@@ -132,14 +190,18 @@ restrict_condition_to_one_loop <- function(cond_fpd) {
 ## The given `expr` will always be of the form  *vec <- NULL* or *vec <- c()* 
 extract_vector_name <- function(node_id) {
   assignment_pd <- get_children(fpd, node_id)
-  assignment_index <- which(get_children(fpd, node_id)$token %in% assigns)
-  assignment_type <- assignment_pd[assignment_index, "token"]
-  if(assignment_type == "EQ_ASSIGN" || assignment_type == "LEFT_ASSIGN") {
-    vector_name <- assignment_pd[(assignment_index - 1), "text"]
+  assignment_index <- which(assignment_pd$token %in% assigns)
+  if(length(assignment_index) > 0) {
+    assignment_type <- assignment_pd[assignment_index, "token"]
+    if(assignment_type == "EQ_ASSIGN" || assignment_type == "LEFT_ASSIGN") {
+      vector_name <- assignment_pd[(assignment_index - 1), "text"]
+    } else {
+      vector_name <- assignment_pd[(assignment_index + 1), "text"]
+    }
+    return (vector_name)
   } else {
-    vector_name <- assignment_pd[(assignment_index + 1), "text"]
+    return (FALSE)
   }
-  vector_name
 }
 
 ## This function checks whether a number is explicitly mentioned in the condition of the `FOR` loop
@@ -165,6 +227,7 @@ check_forcond_num_declaration <- function(cond_fpd, index_name, in_pos) {
       cond_fpd <- cond_fpd[cond_fpd$pos_id > seqLen_pos_id, ]
       memory_alloc_number <- as.integer(cond_fpd[cond_fpd$token == "NUM_CONST", "text"])
     }
+    forcond_number_flag <- FALSE
   }
   else if("SYMBOL_FUNCTION_CALL" %in% cond_fpd[cond_fpd$pos_id > in_pos & 
                                               cond_fpd$text == "c", "token"]) {
@@ -181,9 +244,13 @@ check_forcond_num_declaration <- function(cond_fpd, index_name, in_pos) {
         }
       }
     }
+    forcond_number_flag <- FALSE
   }
-  
-  forcond_number_flag == TRUE ? return (memory_alloc_number) : return (FALSE)
+  if(forcond_number_flag == TRUE) {
+    return (memory_alloc_number)
+  } else {
+    return (FALSE)
+  }
 }
 
 ## This function checks for presence of functions inside the body of `loops`.
@@ -333,7 +400,6 @@ for(i in seq_len(length(custom_exam_nodes$id))) {
 ## Now the id of the nodes that have to be edited is stored in vector_initialization_list, and when we remove those nodes from exam_nodes we have the not_to_edit fpd
 ####################################################################################################################################################################################################################
 
-edit_nodes_list <- NULL
 for(i in seq_len(length(vector_initialization_list))) {
   if(names(vector_initialization_list)[i] %in% names(vectors_memory_list)) {
     edit_nodes_list <- c(edit_nodes_list, vector_initialization_list[[i]])
@@ -357,16 +423,20 @@ not_to_edit <- unique(not_to_edit)
 
 final_exam_nodes <- exam_nodes[exam_nodes$id %in% edit_nodes_list, ]
 
-not_to_edit <- not_to_edit[order(not_to_edit$pos_id), ]
-not_to_edit <- unique(not_to_edit)
-
+to_remove_indices <- NULL
 ## final_exam_nodes_copy <- final_exam_nodes
 ## Now we iterate over all the entries of final_exam_nodes and change their text
 for(i in seq_len(length(final_exam_nodes$id))) {
   name_of_vector <- extract_vector_name(final_exam_nodes[i, "id"])
-  final_exam_nodes[i, "text"] <- sprintf("%s <- vector(length = %d)", name_of_vector, vectors_memory_list[[name_of_vector]])
+  if(typeof(name_of_vector) == "logical") {
+    to_remove_indices <- c(to_remove_indices, i)
+  } else {
+    final_exam_nodes[i, "text"] <- sprintf("%s <- vector(length = %d)", name_of_vector, vectors_memory_list[[name_of_vector]])
+  }
 }
-
+if(!(is.null(to_remove_indices))) {
+  final_exam_nodes <- final_exam_nodes[-(to_remove_indices), ]  
+}
 
 ## sprintf(".subset2(%s, %s)", data_frame[i], column_name[i])
 ###################################################################################################################################################################################################################

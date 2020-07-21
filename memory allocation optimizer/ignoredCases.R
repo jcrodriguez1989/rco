@@ -96,4 +96,37 @@ for(i in 1:10) {
 }
 
 
+x <- NULL
+i <- 1
+while(i < 10) {
+  i <- i + 4
+  x[i] <- i^2
+}
+
+
+## Test to see just how fast does also writing the type makes it:
+library("microbenchmark")
+library("ggplot2")
+a <- function() {
+  v <- vector(mode = "numeric",length = 500)
+  for(i in 1:100) {
+    v[i] <- i
+  }
+}
+
+b <- function() {
+  v <- vector(length = 500)
+  for(i in 1:100) {
+    v[i] <- i
+  }
+}
+
+c <- function() {
+  v <- NULL
+  for(i in 1:1000) {
+    v[i] <- i
+  }
+}
+
+autoplot(microbenchmark(a(), b(), c(), times = 10000L))
 
