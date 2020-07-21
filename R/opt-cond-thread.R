@@ -11,15 +11,15 @@
 #'   "even_sum <- 0",
 #'   "odd_sum_a <- 0",
 #'   "odd_sum_b <- 0",
-#'   "if(num %% 2 == 1) {",
+#'   "if (num %% 2 == 1) {",
 #'   "  odd_sum_a <- odd_sum_a + num",
-#'   "",
-#'   "if(num %% 2 == 1) {",
+#'   "}",
+#'   "if (num %% 2 == 1) {",
 #'   "  odd_num_b <- odd_num_b + num",
-#'   "",
-#'   "if(!(num %% 2 == 1)) {",
+#'   "}",
+#'   "if (!(num %% 2 == 1)) {",
 #'   "  even_sum <- even_sum + num",
-#'   "",
+#'   "}",
 #'   sep = "\n"
 #' )
 #' cat(opt_cond_thread(list(code))$codes[[1]])

@@ -2,7 +2,7 @@
 output: rmarkdown::html_vignette
 title: Potential Optimizers
 vignette: >
-  %\VignetteIndexEntry{Potential optimizers}
+  %\VignetteIndexEntry{Potential Optimizers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
