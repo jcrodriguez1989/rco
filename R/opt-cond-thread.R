@@ -580,7 +580,16 @@ ct_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
   for (i in unique(not_to_edit$id)) {
     not_to_edit_final <- rbind(not_to_edit_final, unique(not_to_edit[not_to_edit$id == i, ]))
   }
+  
+  
+  
+  #### If no changes were introduced, no need to proceed further ####
+  if(identical(as.list.data.frame(not_to_edit_final), as.list.data.frame(pd)) == TRUE) {
+    return (fpd)
+  }
 
+  
+  
   # Creating a list that consists of all the nodes to be changed
   final_exam_nodes <- c()
   for (i in to_change_node) {
@@ -669,6 +678,23 @@ ct_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
       test_fpd[i - 1, "next_lines"] <- 1
     } else {
       next
+    }
+  }
+  
+  #Copying the behaviour of "';'" from fpd to test_fpd
+  if("';'" %in% test_fpd$token) {
+    semiColon_indices <- which("';'" == fpd$token)
+    for(i in seq_len(length(semiColon_indices))) {
+      fpd_nextSpaces <- fpd[semiColon_indices[i], "next_spaces"]
+      fpd_nextLines <- fpd[semiColon_indices[i], "next_lines"]
+      fpd_prevSpaces <- fpd[semiColon_indices[i], "prev_spaces"]
+      
+      fpd_id <- fpd[semiColon_indices[i], "id"]
+      testFpd_index <- which(fpd_id == test_fpd$id)
+      
+      test_fpd[testFpd_index, "next_spaces"] <- fpd_nextSpaces
+      test_fpd[testFpd_index, "next_lines"] <- fpd_nextLines
+      test_fpd[testFpd_index, "prev_spaces"] <- fpd_prevSpaces
     }
   }
 
