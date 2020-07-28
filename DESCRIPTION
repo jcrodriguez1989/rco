@@ -20,7 +20,7 @@ BugReports: https://github.com/jcrodriguez1989/rco/issues
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Suggests: 
     covr,
     diffr,
