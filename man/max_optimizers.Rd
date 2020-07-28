@@ -5,7 +5,7 @@
 \alias{max_optimizers}
 \title{Max optimizers list.}
 \format{
-An object of class \code{list} of length 7.
+An object of class \code{list} of length 8.
 }
 \usage{
 max_optimizers
@@ -22,6 +22,7 @@ Note that using this optimizers could change the semantics of the program!
   \item Dead Expression Elimination \code{\link{opt_dead_expr}}
   \item Common Subexpression Elimination \code{\link{opt_common_subexpr}}
   \item Loop-invariant Code Motion \code{\link{opt_loop_invariant}}
+  \item Memory Allocation \code{\link{opt_memory_alloc}}
 }
 }
 \keyword{datasets}

@@ -287,13 +287,7 @@ ma_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
       ## Checking condition 3: The index should be mentioned specifically of the vector to which something is being assigned
       passing_vectors <- check_index_assignment(body_fpd, index_name)
       index_assignment_flag <- (length(passing_vectors) == 0)
-      
-      # print(fun_call_flag)
-      # print(forcond_number_flag)
-      # print(index_assignment_flag)
-      # print(passing_vectors)
-      # 
-      
+
       if(fun_call_flag | typeof(forcond_number_flag) == "logical" | index_assignment_flag) {
         next
       } else {
@@ -322,10 +316,8 @@ ma_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
     }
   }
   
-  ####################################################################################################################################################################################################################
-  ## Now the id of the nodes that have to be edited is stored in vector_initialization_list, and when we remove those nodes from exam_nodes we have the not_to_edit fpd
-  ####################################################################################################################################################################################################################
-  
+# Now the id of the nodes that have to be edited is stored in vector_initialization_list, and when we remove those nodes from exam_nodes we have the not_to_edit fpd
+
   for(i in seq_len(length(vector_initialization_list))) {
     if(names(vector_initialization_list)[i] %in% names(vectors_memory_list)) {
       edit_nodes_list <- c(edit_nodes_list, vector_initialization_list[[i]])
@@ -342,15 +334,13 @@ ma_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
   not_to_edit <- not_to_edit[order(not_to_edit$pos_id), ]
   
   not_to_edit <- unique(not_to_edit)
-  
-  #####################################################################################################################################################################################################################
-  #### Creating the final_exam_nodes list from the `vector_initialization_list` and `vectors_memory_list` ####
-  #####################################################################################################################################################################################################################
-  
+
+# Creating the final_exam_nodes list from the `vector_initialization_list` and `vectors_memory_list` ####
+
   final_exam_nodes <- exam_nodes[exam_nodes$id %in% edit_nodes_list, ]
   
   to_remove_indices <- NULL
-  ## final_exam_nodes_copy <- final_exam_nodes
+  
   ## Now we iterate over all the entries of final_exam_nodes and change their text
   for(i in seq_len(length(final_exam_nodes$id))) {
     name_of_vector <- extract_vector_name(fpd, final_exam_nodes[i, "id"])
@@ -364,12 +354,9 @@ ma_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
     final_exam_nodes <- final_exam_nodes[-(to_remove_indices), ]  
   }
   
-## sprintf(".subset2(%s, %s)", data_frame[i], column_name[i])
-###################################################################################################################################################################################################################
-#### Merging the final_exam_nodes and the not_to_edit and subsequent cleaning operations ####
-###################################################################################################################################################################################################################
+# Merging the final_exam_nodes and the not_to_edit and subsequent cleaning operations ####
 
-  final_exam_nodes_ids <- final_exam_nodes$id
+final_exam_nodes_ids <- final_exam_nodes$id
   
   new_fpd <- NULL
   for(itr in seq_len(length(final_exam_nodes$id))) {
@@ -402,10 +389,8 @@ ma_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
     new_fpd <- new_fpd[order(new_fpd$pos_id), ]
   }
 
-###################################################################################################################################################################################################################
-#### Final Steps of molding the not_to_edit and final_exam_nodes into the same fpd ####
-###################################################################################################################################################################################################################
-  
+# Final Steps of molding the not_to_edit and final_exam_nodes into the same fpd ####
+
   resultant_fpd <- rbind(not_to_edit, new_fpd)
   resultant_fpd <- resultant_fpd[order(resultant_fpd$pos_id), ]
   
@@ -473,6 +458,4 @@ ma_one_flatten_pd <- function(parsed_dataset, flatten_pd) {
   }
   
   return(test_fpd)
-
 }
-

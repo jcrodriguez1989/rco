@@ -1,3 +1,7 @@
+# rco 1.0.2
+
+  - Adding Memory Allocation optimizer.
+
 # rco 1.0.1
 
   - Bug fixing.

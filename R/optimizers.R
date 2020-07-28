@@ -9,6 +9,7 @@
 #'   \item Dead Expression Elimination \code{\link{opt_dead_expr}}
 #'   \item Common Subexpression Elimination \code{\link{opt_common_subexpr}}
 #'   \item Loop-invariant Code Motion \code{\link{opt_loop_invariant}}
+#'   \item Memory Allocation \code{\link{opt_memory_alloc}}
 #' }
 #'
 #' @export
@@ -20,7 +21,8 @@ all_optimizers <- list(
   "Dead Store Elimination" = opt_dead_store,
   "Dead Expression Elimination" = opt_dead_expr,
   "Common Subexpression Elimination" = opt_common_subexpr,
-  "Loop-invariant Code Motion" = opt_loop_invariant
+  "Loop-invariant Code Motion" = opt_loop_invariant,
+  "Memory Allocation" = opt_memory_alloc
 )
 
 #' Max optimizers list.
@@ -36,6 +38,7 @@ all_optimizers <- list(
 #'   \item Dead Expression Elimination \code{\link{opt_dead_expr}}
 #'   \item Common Subexpression Elimination \code{\link{opt_common_subexpr}}
 #'   \item Loop-invariant Code Motion \code{\link{opt_loop_invariant}}
+#'   \item Memory Allocation \code{\link{opt_memory_alloc}}
 #' }
 #'
 #' @export
@@ -53,5 +56,6 @@ max_optimizers <- list(
   "Common Subexpression Elimination" = function(texts) {
     opt_common_subexpr(texts, in_fun_call = TRUE)
   },
-  "Loop-invariant Code Motion" = opt_loop_invariant
+  "Loop-invariant Code Motion" = opt_loop_invariant,
+  "Memory Allocation" = opt_memory_alloc
 )
