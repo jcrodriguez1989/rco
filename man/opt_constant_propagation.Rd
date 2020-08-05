@@ -25,4 +25,12 @@ code <- paste(
   sep = "\n"
 )
 cat(opt_constant_propagation(list(code))$codes[[1]])
+
+hemisphere_vol <- paste(
+  "pi <- 3.141593 ",
+  "radius <- 25 ",
+  "hemis_vol <- 2/3 * pi * radius ^ 3 ",
+  sep = "\n"
+)
+cat(opt_constant_propagation(list(hemisphere_vol))$codes[[1]])
 }

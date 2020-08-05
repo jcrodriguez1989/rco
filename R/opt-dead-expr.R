@@ -88,9 +88,18 @@ get_unassigned_exprs <- function(pd, id) {
       act_prnt_pd <- get_children(act_pd, act_parent)
       act_sblngs <- act_prnt_pd[act_prnt_pd$parent == act_parent, ]
       if (act_sblngs$token[[1]] == "'{'") {
-        new_visit <- c(new_visit, act_sblngs$id[act_sblngs$token == "expr"])
+        new_visit <- c(new_visit, act_sblngs$id[act_sblngs$token == "expr" | act_sblngs$token == "exprlist"])
+      } else if (act_sblngs$token[[1]] == "exprlist") {
+        exprlist_ids <- act_prnt_pd[act_prnt_pd$token == "exprlist", "id"]
+        for (exprlist_idx in exprlist_ids) {
+          separate_exprs <- act_prnt_pd[act_prnt_pd$parent == exprlist_idx & act_prnt_pd$token == "expr", "id"]
+          new_visit <- c(new_visit, separate_exprs)
+        }
+        new_visit <- unique(new_visit)
+      } else if (all(act_sblngs$token %in% c("expr", "';'"))) {
+        new_visit <- c(new_visit, act_sblngs[act_sblngs$token == "expr", "id"])
       } else if (all(act_prnt_pd$token %in%
-        c(constants, ops, precedence_ops, "expr", "SYMBOL"))) {
+        c(constants, ops, precedence_ops, "expr", "exprlist","SYMBOL"))) {
         # it is an expression
         exprs_ids <- c(exprs_ids, act_parent)
       } else if (any(c(loops, "IF") %in% act_sblngs$token)) {
@@ -121,6 +130,8 @@ get_unassigned_exprs <- function(pd, id) {
       act_pd$parent[act_pd$id == act_id], ]
     any(assigns %in% act_sblngs$token) # the expr is being assigned
   })]
+  
+  unique(exprs_ids)
 }
 
 # Returns the IDs of the exprs that can return in a function.
@@ -142,10 +153,16 @@ get_fun_last_exprs <- function(pd, id) {
       act_sblngs <- act_prnt_pd[act_prnt_pd$parent == act_parent, ]
       if (act_sblngs$token[[1]] == "'{'") {
         # has multiple exprs, check only the last one
-        new_visit <- c(
-          new_visit,
-          utils::tail(act_sblngs$id[act_sblngs$token == "expr"], 1)
-        )
+        if (act_sblngs[(nrow(act_sblngs)-1), "token"] == "exprlist") {
+          exprlist_id <- act_sblngs[(nrow(act_sblngs)-1), "id"]
+          exprlist_expr_ids <- act_prnt_pd[act_prnt_pd$parent == exprlist_id & act_prnt_pd$token == "expr", "id"]
+          new_visit <- c(new_visit, utils::tail(exprlist_expr_ids, n = 1))
+        } else {
+          new_visit <- c(
+            new_visit,
+            utils::tail(act_sblngs$id[act_sblngs$token == "expr"], 1)
+          )
+        }
       } else if (any(loops %in% act_sblngs$token)) {
         next
       } else if ("IF" %in% act_sblngs$token) {
