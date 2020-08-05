@@ -368,6 +368,21 @@ test_that("Conversion to else due to inequality", {
   ))
 })
 
+test_that("No changes when none required, `;` version", {
+  code <- "var1 <- 3; var2 <- var1 * 5"
+  opt_code <- opt_cond_thread(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
+})
+
+test_that("No changes when none required, `;` version - 2", {
+  code <- paste("var1 <- 3;", 
+                "var2 <- var1 * 5",
+                sep = "\n"
+  )
+  opt_code <- opt_cond_thread(list(code))$codes[[1]]
+  expect_equal(opt_code, code)
+})
+
 test_that("Case when the IF condtions have function calls", {
   code <- paste(
     "a <- 0",
@@ -403,3 +418,4 @@ test_that("Case when the IF condtions have function calls", {
     sep = "\n"
   ))
 })
+
