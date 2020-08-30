@@ -1,0 +1,182 @@
+---
+output: rmarkdown::html_vignette
+title: GSoC 2020 Final Report
+vignette: >
+  %\VignetteIndexEntry{GSoC 2020}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+library("ggplot2")
+library("microbenchmark")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# My GSoC 2020 work in a nutshell
+
+Phew... So it's already time for the end of *GSoC 2020*. Time sure flew by this summer. Now it's the time for me to take a step back and ponder over my summer with *The R Project for Statistical Computing*. So, let's touch upon my summer in a chronological fashion.
+
+## Humble Beginnings:
+
+Around the time when *The R Project for Statistical Computing* announced their participation in *GSoC 2020*, a list of proposed projects were announced. The [`rco`](https://cran.r-project.org/web/packages/rco/index.html) or the **R Code Optimizer** caught my attention at the very first moment and I didn't look back since then.
+
+Although the exsisting [`rco`](https://github.com/jcrodriguez1989/rco) repository was extremely well maintained and documented, me being a newbie still faced quite a lot of difficulties and also, most probably gave my mentors, [Dr. JC Rodriguez](https://jcrodriguez1989.github.io/) and [Mauricio "Pachá" Vargas Sepúlveda](https://pacha.dev/) a hard time.
+
+As part of the [tests](https://github.com/rstats-gsoc/gsoc2020/wiki/rco%3A-The-R-Code-Optimizer#tests) to be completed for being considered as a potential student developer for R with the `rco` project, I was required to build a completely functional and working optimizer.
+
+I decided to work on a suggested optimizer that made [column extraction](https://rpubs.com/IACCancu/462502) faster and more efficient. After the benign guidance of my mentors, I was able to come up with an column extraction optimizer, that performed according to its expectation. This got me so excited that I worked on and built another [value extraction optimizer](https://rpubs.com/IACCancu/462501) without any explicit incentive :D 
+
+* [**PR for Column Extraction Optimizer**](https://github.com/jcrodriguez1989/rco/pull/152)
+* [**PR for Value Extraction Optimizer**](https://github.com/jcrodriguez1989/rco/pull/155)
+
+## Post GSoC selection:
+
+It was only a few days before my acceptance into the GSoC 2020 program, that my mentors gave their insights into both these optimizers and explained, how these optimizers can be broken, owing to the extreme flexibility that the R Language offers. Since, `.subset2( )` is not a reserved keyword in the R Language, it could be over-written. Hence we can never be sure while optimizing, that the functions that are being called has not been re-defined by the user. However, this served as a great primer as to what to expect when GSoC officially began.
+
+## Getting up to speed:
+
+The next tasks that I were assigned were not too glorious/dramatic or blinge-y but they were essential steps for the upkeep of a package on `CRAN`. Firstly, I designed a vignette that enlisted all the [future potential optimizers](https://rpubs.com/hinduBale/strategies_ideas_rco) that can be implemented in the `rco` package. Next, I went on to collate the efforts put in the `rco` library by the *Google Code-In* students, by creating PRs that such that every student gets credit as a contributor and at the same time hand-picking the best of examples and explanations to include in the official `rco` documentation. It was a riveting experience for me, as I had to learn and implement some really advanced concepts of `git` and `github` to be able to pull this off, including, but not limited to, `cherry-picking`, resolving `merge conficts`, adding `remotes`, etc.
+
+* [**PR for the Potential Optimizers Vignette**](https://github.com/jcrodriguez1989/rco/pull/156)
+* [**PR #1 related to Google Code-In**](https://github.com/jcrodriguez1989/rco/pull/161)
+* [**PR #2 related to Google Code-In**](https://github.com/jcrodriguez1989/rco/pull/163)
+* [**PR #3 related to Google Code-In**](https://github.com/jcrodriguez1989/rco/pull/164)
+* [**PR #4 related to Google Code-In**](https://github.com/jcrodriguez1989/rco/pull/165)
+* [**PR #5 related to Google Code-In**](https://github.com/jcrodriguez1989/rco/pull/166)
+* [**PR #6 related to Google Code-In**](https://github.com/jcrodriguez1989/rco/pull/167)
+* [**PR #7 related to Google Code-In**](https://github.com/jcrodriguez1989/rco/pull/168)
+
+## Unexpected Turn of Events:
+
+As **Dwight D. Eisenhower** once said,
+
+> In preparing for battle I have always found that plans are useless, but planning is indispensable.
+
+I had listed several optimization techniques that could have been implemented in `rco` in my [*GSoC* proposal](https://drive.google.com/file/d/1HvF0oE9gW4BYt2Lo-1zRl1dcbsG1wEPg/view) as well the [*potential optimizers* vignette](https://rpubs.com/hinduBale/strategies_ideas_rco) but when we got down to discussing the design of these optimizers, it became quite clear to me and my mentors that we were walking on thin ice. With the extreme constraints that are imposed due to R's flexible nature, only a few of our optimization strategies seemed bullet-proof.
+
+### Conditional Threading Optimizer:
+I went on ahead with the idea of [Jump/Conditional Threading](https://beza1e1.tuxen.de/articles/jump_threading.html) and started designing the optimizer. The objective was to replace `if` statments with `else` wherever possible and also to group together the code blocks of different `if` blocks if the `if conditionals` were same. This concept is succintly covered over [here](https://developers.redhat.com/blog/2019/03/13/intro-jump-threading-optimizations/).
+
+To see the speed-ups provided by this optimization strategy, have a look at this example:
+
+#### Unoptimized Code
+
+```{r cond_thread_thread_code_og, echo=TRUE, warning=FALSE}
+cond_thread <- function(n) {
+  evens <- 0
+  evens_sum <- 0
+  odds <- 0
+  for (i in seq_len(n)) {
+    if (i %% 2 == 0) { # same logical as next if condition (can be merged)
+      evens <- evens + 1
+    }
+    if (i %% 2 == 0) {
+      evens_sum <- evens_sum + i
+    }
+    if (!(i %% 2 == 0)) { # exact negation as previous if (can be an else)
+      odds <- odds + 1
+    }
+  }
+}
+```
+
+#### Proposed Optimized Code
+
+```{r cond_thread_thread_code_op, echo=TRUE, warning=FALSE}
+cond_thread_opt <- function(n) {
+  evens <- 0
+  evens_sum <- 0
+  odds <- 0
+  for (i in seq_len(n)) {
+    if (i %% 2 == 0) { # merged
+      evens <- evens + 1
+      evens_sum <- evens_sum + i
+    } else { # converted to else
+      odds <- odds + 1
+    }
+  }
+}
+```
+
+#### Benchmark
+
+```{r cond_thread_thread_benchmark, warning=FALSE, message=FALSE}
+n <- 100000
+autoplot(microbenchmark(cond_thread(n), cond_thread_opt(n)))
+```
+
+
+
+* [**PR for the Conditional Threading Optimizer**](https://github.com/jcrodriguez1989/rco/pull/162)
+
+### Memory Allocation Optimizer:
+Next, I set my eyes on the [Memory Pre-Allocation optimization technique](https://insightr.wordpress.com/2018/08/23/growing-objects-and-loop-memory-pre-allocation/). The objective here was to save the *R Programmers* from the sin of growing a vector in loops. In our experience, we've seen that vector, lists, etc are initialized often with `NULL` or `c()` out of convenience. Bothering about the size of the vectors may seem trivial to the programmer, but it has a huge impact on the performance of the script.
+ 
+To see the speed-ups provided by this optimization strategy, consider this example:
+
+#### Unoptimized Code
+
+```{r pre_allocation_code_og}
+mem_alloc <- function(n) {
+  vec <- NULL
+  for (i in seq_len(n)) {
+    vec[i] <- i
+  }
+}
+```
+
+#### Proposed Optimized Code
+
+```{r pre_allocation_code_op}
+mem_alloc_opt <- function(n) {
+  vec <- vector(length = n)
+  for (i in seq_len(n)) {
+    vec[i] <- i
+  }
+}
+```
+
+#### Benchmark
+
+```{r pre_allocate_benchmark, echo = TRUE, warning = FALSE, message= FALSE}
+n <- 100000
+autoplot(microbenchmark(mem_alloc(n), mem_alloc_opt(n)))
+```
+
+
+
+* [**PR for the Memory Allocation Optimizer**](https://github.com/jcrodriguez1989/rco/pull/169)
+
+## Pivot and Push:
+
+As mentioned in the last segment, we had pretty much exhausted all the possible optimization strategies, that could be implemented without breaking. Now, it was onto us to decide whether, to work on new optimizer, that had a non-zero chance of breaking or pivot and change objectives. Following the lead of my mentors, I decided to put on hold, the optimizers that could break and focus on further bolstering the `rco` package.
+
+### Fixing a critical issue:
+
+Owing to the fantastic upkeep of the `rco` repository, it had almost no bugs in the optimizers, and that is no mean feat. However [an issue reporting a bug](https://github.com/jcrodriguez1989/rco/issues/107) was reported. The bug was that an optimizer, namely `opt-dead-expr()` did not function when the user used `;`. Ideally, the optimizer shouldn't have been affected by the usage of `;`, but here it was, a bug, laying dormant for over 6 months. 
+
+I decided to tackle this bug head on. I [created a separate branch](https://github.com/hinduBale/rco/tree/issue%23107) for this bug and reproduced the bug. After lots of trials and tribulations and lots of reverse-engineering, I zeroed in one the problem. It was a problem that existed in very low-level R code. When a R script without the use of `;` is parsed, the they get tokenized as something called `expr` but when `;` was used, the parser tokenized them as an `exprlist`. The exsisting optimizer didnot handle the case of `exprlist`, so I appended code that handled `exprlist` and then the optimizer started functioning normally irrespective of the usage of `;`. This is an issue which could arise in other optimizers too, but given that, it has been solved in one optimizer, solving them in other optimizers would not prove challenging. Also, in the process of making the `opt_dead_expr()` optimizer work, I further bolstered the robustness of the optimizer by **doubling the number of test cases** that the optimizer must pass, including tests with `;`.
+
+* [**PR for solution of issue #107**](https://github.com/jcrodriguez1989/rco/pull/170)
+
+### Call for Actions:
+
+To reduce dependencies on 3rd party applications and to promote homogeneity, we decided to go for an in-house solution for the CI/CD needs of our package, ie `Github Actions`. Earlier the popular choice for carrying out CI/CD operations were 3rd party applications such as *Travis CI* or *codecov.io*, but lately more and more developers and organizations had been migrating to Github Actions and we decided to follow suit. *Github Marketplace* wasn't much help, as there were not much support for the **R Language** as compared to more popular languages such as *Rust*, *Ruby*, *Typescript*, etc. So, I went through several documentations and scarce examples and [created a branch](https://github.com/hinduBale/rco/tree/ghActions) that [renders a website](https://hindubale.github.io/rco/) and completes the testing that Travis used to do. We left out the *code coverage* as *Github* [doesnot yet support badges that shows the percentage](https://github.com/r-lib/actions/issues/156#event-3643325125) of coverage.
+
+### Acting on users' recommendations:
+
+One of the users of `rco` opened an issue, with a [feature request](https://github.com/jcrodriguez1989/rco/issues/72). The request that the user asked for, is as follows:
+> I think it would be nifty to be able to create a report out of `rco` optimisers.
+The idea would be to analyse the whole code and return some kind of markdown / bookdown that will list all the results from the optimisers, without changing the original code.
+It might be useful to analyse your own code and learn what you could do better, but also it could be use in the industry to analyse the quality of code.
+
+While actually implementing this idea, would have been a tall order, me and my mentors discussed that, as the first iteration we could work on creating a function, which could be called to check, exactly how many files from a folder or a group of files can be optimized and which optimizer is being used there. If interested, the user could run that specific file along with the optimizers named in the output, in the `rco_gui()` function and see the code difference.
+
+* [**PR for the reporting function**](https://github.com/jcrodriguez1989/rco/pull/171)
+
+## And, my GSoC '20 journey comes to an end:
+
+Well, I never thought that 3 months could pass in a jiffy, but these months when I was working under the *R Language* in this program, had been the golden months of my life. Never to be forgotten and to be re-lived time and again. I am proud and happy to state that, my GSoC experience and project was mostly a hit. Yes, we did face obstacles, but each and every time we emerged stronger. I have now become a life-long fan of open-source. 
+
+> Open source is simply put, magic. And, no one can ever get enough of magic, right >.<
