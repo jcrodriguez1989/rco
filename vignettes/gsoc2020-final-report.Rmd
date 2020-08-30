@@ -167,9 +167,10 @@ To reduce dependencies on 3rd party applications and to promote homogeneity, we 
 ### Acting on users' recommendations:
 
 One of the users of `rco` opened an issue, with a [feature request](https://github.com/jcrodriguez1989/rco/issues/72). The request that the user asked for, is as follows:
+
 > I think it would be nifty to be able to create a report out of `rco` optimisers.
-The idea would be to analyse the whole code and return some kind of markdown / bookdown that will list all the results from the optimisers, without changing the original code.
-It might be useful to analyse your own code and learn what you could do better, but also it could be use in the industry to analyse the quality of code.
+> The idea would be to analyse the whole code and return some kind of markdown / bookdown that will list all the results from the optimisers, without changing the       > original code.
+> It might be useful to analyse your own code and learn what you could do better, but also it could be use in the industry to analyse the quality of code.
 
 While actually implementing this idea, would have been a tall order, me and my mentors discussed that, as the first iteration we could work on creating a function, which could be called to check, exactly how many files from a folder or a group of files can be optimized and which optimizer is being used there. If interested, the user could run that specific file along with the optimizers named in the output, in the `rco_gui()` function and see the code difference.
 
