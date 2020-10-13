@@ -1,8 +1,10 @@
 ---
+author: "Rahul Saxena"
+email: rahulSaxena.hinduBale@gmail.com
 output: rmarkdown::html_vignette
 title: GSoC 2020 Final Report
 vignette: >
-  %\VignetteIndexEntry{GSoC 2020}
+  %\VignetteIndexEntry{GSoC 2020 Final Report}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -51,9 +53,9 @@ The next tasks that I were assigned were not too glorious/dramatic or blinge-y b
 
 As **Dwight D. Eisenhower** once said,
 
-> In preparing for battle I have always found that plans are useless, but planning is indispensable.
+*In preparing for battle I have always found that plans are useless, but planning is indispensable.*
 
-I had listed several optimization techniques that could have been implemented in `rco` in my [*GSoC* proposal](https://drive.google.com/file/d/1HvF0oE9gW4BYt2Lo-1zRl1dcbsG1wEPg/view) as well the [*potential optimizers* vignette](https://rpubs.com/hinduBale/strategies_ideas_rco) but when we got down to discussing the design of these optimizers, it became quite clear to me and my mentors that we were walking on thin ice. With the extreme constraints that are imposed due to R's flexible nature, only a few of our optimization strategies seemed bullet-proof.
+I had listed several optimization techniques that could have been implemented in `rco` in my [GSoC proposal](https://drive.google.com/file/d/1HvF0oE9gW4BYt2Lo-1zRl1dcbsG1wEPg/view) as well the [*potential optimizers* vignette](https://rpubs.com/hinduBale/strategies_ideas_rco) but when we got down to discussing the design of these optimizers, it became quite clear to me and my mentors that we were walking on thin ice. With the extreme constraints that are imposed due to R's flexible nature, only a few of our optimization strategies seemed bullet-proof.
 
 ### Conditional Threading Optimizer:
 I went on ahead with the idea of [Jump/Conditional Threading](https://beza1e1.tuxen.de/articles/jump_threading.html) and started designing the optimizer. The objective was to replace `if` statments with `else` wherever possible and also to group together the code blocks of different `if` blocks if the `if conditionals` were same. This concept is succintly covered over [here](https://developers.redhat.com/blog/2019/03/13/intro-jump-threading-optimizations/).
@@ -156,13 +158,13 @@ As mentioned in the last segment, we had pretty much exhausted all the possible 
 
 Owing to the fantastic upkeep of the `rco` repository, it had almost no bugs in the optimizers, and that is no mean feat. However [an issue reporting a bug](https://github.com/jcrodriguez1989/rco/issues/107) was reported. The bug was that an optimizer, namely `opt-dead-expr()` did not function when the user used `;`. Ideally, the optimizer shouldn't have been affected by the usage of `;`, but here it was, a bug, laying dormant for over 6 months. 
 
-I decided to tackle this bug head on. I [created a separate branch](https://github.com/hinduBale/rco/tree/issue%23107) for this bug and reproduced the bug. After lots of trials and tribulations and lots of reverse-engineering, I zeroed in one the problem. It was a problem that existed in very low-level R code. When a R script without the use of `;` is parsed, the they get tokenized as something called `expr` but when `;` was used, the parser tokenized them as an `exprlist`. The exsisting optimizer didnot handle the case of `exprlist`, so I appended code that handled `exprlist` and then the optimizer started functioning normally irrespective of the usage of `;`. This is an issue which could arise in other optimizers too, but given that, it has been solved in one optimizer, solving them in other optimizers would not prove challenging. Also, in the process of making the `opt_dead_expr()` optimizer work, I further bolstered the robustness of the optimizer by **doubling the number of test cases** that the optimizer must pass, including tests with `;`.
+I decided to tackle this bug head on. I [created a separate branch](https://github.com/hinduBale/rco/tree/issue%23107) for this bug and reproduced the bug. After lots of trials and tribulations and lots of reverse-engineering, I zeroed in one the problem. It was a problem that existed in very low-level R code. When a R script without the use of `;` is parsed, then they get tokenized as something called `expr` but when `;` was used, the parser tokenized them as an `exprlist`. The exsisting optimizer did not handle the case of `exprlist`, so I appended code that handled `exprlist` and then the optimizer started functioning normally irrespective of the usage of `;`. This is an issue which could arise in other optimizers too, but given that, it has been solved in one optimizer, solving them in other optimizers would not prove challenging. Also, in the process of making the `opt_dead_expr()` optimizer work, I further bolstered the robustness of the optimizer by **doubling the number of test cases** that the optimizer must pass, including tests with `;`.
 
 * [**PR for solution of issue #107**](https://github.com/jcrodriguez1989/rco/pull/170)
 
 ### Call for Actions:
 
-To reduce dependencies on 3rd party applications and to promote homogeneity, we decided to go for an in-house solution for the CI/CD needs of our package, ie `Github Actions`. Earlier the popular choice for carrying out CI/CD operations were 3rd party applications such as *Travis CI* or *codecov.io*, but lately more and more developers and organizations had been migrating to Github Actions and we decided to follow suit. *Github Marketplace* wasn't much help, as there were not much support for the **R Language** as compared to more popular languages such as *Rust*, *Ruby*, *Typescript*, etc. So, I went through several documentations and scarce examples and [created a branch](https://github.com/hinduBale/rco/tree/ghActions) that [renders a website](https://hindubale.github.io/rco/) and completes the testing that Travis used to do. We left out the *code coverage* as *Github* [doesnot yet support badges that shows the percentage](https://github.com/r-lib/actions/issues/156#event-3643325125) of coverage.
+To reduce dependencies on 3rd party applications and to promote homogeneity, we decided to go for an in-house solution for the CI/CD needs of our package, ie `Github Actions`. Earlier the popular choice for carrying out CI/CD operations were 3rd party applications such as *Travis CI* or *codecov.io*, but lately more and more developers and organizations had been migrating to Github Actions and we decided to follow suit. *Github Marketplace* wasn't much help, as there were not much support for the **R Language** as compared to other languages such as *Rust*, *Ruby*, *Typescript*, etc. So, I went through several documentations and scarce examples and [created a branch](https://github.com/hinduBale/rco/tree/ghActions) that [renders a website](https://hindubale.github.io/rco/) and completes the testing that Travis used to do. We left out the *code coverage* as *Github* [does not yet support badges that shows the percentage](https://github.com/r-lib/actions/issues/156#event-3643325125) of coverage.
 
 ### Acting on users' recommendations:
 
