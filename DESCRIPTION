@@ -18,7 +18,6 @@ License: GPL-3
 URL: https://jcrodriguez1989.github.io/rco/
 BugReports: https://github.com/jcrodriguez1989/rco/issues
 Encoding: UTF-8
-LazyData: true
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
 Suggests: 
