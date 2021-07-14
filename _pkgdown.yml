@@ -26,6 +26,8 @@ navbar:
           href: articles/opt-dead-store.html
         - text: "Loop-invariant Code Motion"
           href: articles/opt-loop-invariant.html
+        - text: "Memory Allocation"
+          href: articles/opt-memory-alloc.html
     - text: "Articles"
       menu:
         - text: "Contributing an Optimizer"

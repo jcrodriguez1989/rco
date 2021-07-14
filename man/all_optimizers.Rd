@@ -21,6 +21,7 @@ List of all the optimizer functions:
   \item Dead Expression Elimination \code{\link{opt_dead_expr}}
   \item Common Subexpression Elimination \code{\link{opt_common_subexpr}}
   \item Loop-invariant Code Motion \code{\link{opt_loop_invariant}}
+  \item Memory Allocation \code{\link{opt_memory_alloc}}
 }
 }
 \keyword{datasets}

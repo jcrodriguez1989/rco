@@ -1,5 +1,6 @@
 # rco 1.0.2
 
+  - Adding Memory Allocation optimizer.
   - Adding Conditional Threading optimizer.
 
 # rco 1.0.1
