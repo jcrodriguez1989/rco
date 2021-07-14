@@ -1,15 +1,19 @@
-pandoc: 2.3.1
-pkgdown: 1.5.1
+pandoc: 2.11.2
+pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   contributing-an-optimizer: contributing-an-optimizer.html
   docker-readme: docker-readme.html
+  gsoc2020-final-report: gsoc2020-final-report.html
   opt-common-subexpr: opt-common-subexpr.html
+  opt-cond-thread: opt-cond-thread.html
   opt-constant-folding: opt-constant-folding.html
   opt-constant-propagation: opt-constant-propagation.html
   opt-dead-code: opt-dead-code.html
   opt-dead-expr: opt-dead-expr.html
   opt-dead-store: opt-dead-store.html
   opt-loop-invariant: opt-loop-invariant.html
-last_built: 2020-05-03T14:07Z
+  opt-memory-alloc: opt-memory-alloc.html
+  potential-optimizers: potential-optimizers.html
+last_built: 2021-07-14T11:56Z
 

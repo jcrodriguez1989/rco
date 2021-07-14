@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -57,6 +57,9 @@
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -74,6 +77,9 @@
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -85,6 +91,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -112,7 +121,8 @@
 
       
 
-      </header><div class="row">
+      </header><script src="opt-common-subexpr_files/header-attrs-2.5/header-attrs.js"></script><link href="opt-common-subexpr_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="opt-common-subexpr_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Common Subexpression Elimination</h1>
@@ -128,32 +138,40 @@
 <div id="common-subexpression-elimination" class="section level1">
 <h1 class="hasAnchor">
 <a href="#common-subexpression-elimination" class="anchor"></a>Common Subexpression Elimination</h1>
+<div id="idea" class="section level2">
+<h2 class="hasAnchor">
+<a href="#idea" class="anchor"></a>Idea</h2>
+<p>The main idea behind the common subexpression elimination optimizer is to separate/isolate those parts of an expression (sub-expressions) that are being calculated again and again. By isolating a common sub-expression and replacing it with a variable, we can limit the number of computations. Thus improving the performance of our script.</p>
+</div>
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
 <p>Common Subexpression Elimination is an optimization that searches for instances of identical expressions, and replaces them with a single variable holding the computed value.</p>
 <p>For instance, consider the following code:</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="no">a</span> <span class="kw">&lt;-</span> <span class="fl">1</span> / (<span class="fl">8</span> + <span class="fl">8</span> + <span class="fl">1</span> + <span class="fl">9</span> * <span class="fl">1</span> ^ <span class="fl">8</span>)
-<span class="no">b</span> <span class="kw">&lt;-</span> (<span class="fl">8</span> + <span class="fl">8</span> + <span class="fl">1</span> + <span class="fl">9</span> * <span class="fl">1</span> ^ <span class="fl">8</span>) * <span class="fl">2</span></pre></body></html></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">a</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">8</span> <span class="op">+</span> <span class="fl">8</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">9</span> <span class="op">*</span> <span class="fl">1</span> <span class="op">^</span> <span class="fl">8</span><span class="op">)</span>
+<span class="va">b</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">8</span> <span class="op">+</span> <span class="fl">8</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">9</span> <span class="op">*</span> <span class="fl">1</span> <span class="op">^</span> <span class="fl">8</span><span class="op">)</span> <span class="op">*</span> <span class="fl">2</span></code></pre></div>
 <p>This code computes twice <code>8 + 8 + 1 + 9 * 1 ^ 8</code>, this could be evaluated once, assigned to a new variable, and used twice. Like, for example:</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">cs_1</span> <span class="kw">&lt;-</span> (<span class="fl">8</span> + <span class="fl">8</span> + <span class="fl">1</span> + <span class="fl">9</span> * <span class="fl">1</span> ^ <span class="fl">8</span>)
-<span class="no">a</span> <span class="kw">&lt;-</span>  <span class="fl">1</span> / <span class="no">cs_1</span>
-<span class="no">b</span> <span class="kw">&lt;-</span> <span class="no">cs_1</span> * <span class="fl">2</span></pre></body></html></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">cs_1</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">8</span> <span class="op">+</span> <span class="fl">8</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">9</span> <span class="op">*</span> <span class="fl">1</span> <span class="op">^</span> <span class="fl">8</span><span class="op">)</span>
+<span class="va">a</span> <span class="op">&lt;-</span>  <span class="fl">1</span> <span class="op">/</span> <span class="va">cs_1</span>
+<span class="va">b</span> <span class="op">&lt;-</span> <span class="va">cs_1</span> <span class="op">*</span> <span class="fl">2</span></code></pre></div>
 </div>
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>Consider the following example:</p>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">code</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
   <span class="st">"a &lt;- b &lt;- c &lt;- 1"</span>,
   <span class="st">"for (i in 1:1000) {"</span>,
   <span class="st">"  a &lt;- a ^ i ^ c"</span>,
   <span class="st">"  b &lt;- b * i ^ c"</span>,
   <span class="st">"  c &lt;- c + i ^ c"</span>,
   <span class="st">"}"</span>,
-  <span class="kw">sep</span> <span class="kw">=</span> <span class="st">"\n"</span>
-)
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">code</span>)</pre></body></html></div>
+  sep <span class="op">=</span> <span class="st">"\n"</span>
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span></code></pre></div>
 <pre><code>## a &lt;- b &lt;- c &lt;- 1
 ## for (i in 1:1000) {
 ##   a &lt;- a ^ i ^ c
@@ -161,8 +179,9 @@
 ##   c &lt;- c + i ^ c
 ## }</code></pre>
 <p>Then, the automatically optimized code would be:</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">opt_code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/opt_common_subexpr.html">opt_common_subexpr</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">code</span>))
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">opt_code</span>$<span class="no">codes</span><span class="kw">[[</span><span class="fl">1</span>]])</pre></body></html></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">opt_code</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_common_subexpr.html">opt_common_subexpr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">opt_code</span><span class="op">$</span><span class="va">codes</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <pre><code>## a &lt;- b &lt;- c &lt;- 1
 ## for (i in 1:1000) {
 ##   cs_1 &lt;- i ^ c
@@ -171,16 +190,18 @@
 ##   c &lt;- c + cs_1
 ## }</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">bmark_res</span> <span class="kw">&lt;-</span> <span class="fu">microbenchmark</span>({
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">code</span>))
-}, {
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">opt_code</span>))
-})
-<span class="fu">autoplot</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">bmark_res</span> <span class="op">&lt;-</span> <span class="fu">microbenchmark</span><span class="op">(</span><span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span>, <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">opt_code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="fu">autoplot</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
 <p><img src="opt-common-subexpr_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu">speed_up</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
-<pre><code>##            Min.  1st Qu.   Median   Mean  3rd Qu.     Max.
-## Expr_2 70.96235 65.62056 64.95742 67.424 58.25943 148.3645</code></pre>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">speed_up</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.    Max.
+## Expr_2 73.61738 74.05437 71.04682 64.59769 55.53048 52.0365</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -195,12 +216,14 @@
 <p>Consider functions as common subexpressions?</p>
 <p>This can have an issue if the common function call returns random values.</p>
 <p>For example:</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">a</span> <span class="kw">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fl">1</span>) * <span class="fl">8</span>
-<span class="no">b</span> <span class="kw">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fl">1</span>) * <span class="fl">18</span></pre></body></html></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">a</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">8</span>
+<span class="va">b</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">18</span></code></pre></div>
 <p>Will be wrongly optimized to:</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">cs_1</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fl">1</span>)
-<span class="no">a</span> <span class="kw">&lt;-</span><span class="no">cs_1</span> * <span class="fl">8</span>
-<span class="no">b</span> <span class="kw">&lt;-</span><span class="no">cs_1</span> * <span class="fl">18</span></pre></body></html></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">cs_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>
+<span class="va">a</span> <span class="op">&lt;-</span><span class="va">cs_1</span> <span class="op">*</span> <span class="fl">8</span>
+<span class="va">b</span> <span class="op">&lt;-</span><span class="va">cs_1</span> <span class="op">*</span> <span class="fl">18</span></code></pre></div>
 </li>
 <li>
 <p>Use information about which functions modify their parent env?</p>
@@ -226,7 +249,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

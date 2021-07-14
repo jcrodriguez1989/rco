@@ -11,7 +11,7 @@ generate_files_opt_report <- function(files, optimizers = rco:::all_optimizers) 
   # Initializations
   final_result <- codes <- list()
   # Read the contents of a file. 3 files will form a list/vector/df of size 3
-  codes <- lapply(files, rco:::read_code_file)
+  codes <- lapply(files, read_code_file)
   # Naming each entry in the list
   names(codes) <- files
   # Setting up the progress bar
@@ -39,12 +39,12 @@ generate_files_opt_report <- function(files, optimizers = rco:::all_optimizers) 
       # Remove whitespaces for comparsion purposes
       opt_j_code_no_ws <- gsub(" ", "", opt_j_code[[1]])
       # If code was optimized, then append the optimizer name to the file
-      if(!isTRUE(all.equal(og_code_no_ws, opt_j_code_no_ws))) 
+      if(!isTRUE(all.equal(og_code_no_ws, opt_j_code_no_ws)))
         opt_used_in_i <- append(opt_used_in_i, act_optim_name)
     }
     # Setting the name for the files in the resultant list
     code_file_name <- names(codes)[i]
-    final_result[[code_file_name]] <- opt_used_in_i     
+    final_result[[code_file_name]] <- opt_used_in_i
   }
   # Removing all entries with `character(0)` or no optimizations
   final_result <- final_result[lapply(final_result, length) > 0]

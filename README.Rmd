@@ -6,7 +6,7 @@ output: github_document
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/rco)](https://CRAN.R-project.org/package=rco)
-[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![Travis build status](https://travis-ci.org/jcrodriguez1989/rco.svg?branch=master)](https://travis-ci.org/jcrodriguez1989/rco)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/jcrodriguez1989/rco?branch=master&svg=true)](https://ci.appveyor.com/project/jcrodriguez1989/rco)
 [![Coverage status](https://codecov.io/gh/jcrodriguez1989/rco/branch/master/graph/badge.svg)](https://codecov.io/github/jcrodriguez1989/rco?branch=master)
@@ -17,7 +17,7 @@ Make your R code run faster!
 
 The `rco` project, from its start to version 1.0.0, was made possible by a [Google Summer of Code 2019 project](https://summerofcode.withgoogle.com/archive/2019/projects/6300906386096128/).
 
-Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.name/en/) and [Dr. Nicolás Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
+Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.org/en/) and [Dr. Nicolás Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
 
 ```{r echo=FALSE}
 library("rco")

@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -57,6 +57,9 @@
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -74,6 +77,9 @@
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -85,6 +91,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -112,7 +121,8 @@
 
       
 
-      </header><div class="row">
+      </header><script src="docker-readme_files/header-attrs-2.5/header-attrs.js"></script><link href="docker-readme_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="docker-readme_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Docker file</h1>
@@ -133,24 +143,24 @@
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>First, you need to install <a href="https://www.docker.com/">Docker</a> on your computer. And then, from a terminal, the <code>rco</code> Docker image can be pulled from <a href="https://hub.docker.com/r/jcrodriguez1989/rco">Docker Hub</a> with:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="ex">docker</span> pull jcrodriguez1989/rco</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> pull jcrodriguez1989/rco</span></code></pre></div>
 </div>
 <div id="usage" class="section level2">
 <h2 class="hasAnchor">
 <a href="#usage" class="anchor"></a>Usage</h2>
 <p>The docker image basic usage will optimize a random CRAN package, this is done with:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="ex">docker</span> run jcrodriguez1989/rco</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run jcrodriguez1989/rco</span></code></pre></div>
 <p>We can also specify a package to optimize, using the <code>RCO_PKG</code> environment variable, for example, if we want to optimize the <code>rflights</code> package:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="ex">docker</span> run -e RCO_PKG=rflights jcrodriguez1989/rco</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run -e RCO_PKG=rflights jcrodriguez1989/rco</span></code></pre></div>
 <p>Also, if we want to get the resulting optimized files we can set a docker shared folder, with:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># Replace DEST_FOLDER path, with your desired output path</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="va">DEST_FOLDER=</span>/tmp/rco_dock_res</a>
-<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="ex">docker</span> run -v <span class="va">$DEST_FOLDER</span>:/rco_results jcrodriguez1989/rco</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace DEST_FOLDER path, with your desired output path</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="va">DEST_FOLDER=</span>/tmp/rco_dock_res</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run -v <span class="va">$DEST_FOLDER</span>:/rco_results jcrodriguez1989/rco</span></code></pre></div>
 <p><strong>In summary</strong>, if we want to optimize the <code>rflights</code> package and save its results, we can do:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="ex">docker</span> run -e RCO_PKG=rflights -v <span class="va">$DEST_FOLDER</span>:/rco_results jcrodriguez1989/rco</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run -e RCO_PKG=rflights -v <span class="va">$DEST_FOLDER</span>:/rco_results jcrodriguez1989/rco</span></code></pre></div>
 <p>And in the <code>DEST_FOLDER</code> we will have files as:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="fu">ls</span> <span class="va">$DEST_FOLDER</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="co">## rflights  rflights_0.1.0.tar.gz  rflights_opt</span></a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="va">$DEST_FOLDER</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">## rflights  rflights_0.1.0.tar.gz  rflights_opt</span></span></code></pre></div>
 </div>
 </div>
   </div>
@@ -170,7 +180,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
