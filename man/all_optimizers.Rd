@@ -5,7 +5,7 @@
 \alias{all_optimizers}
 \title{All optimizers list.}
 \format{
-An object of class \code{list} of length 7.
+An object of class \code{list} of length 8.
 }
 \usage{
 all_optimizers
@@ -13,6 +13,7 @@ all_optimizers
 \description{
 List of all the optimizer functions:
 \itemize{
+  \item Conditional Threading \code{\link{opt_cond_thread}}
   \item Constant Folding \code{\link{opt_constant_folding}}
   \item Constant Propagation \code{\link{opt_constant_propagation}}
   \item Dead Code Elimination \code{\link{opt_dead_code}}
