@@ -2,6 +2,7 @@
 #'
 #' List of all the optimizer functions:
 #' \itemize{
+#'   \item Conditional Threading \code{\link{opt_cond_thread}}
 #'   \item Constant Folding \code{\link{opt_constant_folding}}
 #'   \item Constant Propagation \code{\link{opt_constant_propagation}}
 #'   \item Dead Code Elimination \code{\link{opt_dead_code}}
@@ -15,6 +16,7 @@
 #' @export
 #'
 all_optimizers <- list(
+  "Conditional Threading" = opt_cond_thread,
   "Constant Folding" = opt_constant_folding,
   "Constant Propagation" = opt_constant_propagation,
   "Dead Code Elimination" = opt_dead_code,
@@ -31,6 +33,7 @@ all_optimizers <- list(
 #' enabled.
 #' Note that using this optimizers could change the semantics of the program!
 #' \itemize{
+#'   \item Conditional Threading \code{\link{opt_cond_thread}}
 #'   \item Constant Folding \code{\link{opt_constant_folding}}
 #'   \item Constant Propagation \code{\link{opt_constant_propagation}}
 #'   \item Dead Code Elimination \code{\link{opt_dead_code}}
@@ -44,6 +47,7 @@ all_optimizers <- list(
 #' @export
 #'
 max_optimizers <- list(
+  "Conditional Threading" = opt_cond_thread,
   "Constant Folding" = function(texts) {
     opt_constant_folding(texts, fold_floats = TRUE, in_fun_call = TRUE)
   },

@@ -15,6 +15,7 @@ List of all the optimizer functions, with maximum optimization techniques
 enabled.
 Note that using this optimizers could change the semantics of the program!
 \itemize{
+  \item Conditional Threading \code{\link{opt_cond_thread}}
   \item Constant Folding \code{\link{opt_constant_folding}}
   \item Constant Propagation \code{\link{opt_constant_propagation}}
   \item Dead Code Elimination \code{\link{opt_dead_code}}

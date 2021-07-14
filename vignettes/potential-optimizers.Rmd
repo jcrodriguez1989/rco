@@ -2,7 +2,7 @@
 output: rmarkdown::html_vignette
 title: Potential Optimizers
 vignette: >
-  %\VignetteIndexEntry{Potential optimizers}
+  %\VignetteIndexEntry{Potential Optimizers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,60 +14,6 @@ library("ggplot2")
 library("microbenchmark")
 
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-## Conditional Threading
-
-### Idea
-
-When several conditionals present the same boolean condition, merging their inside actions would avoid computing the condition several times. Also, in the cases where a second `if` statement has been used with the exact negation of the condition of the first `if`, the second `if` could then be incorporated in an `else` statement.
-
-### Code Examples
-
-#### Unoptimized Code
-
-```{r cond_thread_thread_code_og, echo=TRUE, warning=FALSE}
-cond_thread <- function(n) {
-  evens <- 0
-  evens_sum <- 0
-  odds <- 0
-  for (i in seq_len(n)) {
-    if (i %% 2 == 0) { # same logical as next if condition (can be merged)
-      evens <- evens + 1
-    }
-    if (i %% 2 == 0) {
-      evens_sum <- evens_sum + i
-    }
-    if (!(i %% 2 == 0)) { # exact negation as previous if (can be an else)
-      odds <- odds + 1
-    }
-  }
-}
-```
-
-#### Proposed Optimized Code
-
-```{r cond_thread_thread_code_op, echo=TRUE, warning=FALSE}
-cond_thread_opt <- function(n) {
-  evens <- 0
-  evens_sum <- 0
-  odds <- 0
-  for (i in seq_len(n)) {
-    if (i %% 2 == 0) { # merged
-      evens <- evens + 1
-      evens_sum <- evens_sum + i
-    } else { # converted to else
-      odds <- odds + 1
-    }
-  }
-}
-```
-
-### Benchmark
-
-```{r cond_thread_thread_benchmark, warning=FALSE, message=FALSE}
-n <- 100000
-autoplot(microbenchmark(cond_thread(n), cond_thread_opt(n)))
 ```
 
 ## Inline Expansion
