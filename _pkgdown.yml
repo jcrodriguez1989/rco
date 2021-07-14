@@ -12,6 +12,8 @@ navbar:
       menu:
         - text: "Common Subexpression Elimination"
           href: articles/opt-common-subexpr.html
+        - text: "Conditional Threading"
+          href: articles/opt-cond-thread.html
         - text: "Constant Folding"
           href: articles/opt-constant-folding.html
         - text: "Constant Propagation"
@@ -24,10 +26,14 @@ navbar:
           href: articles/opt-dead-store.html
         - text: "Loop-invariant Code Motion"
           href: articles/opt-loop-invariant.html
+        - text: "Memory Allocation"
+          href: articles/opt-memory-alloc.html
     - text: "Articles"
       menu:
         - text: "Contributing an Optimizer"
           href: articles/contributing-an-optimizer.html
+        - text: "Potential Optimizers"
+          href: articles/potential-optimizers.html
         - text: "Docker Image"
           href: articles/docker-readme.html
     - text: "News"

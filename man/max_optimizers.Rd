@@ -5,7 +5,7 @@
 \alias{max_optimizers}
 \title{Max optimizers list.}
 \format{
-An object of class \code{list} of length 7.
+An object of class \code{list} of length 9.
 }
 \usage{
 max_optimizers
@@ -15,6 +15,7 @@ List of all the optimizer functions, with maximum optimization techniques
 enabled.
 Note that using this optimizers could change the semantics of the program!
 \itemize{
+  \item Conditional Threading \code{\link{opt_cond_thread}}
   \item Constant Folding \code{\link{opt_constant_folding}}
   \item Constant Propagation \code{\link{opt_constant_propagation}}
   \item Dead Code Elimination \code{\link{opt_dead_code}}
@@ -22,6 +23,7 @@ Note that using this optimizers could change the semantics of the program!
   \item Dead Expression Elimination \code{\link{opt_dead_expr}}
   \item Common Subexpression Elimination \code{\link{opt_common_subexpr}}
   \item Loop-invariant Code Motion \code{\link{opt_loop_invariant}}
+  \item Memory Allocation \code{\link{opt_memory_alloc}}
 }
 }
 \keyword{datasets}

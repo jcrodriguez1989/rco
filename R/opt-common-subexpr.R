@@ -16,6 +16,14 @@
 #'   sep = "\n"
 #' )
 #' cat(opt_common_subexpr(list(code))$codes[[1]])
+#' 
+#' heron_formula <- paste(
+#'   "area <- (a/2 + b/2 +c/2) * (a/2 + b/2 + c/2 - a) * (a/2 + b/2 + c/2 - b) *",
+#'   "  (a/2 + b/2 + c/2 - c)",
+#'   "area <- sqrt(area)",
+#'   sep = '\n'
+#' )
+#' cat(opt_common_subexpr(list(heron_formula))$codes[[1]])
 #' @export
 #'
 opt_common_subexpr <- function(texts, n_values = 2, in_fun_call = FALSE) {

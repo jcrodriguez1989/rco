@@ -6,7 +6,7 @@
 [![CRAN
 status](https://www.r-pkg.org/badges/version/rco)](https://CRAN.R-project.org/package=rco)
 [![Lifecycle:
-stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![Travis build
 status](https://travis-ci.org/jcrodriguez1989/rco.svg?branch=master)](https://travis-ci.org/jcrodriguez1989/rco)
 [![AppVeyor build
@@ -15,7 +15,7 @@ status](https://ci.appveyor.com/api/projects/status/github/jcrodriguez1989/rco?b
 status](https://codecov.io/gh/jcrodriguez1989/rco/branch/master/graph/badge.svg)](https://codecov.io/github/jcrodriguez1989/rco?branch=master)
 <!-- badges: end -->
 
-Make your R code run faster\! `rco` analyzes your code and applies
+Make your R code run faster! `rco` analyzes your code and applies
 different optimization strategies that return an R code that runs
 faster.
 
@@ -23,7 +23,7 @@ The `rco` project, from its start to version 1.0.0, was made possible by
 a [Google Summer of Code 2019
 project](https://summerofcode.withgoogle.com/archive/2019/projects/6300906386096128/).
 
-Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.name/en/)
+Thanks to the kind mentorship of [Dr. Yihui Xie](https://yihui.org/en/)
 and [Dr. Nicolás Wolovick](https://cs.famaf.unc.edu.ar/~nicolasw/).
 
 ## Installation
@@ -46,39 +46,35 @@ Or install the development version from GitHub:
 
 `rco` can be used in three ways:
 
-  - Using the RStudio Addins
-    
+-   Using the RStudio Addins
+
     1.  `Optimize active file`: Optimizes the file currently open in
         RStudio. It will apply the optimizers present in
         `all_optimizers`.
-    
+
     2.  `Optimize selection`: Optimizes the code currently highlited in
         the RStudio Source Pane. It will apply the optimizers present in
         `all_optimizers`.
 
-  - Using the `shiny` GUIs
-    
+-   Using the `shiny` GUIs
+
     1.  `rco_gui("code_optimizer")` opens a `shiny` interface in a
         browser. This GUI allows to easily optimize chunks of code.
-    
+
     2.  `rco_gui("pkg_optimizer")` opens a `shiny` interface in a
         browser. This GUI allows to easily optimize R packages that are
         hosted at CRAN or GitHub.
 
-  - Using the R functions
-    
+-   Using the R functions
+
     1.  Optimize some `.R` code files
-    
-    <!-- end list -->
-    
+
     ``` r
     optimize_files(c("file_to_optimize_1.R", "file_to_optimize_2.R"))
     ```
-    
-    2.  Optimize some code in a character vector
-    
-    <!-- end list -->
-    
+
+    1.  Optimize some code in a character vector
+
     ``` r
     code <- paste(
       "code_to_optimize <- 8 ^ 8 * 1918",
@@ -87,11 +83,9 @@ Or install the development version from GitHub:
     )
     optimize_text(code)
     ```
-    
-    3.  Optimize all `.R` code files into a folder
-    
-    <!-- end list -->
-    
+
+    1.  Optimize all `.R` code files into a folder
+
     ``` r
     optimize_folder("~/myfolder_to_optimize", recursive = FALSE)
     ```

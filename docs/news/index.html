@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -97,6 +97,9 @@
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -114,6 +117,9 @@
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -125,6 +131,9 @@
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -159,25 +168,34 @@
       <small>Source: <a href='https://github.com/jcrodriguez1989/rco/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="rco-1-0-1" class="section level1">
+    <div id="rco-102" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.2">
+<a href="#rco-102" class="anchor"></a>rco 1.0.2<small> 2021-04-17 </small>
+</h1>
+<ul>
+<li>Adding Memory Allocation optimizer.</li>
+<li>Adding Conditional Threading optimizer.</li>
+</ul>
+</div>
+    <div id="rco-101" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.1">
-<a href="#rco-1-0-1" class="anchor"></a>rco 1.0.1<small> 2020-02-08 </small>
+<a href="#rco-101" class="anchor"></a>rco 1.0.1<small> 2020-02-08 </small>
 </h1>
 <ul>
 <li>Bug fixing.</li>
 </ul>
 </div>
-    <div id="rco-1-0-0" class="section level1">
+    <div id="rco-100" class="section level1">
 <h1 class="page-header" data-toc-text="1.0.0">
-<a href="#rco-1-0-0" class="anchor"></a>rco 1.0.0<small> 2020-02-06 </small>
+<a href="#rco-100" class="anchor"></a>rco 1.0.0<small> 2020-02-06 </small>
 </h1>
 <ul>
 <li>Version bump to submit to CRAN.</li>
 </ul>
 </div>
-    <div id="rco-0-1-8" class="section level1">
+    <div id="rco-018" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.8">
-<a href="#rco-0-1-8" class="anchor"></a>rco 0.1.8<small> Unreleased </small>
+<a href="#rco-018" class="anchor"></a>rco 0.1.8<small> Unreleased </small>
 </h1>
 <ul>
 <li><p>Adding Shiny GUIs, called with the <code>rco_gui</code> function.</p></li>
@@ -186,65 +204,65 @@
 <li><p>Adding new optimizers list.</p></li>
 </ul>
 </div>
-    <div id="rco-0-1-7" class="section level1">
+    <div id="rco-017" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.7">
-<a href="#rco-0-1-7" class="anchor"></a>rco 0.1.7<small> Unreleased </small>
+<a href="#rco-017" class="anchor"></a>rco 0.1.7<small> Unreleased </small>
 </h1>
 <ul>
 <li>Adding Loop-invariant Code Motion optimizer.</li>
 </ul>
 </div>
-    <div id="rco-0-1-6" class="section level1">
+    <div id="rco-016" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.6">
-<a href="#rco-0-1-6" class="anchor"></a>rco 0.1.6<small> Unreleased </small>
+<a href="#rco-016" class="anchor"></a>rco 0.1.6<small> Unreleased </small>
 </h1>
 <ul>
 <li>Adding Dead Expression Elimination optimizer.</li>
 </ul>
 </div>
-    <div id="rco-0-1-5" class="section level1">
+    <div id="rco-015" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.5">
-<a href="#rco-0-1-5" class="anchor"></a>rco 0.1.5<small> Unreleased </small>
+<a href="#rco-015" class="anchor"></a>rco 0.1.5<small> Unreleased </small>
 </h1>
 <ul>
 <li>Adding Common Subexpression Elimination optimizer.</li>
 </ul>
 </div>
-    <div id="rco-0-1-4" class="section level1">
+    <div id="rco-014" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.4">
-<a href="#rco-0-1-4" class="anchor"></a>rco 0.1.4<small> Unreleased </small>
+<a href="#rco-014" class="anchor"></a>rco 0.1.4<small> Unreleased </small>
 </h1>
 <ul>
 <li>Adding Dead Store Elimination optimizer.</li>
 </ul>
 </div>
-    <div id="rco-0-1-3" class="section level1">
+    <div id="rco-013" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.3">
-<a href="#rco-0-1-3" class="anchor"></a>rco 0.1.3<small> Unreleased </small>
+<a href="#rco-013" class="anchor"></a>rco 0.1.3<small> Unreleased </small>
 </h1>
 <ul>
 <li>Adding Dead Code Elimination optimizer.</li>
 </ul>
 </div>
-    <div id="rco-0-1-2" class="section level1">
+    <div id="rco-012" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.2">
-<a href="#rco-0-1-2" class="anchor"></a>rco 0.1.2<small> Unreleased </small>
+<a href="#rco-012" class="anchor"></a>rco 0.1.2<small> Unreleased </small>
 </h1>
 <ul>
 <li>Adding Constant Propagation optimizer.</li>
 </ul>
 </div>
-    <div id="rco-0-1-1" class="section level1">
+    <div id="rco-011" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.1">
-<a href="#rco-0-1-1" class="anchor"></a>rco 0.1.1<small> Unreleased </small>
+<a href="#rco-011" class="anchor"></a>rco 0.1.1<small> Unreleased </small>
 </h1>
 <ul>
 <li>Adding Constant Folding optimizer.</li>
 </ul>
 </div>
-    <div id="rco-0-1-0" class="section level1">
+    <div id="rco-010" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.0">
-<a href="#rco-0-1-0" class="anchor"></a>rco 0.1.0<small> Unreleased </small>
+<a href="#rco-010" class="anchor"></a>rco 0.1.0<small> Unreleased </small>
 </h1>
 <ul>
 <li>Creating basic rco package skeleton.</li>
@@ -267,7 +285,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

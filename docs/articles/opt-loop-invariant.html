@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -57,6 +57,9 @@
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -74,6 +77,9 @@
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -85,6 +91,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -112,7 +121,8 @@
 
       
 
-      </header><div class="row">
+      </header><script src="opt-loop-invariant_files/header-attrs-2.5/header-attrs.js"></script><link href="opt-loop-invariant_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="opt-loop-invariant_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Loop-invariant Code Motion</h1>
@@ -128,28 +138,35 @@
 <div id="loop-invariant-code-motion" class="section level1">
 <h1 class="hasAnchor">
 <a href="#loop-invariant-code-motion" class="anchor"></a>Loop-invariant Code Motion</h1>
+<div id="idea" class="section level2">
+<h2 class="hasAnchor">
+<a href="#idea" class="anchor"></a>Idea</h2>
+<p>Invariant code is a piece of code that could be run outside of a loop without affecting the actual outcome of a program. This may come in the form of variables that are not modified after going through the loop and as such are called “invariants” or non-changing. If these pieces of code were removed from the loops, this would speed up the script being run.</p>
+</div>
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
 <p>Loop-invariant code consists of statements or expressions which can be moved outside the body of a loop without affecting the semantics of the program. Loop-invariant code motion is a compiler optimization which performs this movement automatically.</p>
 <p>For example, consider the following code:</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="no">i</span> <span class="kw">&lt;-</span> <span class="fl">0</span>
-<span class="no">n</span> <span class="kw">&lt;-</span> <span class="fl">1000</span>
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fl">1</span>)
-<span class="no">z</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fl">1</span>)
-<span class="no">a</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>()
-<span class="kw">while</span> (<span class="no">i</span> <span class="kw">&lt;</span> <span class="no">n</span>) {
-  <span class="no">x</span> <span class="kw">&lt;-</span> <span class="no">y</span> + <span class="no">z</span>
-  <span class="no">a</span>[<span class="no">i</span>] <span class="kw">&lt;-</span> <span class="fl">6</span> * <span class="no">i</span> + <span class="no">x</span> * <span class="no">x</span>
-  <span class="no">i</span> <span class="kw">&lt;-</span> <span class="no">i</span> + <span class="fl">1</span>
-}</pre></body></html></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">i</span> <span class="op">&lt;-</span> <span class="fl">0</span>
+<span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1000</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>
+<span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>
+<span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">)</span>
+<span class="kw">while</span> <span class="op">(</span><span class="va">i</span> <span class="op">&lt;</span> <span class="va">n</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">+</span> <span class="va">z</span>
+  <span class="va">a</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">6</span> <span class="op">*</span> <span class="va">i</span> <span class="op">+</span> <span class="va">x</span> <span class="op">*</span> <span class="va">x</span>
+  <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">i</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="op">}</span></code></pre></div>
 <p>Here, <code>x</code> is assigned a value <code>y + z</code> that is constant in each loop execution. In this example, the assignment would be executed <code>n</code> times. The same result, but much faster, would be obtained by doing the assign outside the loop.</p>
 </div>
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>Consider the previous example to be automatically optimized.</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">code</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
   <span class="st">"i &lt;- 0"</span>,
   <span class="st">"n &lt;- 1000"</span>,
   <span class="st">"y &lt;- rnorm(1)"</span>,
@@ -160,9 +177,9 @@
   <span class="st">"  a[i] &lt;- 6 * i + x * x"</span>,
   <span class="st">"  i &lt;- i + 1"</span>,
   <span class="st">"}"</span>,
-  <span class="kw">sep</span> <span class="kw">=</span> <span class="st">"\n"</span>
-)
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">code</span>)</pre></body></html></div>
+  sep <span class="op">=</span> <span class="st">"\n"</span>
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span></code></pre></div>
 <pre><code>## i &lt;- 0
 ## n &lt;- 1000
 ## y &lt;- rnorm(1)
@@ -174,8 +191,9 @@
 ##   i &lt;- i + 1
 ## }</code></pre>
 <p>Then, the automatically optimized code would be:</p>
-<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">opt_code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/opt_loop_invariant.html">opt_loop_invariant</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">code</span>))
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">opt_code</span>$<span class="no">codes</span><span class="kw">[[</span><span class="fl">1</span>]])</pre></body></html></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">opt_code</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_loop_invariant.html">opt_loop_invariant</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">opt_code</span><span class="op">$</span><span class="va">codes</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <pre><code>## i &lt;- 0
 ## n &lt;- 1000
 ## y &lt;- rnorm(1)
@@ -189,16 +207,18 @@
 ##   i &lt;- i + 1
 ## }</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">bmark_res</span> <span class="kw">&lt;-</span> <span class="fu">microbenchmark</span>({
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">code</span>))
-}, {
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">opt_code</span>))
-})
-<span class="fu">autoplot</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">bmark_res</span> <span class="op">&lt;-</span> <span class="fu">microbenchmark</span><span class="op">(</span><span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span>, <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">opt_code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="fu">autoplot</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
 <p><img src="opt-loop-invariant_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu">speed_up</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
-<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.    Max.
-## Expr_2 61.23334 59.35936 51.22635 57.88994 49.62913 119.566</code></pre>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">speed_up</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
+<pre><code>##            Min.  1st Qu.   Median    Mean  3rd Qu.     Max.
+## Expr_2 63.28935 62.14527 54.43887 57.8912 51.62791 58.50693</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -219,55 +239,61 @@
 <li>
 <p><code>if/else</code> code motion?</p>
 <p>Actually, the <code>opt_loop_invariant</code> does not consider <code>if/else</code> expressions to move. In this sense, the code:</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="kw">while</span> (<span class="no">i</span> <span class="kw">&lt;</span> <span class="no">n</span>) {
-  <span class="kw">if</span> (<span class="no">n</span> <span class="kw">&gt;</span> <span class="fl">3</span>) {
-    <span class="no">something_without_i</span>
-  }
-}</pre></body></html></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">while</span> <span class="op">(</span><span class="va">i</span> <span class="op">&lt;</span> <span class="va">n</span><span class="op">)</span> <span class="op">{</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="va">n</span> <span class="op">&gt;</span> <span class="fl">3</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">something_without_i</span>
+  <span class="op">}</span>
+<span class="op">}</span></code></pre></div>
 <p>Will not be optimized to its equivalent code:</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="kw">if</span> (<span class="no">i</span> <span class="kw">&lt;</span> <span class="no">n</span>) {
-  <span class="kw">if</span> (<span class="no">n</span> <span class="kw">&gt;</span> <span class="fl">3</span>) {
-    <span class="no">something_without_i</span>
-  }
-}
-<span class="kw">while</span> (<span class="no">i</span> <span class="kw">&lt;</span> <span class="no">n</span>) {
-}</pre></body></html></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">&lt;</span> <span class="va">n</span><span class="op">)</span> <span class="op">{</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="va">n</span> <span class="op">&gt;</span> <span class="fl">3</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">something_without_i</span>
+  <span class="op">}</span>
+<span class="op">}</span>
+<span class="kw">while</span> <span class="op">(</span><span class="va">i</span> <span class="op">&lt;</span> <span class="va">n</span><span class="op">)</span> <span class="op">{</span>
+<span class="op">}</span></code></pre></div>
 </li>
 <li>
 <p>Invariant subexpressions motion?</p>
 <p>Actually, the <code>opt_loop_invariant</code> considers only full expressions, it is not working on subexpressions, for instance, the code:</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="kw">while</span> (<span class="no">i</span> <span class="kw">&lt;</span> <span class="no">n</span>) {
-  <span class="no">i</span> <span class="kw">&lt;-</span> (<span class="no">x</span> * <span class="no">y</span>) + <span class="fl">1</span>
-}</pre></body></html></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">while</span> <span class="op">(</span><span class="va">i</span> <span class="op">&lt;</span> <span class="va">n</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">i</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">x</span> <span class="op">*</span> <span class="va">y</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="op">}</span></code></pre></div>
 <p>as <code>x</code> and <code>y</code> are invariant, could be optimized to:</p>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">is_1</span> <span class="kw">&lt;-</span> (<span class="no">x</span> * <span class="no">y</span>)
-<span class="kw">while</span> (<span class="no">i</span> <span class="kw">&lt;</span> <span class="no">n</span>) {
-  <span class="no">i</span> <span class="kw">&lt;-</span> <span class="no">is_1</span> + <span class="fl">1</span>
-}</pre></body></html></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">is_1</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">x</span> <span class="op">*</span> <span class="va">y</span><span class="op">)</span>
+<span class="kw">while</span> <span class="op">(</span><span class="va">i</span> <span class="op">&lt;</span> <span class="va">n</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">is_1</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="op">}</span></code></pre></div>
 </li>
 <li>
 <p>Include <code>repeat</code> optimization?</p>
 <p>Since determining the conditional that causes a <code>repeat</code> loop to stop is not that simple, it is not easy to remove invariant variables and place them in an <code>if</code>.</p>
 <p>For example, the code:</p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">1</span>
-<span class="kw">repeat</span>{
-  <span class="kw">if</span> (<span class="no">y</span> <span class="kw">&gt;</span> <span class="fl">4</span>) {
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span>
+<span class="kw">repeat</span><span class="op">{</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="va">y</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span> <span class="op">{</span>
     <span class="kw">break</span>
-  }
-  <span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">8</span> * <span class="fl">8</span>
-  <span class="no">y</span> <span class="kw">&lt;-</span> <span class="no">y</span> + <span class="fl">1</span>
-}</pre></body></html></div>
+  <span class="op">}</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">8</span> <span class="op">*</span> <span class="fl">8</span>
+  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="op">}</span></code></pre></div>
 <p>Must be optimized to:</p>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">1</span>
-<span class="kw">if</span> (<span class="no">y</span> <span class="kw">&lt;=</span> <span class="fl">4</span>) {
-  <span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">8</span> * <span class="fl">8</span>
-}
-<span class="kw">repeat</span>{
-  <span class="kw">if</span> (<span class="no">y</span> <span class="kw">&gt;</span> <span class="fl">4</span>) {
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span>
+<span class="kw">if</span> <span class="op">(</span><span class="va">y</span> <span class="op">&lt;=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">8</span> <span class="op">*</span> <span class="fl">8</span>
+<span class="op">}</span>
+<span class="kw">repeat</span><span class="op">{</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="va">y</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span> <span class="op">{</span>
     <span class="kw">break</span>
-  }
-  <span class="no">y</span> <span class="kw">&lt;-</span> <span class="no">y</span> + <span class="fl">1</span>
-}</pre></body></html></div>
+  <span class="op">}</span>
+  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="op">}</span></code></pre></div>
 </li>
 </ul>
 </div>
@@ -289,7 +315,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

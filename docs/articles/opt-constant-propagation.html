@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -57,6 +57,9 @@
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -74,6 +77,9 @@
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -85,6 +91,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -112,7 +121,8 @@
 
       
 
-      </header><div class="row">
+      </header><script src="opt-constant-propagation_files/header-attrs-2.5/header-attrs.js"></script><link href="opt-constant-propagation_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="opt-constant-propagation_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Constant Propagation</h1>
@@ -128,25 +138,33 @@
 <div id="constant-propagation" class="section level1">
 <h1 class="hasAnchor">
 <a href="#constant-propagation" class="anchor"></a>Constant Propagation</h1>
+<div id="idea" class="section level2">
+<h2 class="hasAnchor">
+<a href="#idea" class="anchor"></a>Idea</h2>
+<p>The basic idea behind the constant propagation optimizer is to replace as many variables with their corresponding constant values, as possible. When we replace a variable with its corresponding constant value or <em>propagate the constant</em>, the computation time of the script decreases and we get a speed-up.</p>
+</div>
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
 <p>Constant propagation is the process of substituting the values of known constants in expressions. Constant propagation eliminates cases in which values are copied from one location or variable to another, in order to simply assign their value to another variable.</p>
 <p>For example, consider the following code:</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">14</span>
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">7</span> - <span class="no">x</span> / <span class="fl">2</span>
-<span class="no">z</span> <span class="kw">&lt;-</span> <span class="no">y</span> * (<span class="fl">28</span> / <span class="no">x</span> + <span class="fl">2</span>) - <span class="no">x</span></pre></body></html></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">14</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">7</span> <span class="op">-</span> <span class="va">x</span> <span class="op">/</span> <span class="fl">2</span>
+<span class="va">z</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">*</span> <span class="op">(</span><span class="fl">28</span> <span class="op">/</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">2</span><span class="op">)</span> <span class="op">-</span> <span class="va">x</span></code></pre></div>
 <p>Here, <code>x</code> is assigned a constant, and thus, can be propagated (three times). Propagating yields:</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">14</span>
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">7</span> - <span class="fl">14</span> / <span class="fl">2</span>
-<span class="no">z</span> <span class="kw">&lt;-</span> <span class="no">y</span> * (<span class="fl">28</span> / <span class="fl">14</span> + <span class="fl">2</span>) - <span class="fl">14</span></pre></body></html></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">14</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">7</span> <span class="op">-</span> <span class="fl">14</span> <span class="op">/</span> <span class="fl">2</span>
+<span class="va">z</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">*</span> <span class="op">(</span><span class="fl">28</span> <span class="op">/</span> <span class="fl">14</span> <span class="op">+</span> <span class="fl">2</span><span class="op">)</span> <span class="op">-</span> <span class="fl">14</span></code></pre></div>
 <p>Constant propagation enables the code to assign static values, which is faster than looking up and copying the value of a variable, and also saves time by eliminating assigning a value to a variable that is itself subsequently used only to propagate that value throughout the code. In some cases, copy propagation itself may not provide direct optimizations, but simply facilitates other transformations, such as <a href="opt-constant-folding.html">constant folding</a>, code motion, and <a href="opt-dead-code.html">dead code elimination</a>.</p>
 </div>
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>A simple example would be a code that converts the unit of many temporary samples, from hours to miliseconds <code>miliseconds &lt;- 1000 * 60 * 60 * hours</code>.</p>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">code</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
   <span class="st">"n &lt;- 1000"</span>,
   <span class="st">"hours_vector &lt;- runif(n, 0, 24)"</span>,
   <span class="st">"ms_vector &lt;- numeric(n)"</span>,
@@ -157,9 +175,9 @@
   <span class="st">"for (i in 1:n) {"</span>,
   <span class="st">"  ms_vector[i] &lt;- secs_to_ms * mins_to_secs * hs_to_mins * hours_vector[i]"</span>,
   <span class="st">"}"</span>,
-  <span class="kw">sep</span> <span class="kw">=</span> <span class="st">"\n"</span>
-)
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">code</span>)</pre></body></html></div>
+  sep <span class="op">=</span> <span class="st">"\n"</span>
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span></code></pre></div>
 <pre><code>## n &lt;- 1000
 ## hours_vector &lt;- runif(n, 0, 24)
 ## ms_vector &lt;- numeric(n)
@@ -171,8 +189,9 @@
 ##   ms_vector[i] &lt;- secs_to_ms * mins_to_secs * hs_to_mins * hours_vector[i]
 ## }</code></pre>
 <p>Then, the automatically optimized code would be:</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">opt_code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">code</span>))
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">opt_code</span>$<span class="no">codes</span><span class="kw">[[</span><span class="fl">1</span>]])</pre></body></html></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">opt_code</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">opt_code</span><span class="op">$</span><span class="va">codes</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <pre><code>## n &lt;- 1000
 ## hours_vector &lt;- runif(n, 0, 24)
 ## ms_vector &lt;- numeric(n)
@@ -184,16 +203,18 @@
 ##   ms_vector[i] &lt;- 1000 * 60 * 60 * hours_vector[i]
 ## }</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">bmark_res</span> <span class="kw">&lt;-</span> <span class="fu">microbenchmark</span>({
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">code</span>))
-}, {
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">opt_code</span>))
-})
-<span class="fu">autoplot</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">bmark_res</span> <span class="op">&lt;-</span> <span class="fu">microbenchmark</span><span class="op">(</span><span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span>, <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">opt_code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="fu">autoplot</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
 <p><img src="opt-constant-propagation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="fu">speed_up</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
-<pre><code>##            Min.  1st Qu.   Median    Mean  3rd Qu.     Max.
-## Expr_2 28.91359 28.39406 27.04191 29.6329 26.53973 72.75947</code></pre>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">speed_up</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
+<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 29.11166 27.10578 27.91726 28.48276 30.15566 47.18368</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -230,19 +251,21 @@
 </h3>
 <p>If it is a loop ( <code>repeat</code>, <code>while</code>, or <code>for</code> ): it will get which variables are being assigned in the loop and remove them from <code>values</code>, and then propagate in <code>COND</code> and <code>BODY</code>.</p>
 <p>In-loop assigned variables are removed from <code>values</code> as, if not, it would try to propagate them, and these variables might change in next execution of <code>BODY</code>. For instance:</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">3</span>
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">1</span> + <span class="fl">1</span>
-<span class="kw">while</span> (<span class="no">y</span> <span class="kw">&lt;</span> <span class="fl">5</span>) {
-  <span class="no">y</span> <span class="kw">&lt;-</span> <span class="no">x</span>
-  <span class="no">x</span> <span class="kw">&lt;-</span> <span class="no">x</span> + <span class="fl">1</span>
-}</pre></body></html></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">3</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="kw">while</span> <span class="op">(</span><span class="va">y</span> <span class="op">&lt;</span> <span class="fl">5</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="op">}</span></code></pre></div>
 <p>Would try to propagate to:</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">3</span>
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">1</span> + <span class="fl">1</span>
-<span class="kw">while</span> (<span class="no">y</span> <span class="kw">&lt;</span> <span class="fl">5</span>) {
-  <span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">3</span>
-  <span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">3</span> + <span class="fl">1</span>
-}</pre></body></html></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">3</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="kw">while</span> <span class="op">(</span><span class="va">y</span> <span class="op">&lt;</span> <span class="fl">5</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">3</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">3</span> <span class="op">+</span> <span class="fl">1</span>
+<span class="op">}</span></code></pre></div>
 <p>which is not equivalent.</p>
 </div>
 <div id="if-cond-body-else-body" class="section level3">
@@ -277,30 +300,36 @@
 <li>
 <p>Recognize functions that modify the environment?</p>
 <p>When <code>opt_constant_propagation</code> finds a function call, it deletes the previously found constant-assigned values. This is mainly done to avoid having</p>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">1</span>
-<span class="fu"><a href="https://rdrr.io/r/base/assign.html">assign</a></span>(<span class="st">"x"</span>, <span class="fl">3</span>)
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="no">x</span></pre></body></html></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">1</span>
+<span class="fu"><a href="https://rdrr.io/r/base/assign.html">assign</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="fl">3</span><span class="op">)</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span></code></pre></div>
 <p>Propagated to</p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fl">1</span>
-<span class="fu"><a href="https://rdrr.io/r/base/assign.html">assign</a></span>(<span class="st">"x"</span>, <span class="fl">3</span>)
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">1</span></pre></body></html></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">1</span>
+<span class="fu"><a href="https://rdrr.io/r/base/assign.html">assign</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="fl">3</span><span class="op">)</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span></code></pre></div>
 <p>In R we can list which <code>base</code> functions modify the environment, for example, <code>assign</code>, <code>rm</code>, etc. However, this would not be a solution, as we can define new functions that wrap the <code>base</code> ones, for instance:</p>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">rm_all</span> <span class="kw">&lt;-</span> <span class="kw">function</span>() {
-<span class="no">env</span> <span class="kw">&lt;-</span> <span class="no">.GlobalEnv</span>
-<span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span>(<span class="kw">list</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span>(<span class="kw">envir</span> <span class="kw">=</span> <span class="no">env</span>), <span class="kw">envir</span> <span class="kw">=</span> <span class="no">env</span>)
-}</pre></body></html></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">rm_all</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span>
+<span class="va">env</span> <span class="op">&lt;-</span> <span class="va">.GlobalEnv</span>
+<span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span>list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span>envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span>, envir <span class="op">=</span> <span class="va">env</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
 <p>A possible solution would be to let the user identify which functions edit the environment.</p>
 <ul>
 <li>
 <p>in a <code>roxygen2</code> way:</p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="co"># o @edits_env rm_all</span>
-<span class="no">...</span></pre></body></html></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># o @edits_env rm_all</span>
+<span class="va">...</span></code></pre></div>
 <p>or</p>
-<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="fu">rm_all</span>() <span class="co"># o @edits_env</span></pre></body></html></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">rm_all</span><span class="op">(</span><span class="op">)</span> <span class="co"># o @edits_env</span></code></pre></div>
 </li>
 <li>
 <p>by parameter:</p>
-<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="fu"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">code</span>), <span class="kw">env_edit</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"rm_all"</span>, <span class="no">...</span>))</pre></body></html></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/opt_constant_propagation.html">opt_constant_propagation</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span>, env_edit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"rm_all"</span>, <span class="va">...</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </li>
 </ul>
 </li>
@@ -324,7 +353,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

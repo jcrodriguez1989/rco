@@ -1,0 +1,98 @@
+---
+output: rmarkdown::html_vignette
+title: Memory Allocation Optimizer
+vignette: >
+  %\VignetteIndexEntry{Memory Allocation Optimizer}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, message=FALSE}
+library("rco")
+library("microbenchmark")
+library("ggplot2")
+autoplot.microbenchmark <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  microbenchmark:::autoplot.microbenchmark(obj)
+}
+speed_up <- function(obj) {
+  levels(obj$expr) <- paste0("Expr_", seq_along(levels(obj$expr)))
+  obj <- as.data.frame(obj)
+  summaries <- do.call(rbind, by(obj$time, obj$expr, summary))
+  res <- c()
+  for (i in seq_len(nrow(summaries) - 1) + 1) {
+    res <- rbind(res, summaries[1, ] / summaries[i, ])
+  }
+  rownames(res) <- levels(obj$expr)[-1]
+  return(res)
+}
+```
+
+# Memory Allocation Optimizer
+
+## Background
+
+As a general rule of thumb, in any programming language we should undertake the memory management as much as possible. When we grow a vector inside a loop, the vector asks the processor for extra space in between the running program and then proceeds once it gets the required memory. This process is repeated for every iteration of the loop resulting in massive delays. Thus we should pre-allocate the required memory to a vector to avoid such delays. 
+
+This *Memory Allocation Optimizer* checks the code for vectors that have been initialized without proper memory allocation and whenever possible, changes that allocation to an allocation with a fixed size, taken from the the loops where the vector is being called.
+
+## Example
+
+Consider the following example:
+
+```{r}
+code <- paste(
+  "square_vec <- NULL",
+  "mul_vec <- NULL",
+  "for(i in 1:100) {",
+  "  square_vec[i] <- i^2",
+  "}",
+  "for(i in 1:100) {",
+  "  mul_vec[i] <- i * i",
+  "}",
+  "identical(square_vec, mul_vec)",
+  sep = "\n"
+)
+cat(code)
+```
+
+Then, the automatically optimized code would be:
+
+```{r}
+opt_code <- opt_memory_alloc(list(code))
+cat(opt_code$codes[[1]])
+```
+
+And if we measure the execution time of each one, and the speed-up:
+
+```{r message=FALSE}
+bmark_res <- microbenchmark({
+  eval(parse(text = code))
+}, {
+  eval(parse(text = opt_code))
+})
+autoplot(bmark_res)
+speed_up(bmark_res)
+```
+
+## Implementation
+
+The `memory-allocation-optimizer` looks for vector assignments in the entire code snippet, that have been assigned without proper allocation of memory. For instance, consider a vector `vec`, now this vector can be initialized without proper memory allocation in the following ways:
+
+* `vec <- NULL`
+* `vec = c()`
+* `vec <- NA`
+* `logical() -> vec()`
+* and so on....
+
+When we spot these *improper* initializations of vectors, we change the intialization to include a suitable memory allocation in the following way, if possible:
+
+* `vec <- vector(length = 10)`
+
+## Limitations of the Optimizer
+
+While the highly flexible and accomodating nature of the **R Language** is a boon for programmers, that very nature has limited the scope of this optimizer to a certain extent. In this optimizer the following points have been kept in mind:
+
+* Only `FOR` loops have been considered, owing to the fact that their sizes, most of the times, can be predicted accurately which is not the case with `while` and `repeat` loops.
+* Since most of the in-built functions of base-R can be overwritten, we had to ignore the cases where any function was used in either the body or conidition of the `FOR` loop.
+* Also to be sure of the size of the vector, we have only proceeded with the cases where the index was explicitly mentioned with the vectors inside the loop. 

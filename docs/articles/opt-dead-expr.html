@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -57,6 +57,9 @@
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -74,6 +77,9 @@
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -85,6 +91,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -112,7 +121,8 @@
 
       
 
-      </header><div class="row">
+      </header><script src="opt-dead-expr_files/header-attrs-2.5/header-attrs.js"></script><link href="opt-dead-expr_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="opt-dead-expr_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Dead Expression Elimination</h1>
@@ -128,18 +138,24 @@
 <div id="dead-expression-elimination" class="section level1">
 <h1 class="hasAnchor">
 <a href="#dead-expression-elimination" class="anchor"></a>Dead Expression Elimination</h1>
+<div id="idea" class="section level2">
+<h2 class="hasAnchor">
+<a href="#idea" class="anchor"></a>Idea</h2>
+<p>The basic idea behind the dead expression elimination optimizer is to remove all those expressions whose result is neither used in the program, nor the removal of which affects the result of the code. Therefore this <em>dead expression elimination</em> frees up memory, saves computation time, and provides a speed boost.</p>
+</div>
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
 <p>Dead Expression Elimination intends to remove those expressions that do not modify the environment.</p>
 <p>In R, when evaluating an expression which is not assigned to any variable, its result will be seen in the console. However, when the expression is within a function definition, the value will not be printed, the environment will not be modified, and anyway the computational cost will be incurred.</p>
 <p>For example, in the code:</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="no">foo</span> <span class="kw">&lt;-</span> <span class="kw">function</span>() {
-  <span class="no">val</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fl">1</span>)
-  <span class="no">e</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span>(<span class="fl">1</span>)
-  <span class="no">val</span>
-  <span class="no">res</span> <span class="kw">&lt;-</span> <span class="no">e</span> ^ <span class="no">val</span>
-}</pre></body></html></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">foo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">val</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>
+  <span class="va">e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>
+  <span class="va">val</span>
+  <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">e</span> <span class="op">^</span> <span class="va">val</span>
+<span class="op">}</span></code></pre></div>
 <p>The unassigned <code>val</code> expression is a dead expression, and could be removed.</p>
 <p>This optimization strategy is closely related to <a href="opt-dead-store.html">dead store elimination</a>, since when a dead store is deleted, it is possible that a dead expression is generated.</p>
 </div>
@@ -147,7 +163,8 @@
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>Consider the following example:</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="no">code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">code</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
   <span class="st">"foo &lt;- function(n) {"</span>,
   <span class="st">"  i &lt;- 0"</span>,
   <span class="st">"  res &lt;- 0"</span>,
@@ -159,9 +176,9 @@
   <span class="st">"  res"</span>,
   <span class="st">"}"</span>,
   <span class="st">"foo(10000)"</span>,
-  <span class="kw">sep</span> <span class="kw">=</span> <span class="st">"\n"</span>
-)
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">code</span>)</pre></body></html></div>
+  sep <span class="op">=</span> <span class="st">"\n"</span>
+<span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span></code></pre></div>
 <pre><code>## foo &lt;- function(n) {
 ##   i &lt;- 0
 ##   res &lt;- 0
@@ -174,8 +191,9 @@
 ## }
 ## foo(10000)</code></pre>
 <p>Then, the automatically optimized code would be:</p>
-<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">opt_code</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/opt_dead_expr.html">opt_dead_expr</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">code</span>))
-<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span>(<span class="no">opt_code</span>$<span class="no">codes</span><span class="kw">[[</span><span class="fl">1</span>]])</pre></body></html></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">opt_code</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_dead_expr.html">opt_dead_expr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="va">opt_code</span><span class="op">$</span><span class="va">codes</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <pre><code>## foo &lt;- function(n) {
 ##   i &lt;- 0
 ##   res &lt;- 0
@@ -187,16 +205,18 @@
 ## }
 ## foo(10000)</code></pre>
 <p>And if we measure the execution time of each one, and the speed-up:</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">bmark_res</span> <span class="kw">&lt;-</span> <span class="fu">microbenchmark</span>({
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">code</span>))
-}, {
-  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span>(<span class="kw">text</span> <span class="kw">=</span> <span class="no">opt_code</span>))
-})
-<span class="fu">autoplot</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">bmark_res</span> <span class="op">&lt;-</span> <span class="fu">microbenchmark</span><span class="op">(</span><span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span>, <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/eval.html">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">opt_code</span><span class="op">)</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
+<span class="fu">autoplot</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
 <p><img src="opt-dead-expr_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu">speed_up</span>(<span class="no">bmark_res</span>)</pre></body></html></div>
-<pre><code>##            Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## Expr_2 11.67878 11.61415 11.42088 14.09386 10.84379 171.2217</code></pre>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">speed_up</span><span class="op">(</span><span class="va">bmark_res</span><span class="op">)</span></code></pre></div>
+<pre><code>##            Min. 1st Qu.   Median     Mean  3rd Qu.     Max.
+## Expr_2 14.72117 14.5723 14.25465 14.64141 13.40819 33.05681</code></pre>
 </div>
 <div id="implementation" class="section level2">
 <h2 class="hasAnchor">
@@ -215,17 +235,20 @@
 <li>
 <p>Check if dead expressions have never-assigned vars?</p>
 <p>The optimizer is currently eliminating any dead expression, however, the code:</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">foo</span> <span class="kw">&lt;-</span> <span class="kw">function</span>() {
-  <span class="no">x</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="fl">8818</span>)
-}</pre></body></html></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">foo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">x</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">8818</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
 <p>is not equivalent to</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">foo</span> <span class="kw">&lt;-</span> <span class="kw">function</span>() {
-  <span class="fu"><a href="https://rdrr.io/r/base/function.html">return</a></span>(<span class="fl">8818</span>)
-}</pre></body></html></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">foo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">8818</span><span class="op">)</span>
+<span class="op">}</span></code></pre></div>
 <p>Both functions will return the same value, however, the first one will give an error similar to:</p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="fu">foo</span>()
-<span class="co">## Error in foo() : object 'x' not found</span></pre></body></html></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">foo</span><span class="op">(</span><span class="op">)</span>
+<span class="co">## Error in foo() : object 'x' not found</span></code></pre></div>
 </li>
 </ul>
 </div>
@@ -247,7 +270,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

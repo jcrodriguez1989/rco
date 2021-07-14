@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -57,6 +57,9 @@
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -74,6 +77,9 @@
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -85,6 +91,9 @@
   <ul class="dropdown-menu" role="menu">
 <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -112,7 +121,8 @@
 
       
 
-      </header><div class="row">
+      </header><script src="contributing-an-optimizer_files/header-attrs-2.5/header-attrs.js"></script><link href="contributing-an-optimizer_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="contributing-an-optimizer_files/anchor-sections-1.0/anchor-sections.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Contributing an optimizer</h1>
@@ -135,37 +145,38 @@
 <a href="#writing-the-code" class="anchor"></a>Writing the code</h2>
 <p>All the code developed for the new optimizer will go in a file named <code>R/opt-**optimizer-name**.R</code>.</p>
 <p>An optimizer will be a single function (one exported), which should be called <code>opt_**optimizer_name**</code>. This function will take as input a <code>texts</code> parameter that contains a string list (character vector) with the code to optimize. An example of this, with just one code to optimize, would be:</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="no">texts</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
-  <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span>(
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">texts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
     <span class="st">"i &lt;- 320 * 200 * 32"</span>,
     <span class="st">"x &lt;- i * 20 + 100"</span>,
-    <span class="kw">sep</span> <span class="kw">=</span> <span class="st">"\n"</span>
-  )
-)</pre></body></html></div>
+    sep <span class="op">=</span> <span class="st">"\n"</span>
+  <span class="op">)</span>
+<span class="op">)</span></code></pre></div>
 <p>All other parameters that the function <code>opt_**optimizer_name**</code> takes as input must have an associated default parameter, for example, <code>opt_**optimizer_name** &lt;- function(texts, param1 = FALSE) { ... }</code>.</p>
 <p>As output, the developed function must return a list with a field <code>codes</code> that must have the same format as the <code>texts</code> input but with the code optimized.</p>
 <p>To document code we use the <a href="https://cran.r-project.org/package=roxygen2"><code>roxygen2</code></a> package. You should give a brief description of the new optimizer, of the input parameters, and an example of use.</p>
 <p>As skeleton to use to develop the new optimizer we propose to follow:</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r">#' Optimizer: **New Optimizer Name**
-#' 
-#' **New optimizer description**
-#' Carefully examine the results after running this function!
-#' 
-#' @param texts A list of character vectors with the code to optimize.
-#' **Other parameters description**
-#' 
-#' @examples
-#' **New optimizer example of use**
-#' 
-#' @export
-#' 
-opt_**optimizer_name** &lt;- function(texts) {
-  # todo: **list of possible improvements for the optimizer**
-  res &lt;- list()
-  **new optimizer code**
-  res$codes &lt;- **...**
-  return(res)
-}</pre></body></html></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' Optimizer: **New Optimizer Name**</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' **New optimizer description**</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#' Carefully examine the results after running this function!</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#' @param texts A list of character vectors with the code to optimize.</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#' **Other parameters description**</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#' @examples</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#' **New optimizer example of use**</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#' @export</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#' </span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>opt_<span class="sc">**</span>optimizer_name<span class="sc">**</span> <span class="er">&lt;</span><span class="sc">-</span> <span class="cf">function</span>(texts) {</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># todo: **list of possible improvements for the optimizer**</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="sc">**</span>new optimizer code<span class="sc">**</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  res<span class="sc">$</span>codes <span class="ot">&lt;-</span> <span class="er">**</span>...<span class="sc">**</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(res)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>For the parsing and tokenization of the code we suggest to use the functions developed in <code>R/parse.R</code>.</p>
 </div>
 <div id="writing-the-tests" class="section level2">
@@ -174,39 +185,39 @@ opt_**optimizer_name** &lt;- function(texts) {
 <p>For testing, we use the <a href="https://cran.r-project.org/package=testthat"><code>testthat</code></a> package. All the code for testing the new optimizer will go in a file named <code>tests/testthat/test-opt_**optimizer_name**.R</code>.</p>
 <p>Please create a test suite that covers a large percentage of possible use and border cases.</p>
 <p>As skeleton to use to develop the new optimizer’s test suite we propose to follow:</p>
-<div class="sourceCode" id="cb3"><html><body><pre class="r">context("opt_**optimizer_name**")
-
-test_that("**test name**", {
-  **...**
-})
-
-**more test cases**</pre></body></html></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">context</span>(<span class="st">"opt_**optimizer_name**"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">test_that</span>(<span class="st">"**test name**"</span>, {</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="sc">**</span>...<span class="sc">**</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="sc">**</span>more test cases<span class="sc">**</span></span></code></pre></div>
 </div>
 <div id="writing-the-vignette" class="section level2">
 <h2 class="hasAnchor">
 <a href="#writing-the-vignette" class="anchor"></a>Writing the vignette</h2>
 <p>When developing a new optimizer, we create a vignette to explain it. This documentation will not only be a vignette of the package but will also be part of the <a href="https://jcrodriguez1989.github.io/rco/"><code>rco</code> website</a>.</p>
 <p>For writing vignettes, we use the <a href="https://cran.r-project.org/package=knitr"><code>knitr</code></a> and <a href="https://cran.r-project.org/package=rmarkdown"><code>rmarkdown</code></a> packages. The new vignette will go in a file named <code>vignettes/opt-**optimizer-name**.Rmd</code>, and must follow the skeleton:</p>
-<div class="sourceCode" id="cb4"><html><body><pre class="r">---
-output: rmarkdown::html_vignette
-title: **New Optimizer Name**
-vignette: &gt;
-  %\VignetteIndexEntry{**New Optimizer Name**}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-# **New Optimizer Name**
-
-## Background
-
-## Example
-
-## Implementation
-
-## **Additional headings** (optional)
-
-## To-Do (optional)</pre></body></html></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="sc">---</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>output<span class="sc">:</span> rmarkdown<span class="sc">::</span>html_vignette</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>title<span class="sc">:</span> <span class="er">**</span>New Optimizer Name<span class="sc">**</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>vignette<span class="sc">:</span> <span class="er">&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  %\VignetteIndexEntry{<span class="sc">**</span>New Optimizer Name<span class="sc">**</span>}</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  %\VignetteEngine{knitr<span class="sc">::</span>rmarkdown}</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  %\VignetteEncoding{UTF<span class="dv">-8</span>}</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="sc">---</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># **New Optimizer Name**</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="do">## Background</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Example</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="do">## Implementation</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="do">## **Additional headings** (optional)</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="do">## To-Do (optional)</span></span></code></pre></div>
 <p>The <code>Background</code> section must introduce the reader to why this optimization provides improvements, and what it does. The <code>Example</code> section must give a real example to be optimized, and show the improvements it gave in terms of execution speed, memory usage, or others. The <code>Implementation</code> section must show the idea beneath the optimizer coding, this section intends to ease the understanding of the developed code if it is needed to be edited or improved. Then, as many sections as necessary can be included, where questions and challenges related to the optimizer are explained or commented. Finally, if a list of possible improvements for the optimizer were detailed, each of them should be discussed in the <code>To-Do</code> section.</p>
 </div>
 <div id="writing-additional-files" class="section level2">
@@ -223,11 +234,11 @@ vignette: &gt;
 <a href="#news-md" class="anchor"></a><code>NEWS.md</code>
 </h3>
 <p>A entry to the <code>NEWS.md</code> file should be added:</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"># rco **x.y.(z+1)**
-
-  - Adding **New Optimizer Name** optimizer.
-
-**...**</pre></body></html></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># rco **x.y.(z+1)**</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="sc">-</span> Adding <span class="sc">**</span>New Optimizer Name<span class="sc">**</span> optimizer.</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="sc">**</span>...<span class="sc">**</span></span></code></pre></div>
 </div>
 <div id="roptimizers-r" class="section level3">
 <h3 class="hasAnchor">
@@ -260,7 +271,7 @@ vignette: &gt;
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

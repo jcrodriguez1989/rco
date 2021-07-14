@@ -43,6 +43,7 @@
 <meta property="og:description" content="List of all the optimizer functions, with maximum optimization techniques
 enabled.
 Note that using this optimizers could change the semantics of the program!
+Conditional Threading opt_cond_thread
 Constant Folding opt_constant_folding
 Constant Propagation opt_constant_propagation
 Dead Code Elimination opt_dead_code
@@ -50,6 +51,7 @@ Dead Store Elimination opt_dead_store
 Dead Expression Elimination opt_dead_expr
 Common Subexpression Elimination opt_common_subexpr
 Loop-invariant Code Motion opt_loop_invariant
+Memory Allocation opt_memory_alloc
 
 " />
 
@@ -83,7 +85,7 @@ Loop-invariant Code Motion opt_loop_invariant
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">rco</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.2</span>
       </span>
     </div>
 
@@ -109,6 +111,9 @@ Loop-invariant Code Motion opt_loop_invariant
       <a href="../articles/opt-common-subexpr.html">Common Subexpression Elimination</a>
     </li>
     <li>
+      <a href="../articles/opt-cond-thread.html">Conditional Threading</a>
+    </li>
+    <li>
       <a href="../articles/opt-constant-folding.html">Constant Folding</a>
     </li>
     <li>
@@ -126,6 +131,9 @@ Loop-invariant Code Motion opt_loop_invariant
     <li>
       <a href="../articles/opt-loop-invariant.html">Loop-invariant Code Motion</a>
     </li>
+    <li>
+      <a href="../articles/opt-memory-alloc.html">Memory Allocation</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -137,6 +145,9 @@ Loop-invariant Code Motion opt_loop_invariant
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="../articles/contributing-an-optimizer.html">Contributing an Optimizer</a>
+    </li>
+    <li>
+      <a href="../articles/potential-optimizers.html">Potential Optimizers</a>
     </li>
     <li>
       <a href="../articles/docker-readme.html">Docker Image</a>
@@ -176,6 +187,7 @@ Loop-invariant Code Motion opt_loop_invariant
     <p>List of all the optimizer functions, with maximum optimization techniques
 enabled.
 Note that using this optimizers could change the semantics of the program!</p><ul>
+<li><p>Conditional Threading <code><a href='opt_cond_thread.html'>opt_cond_thread</a></code></p></li>
 <li><p>Constant Folding <code><a href='opt_constant_folding.html'>opt_constant_folding</a></code></p></li>
 <li><p>Constant Propagation <code><a href='opt_constant_propagation.html'>opt_constant_propagation</a></code></p></li>
 <li><p>Dead Code Elimination <code><a href='opt_dead_code.html'>opt_dead_code</a></code></p></li>
@@ -183,16 +195,17 @@ Note that using this optimizers could change the semantics of the program!</p><u
 <li><p>Dead Expression Elimination <code><a href='opt_dead_expr.html'>opt_dead_expr</a></code></p></li>
 <li><p>Common Subexpression Elimination <code><a href='opt_common_subexpr.html'>opt_common_subexpr</a></code></p></li>
 <li><p>Loop-invariant Code Motion <code><a href='opt_loop_invariant.html'>opt_loop_invariant</a></code></p></li>
+<li><p>Memory Allocation <code><a href='opt_memory_alloc.html'>opt_memory_alloc</a></code></p></li>
 </ul>
 
     </div>
 
-    <pre class="usage"><span class='no'>max_optimizers</span></pre>
+    <pre class="usage"><span class='va'>max_optimizers</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>list</code> of length 7.</p>
+    <p>An object of class <code>list</code> of length 9.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -209,7 +222,7 @@ Note that using this optimizers could change the semantics of the program!</p><u
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
