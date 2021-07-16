@@ -48,10 +48,28 @@ de_one_file <- function(text) {
 #
 de_one_pd <- function(pd) {
   res_pd <- pd
-
+  fpd <- flatten_leaves(pd)
   # exprs in functions dont have any effect. However, on the global env they
   # print on console, so just analyze function definitions
   fun_def_ids <- pd[pd$token == "FUNCTION", "parent"]
+  
+  #check if function bodies have never assigned vars
+  if(length(fun_def_ids) > 0) {
+    i <- 1
+    for ( i in 1:length(fun_def_ids)) {
+      flag <- is_var_assigned(fpd, fun_def_ids[[i]])
+      if(flag[1] == TRUE)
+        next
+      else {
+        warning("Please remove the unassigned variable or assign value. It may lead to errors.")
+        k <- 3
+        for(k in 3:(as.numeric(flag[2])+1)){
+          print(flag[k])
+        }
+      }
+    }
+  }
+  
 
   # get unassigned expressions
   dead_exprs_ids <- unlist(lapply(fun_def_ids, function(act_id) {
@@ -179,3 +197,50 @@ get_fun_last_exprs <- function(pd, id) {
   # returns last exprs and their children ids
   get_children(pd, last_exprs_ids)$id
 }
+
+# Checks whether some value is being assigned to all var.
+#
+# @param fpd A parsed data data.frame.
+# @param id A numeric indicating the node ID of the function to search for
+#   unassigned expressions.
+#
+is_var_assigned <- function(fpd, id)  {
+  fun_ids <- sapply(id, function(act_id){
+    utils::tail(fpd$id[fpd$parent == act_id & fpd$token == "expr"], 1)
+  })
+  
+  act_fpd <- get_children(fpd, fun_ids)
+  
+  
+  checklist_expr <- NULL
+  checklist <- NULL
+  checklist_var <- act_fpd[act_fpd$token == "SYMBOL" & act_fpd$next_lines == 1 & 
+                             act_fpd$parent == fun_ids, ]
+  expr_ids <- act_fpd[act_fpd$parent == fun_ids, ]$id
+  j <- 1
+  assignment_exprs <- c("LEFT_ASSIGN", "RIGHT_ASSIGN", "EQ_ASSIGN")
+  sys_call <- c("SYMBOL_FUNCTION_CALL")
+  for(j in seq_len(length(expr_ids))){
+    test_id <- expr_ids[j]
+    if (length(act_fpd[act_fpd$parent == test_id, ]$id) > 0) {
+      if(!any(act_fpd[act_fpd$parent == test_id, ]$token %in% assignment_exprs) & 
+         !any(act_fpd[act_fpd$parent == test_id, ]$token %in% sys_call)){
+        checklist_expr <- rbind(checklist_expr, act_fpd[act_fpd$id == test_id, ])      
+      }
+    }
+  }
+  checklist <- rbind(checklist_expr, checklist_var)
+  check_flag <- NULL
+  if (length(checklist$id) > 0) {
+    itr <- NULL
+    check_flag <- FALSE
+    for (itr in 1:length(checklist$id)) {
+      check_flag <- append(check_flag, sprintf("Function: %s Variable: %s", (fpd[fpd$parent == fpd[fpd$id == act_fpd[1, ]$parent, ]$parent & fpd$token == "SYMBOL", ]$text), (checklist[itr, ]$text)))
+    }
+    check_flag <- append(check_flag, length(check_flag), 1)
+  } 
+  else
+    check_flag <- TRUE
+  check_flag
+}
+
