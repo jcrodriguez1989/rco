@@ -49,7 +49,7 @@ remotes::install_github("jcrodriguez1989/rco", dependencies = TRUE)
 
   1. `Optimize active file`: Optimizes the file currently open in RStudio. It will apply the optimizers present in `all_optimizers`.
   
-  2. `Optimize selection`: Optimizes the code currently highlited in the RStudio Source Pane. It will apply the optimizers present in `all_optimizers`.
+  2. `Optimize selection`: Optimizes the code currently highlighted in the RStudio Source Pane. It will apply the optimizers present in `all_optimizers`.
 
 * Using the `shiny` GUIs
 
