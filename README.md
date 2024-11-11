@@ -52,7 +52,7 @@ Or install the development version from GitHub:
         RStudio. It will apply the optimizers present in
         `all_optimizers`.
 
-    2.  `Optimize selection`: Optimizes the code currently highlited in
+    2.  `Optimize selection`: Optimizes the code currently highlighted in
         the RStudio Source Pane. It will apply the optimizers present in
         `all_optimizers`.
 
