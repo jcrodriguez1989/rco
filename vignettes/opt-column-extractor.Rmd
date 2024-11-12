@@ -1,0 +1,52 @@
+---
+output: rmarkdown::html_vignette
+title: Efficient Column Extraction
+vignette: >
+  %\VignetteIndexEntry{Efficient Column Extraction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+# Efficient Column Extraction
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+Column extraction refers to the act of pulling out the values of a particular column from a given data frame/list/matrix. The below microbenchmark plot clearly shows the vast difference in execution time between `.subset2()` and other methods of column extraction. Therefore, it would make sense to replace other column extraction methods with `.subset2()` since it is a function call while all others are function calls.
+
+```{r Microbenchmark plot, echo=FALSE, message=FALSE, warning=FALSE}
+library("microbenchmark")
+library("ggplot2")
+autoplot(microbenchmark(
+  mtcars[,11],
+  mtcars$carb,
+  mtcars[[c(11)]],
+  mtcars[[11]],
+  .subset2(mtcars, 11)
+))
+```
+
+For example, consider the following code:
+
+```{r raw_code, eval=FALSE}
+  mtcars[,11]
+  mtcars$carb
+  replace_text <- c(1,2,3,4,5)
+  .subset2(mtcars, 11)
+```
+
+There is nothing wrong with the above code, but as noticed earlier it can be made efficient, if we replace the given column extraction methods with system calls(`.subset2()`). That is, it can be made more efficient in the following way:
+
+```{r opt_code, eval=FALSE}
+  .subset2(mtcars, 11)
+  .subset2(mtcars, 11)
+  replace_text <- c(1,2,3,4,5)
+  .subset2(mtcars, 11)
+
+```
+
+## Implementation
+
+The `opt_column_extractor` function of the `rco` achieves this by, parsing the given code snippet, detecting the usage of column extraction methods/techniques and replacing it with the most appropriate one.
